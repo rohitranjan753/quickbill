@@ -1,10 +1,14 @@
 import 'package:equatable/equatable.dart';
 
+enum UserRole { customer, storeAdmin, guard }
+
 class UserModel extends Equatable {
   final String uid;
   final String email;
   final String displayName;
   final String? photoURL;
+  final UserRole role;
+  final String? storeId; // Only for storeAdmin and guard roles
   final DateTime createdAt;
   final DateTime lastLogin;
 
@@ -13,6 +17,8 @@ class UserModel extends Equatable {
     required this.email,
     required this.displayName,
     this.photoURL,
+    this.role = UserRole.customer,
+    this.storeId,
     required this.createdAt,
     required this.lastLogin,
   });
@@ -23,6 +29,11 @@ class UserModel extends Equatable {
       email: json['email'] as String,
       displayName: json['displayName'] as String,
       photoURL: json['photoURL'] as String?,
+      role: UserRole.values.firstWhere(
+        (e) => e.name == json['role'],
+        orElse: () => UserRole.customer,
+      ),
+      storeId: json['storeId'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastLogin: DateTime.parse(json['lastLogin'] as String),
     );
@@ -34,6 +45,8 @@ class UserModel extends Equatable {
       'email': email,
       'displayName': displayName,
       'photoURL': photoURL,
+      'role': role.name,
+      'storeId': storeId,
       'createdAt': createdAt.toIso8601String(),
       'lastLogin': lastLogin.toIso8601String(),
     };
@@ -44,6 +57,8 @@ class UserModel extends Equatable {
     String? email,
     String? displayName,
     String? photoURL,
+    UserRole? role,
+    String? storeId,
     DateTime? createdAt,
     DateTime? lastLogin,
   }) {
@@ -52,11 +67,22 @@ class UserModel extends Equatable {
       email: email ?? this.email,
       displayName: displayName ?? this.displayName,
       photoURL: photoURL ?? this.photoURL,
+      role: role ?? this.role,
+      storeId: storeId ?? this.storeId,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
     );
   }
 
   @override
-  List<Object?> get props => [uid, email, displayName, photoURL, createdAt, lastLogin];
+  List<Object?> get props => [
+    uid,
+    email,
+    displayName,
+    photoURL,
+    role,
+    storeId,
+    createdAt,
+    lastLogin,
+  ];
 }
