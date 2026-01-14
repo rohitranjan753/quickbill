@@ -6,6 +6,7 @@ import '../blocs/auth/auth_state.dart';
 import '../blocs/cart/cart_bloc.dart';
 import '../blocs/cart/cart_event.dart';
 import '../blocs/cart/cart_state.dart';
+import '../models/cart_item_model.dart';
 import '../models/receipt_model.dart';
 import '../services/firestore_service.dart';
 import 'receipt_screen.dart';
@@ -39,6 +40,41 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
       'subtitle': 'Digital Wallets',
     },
   ];
+
+  // Helper method to calculate tax breakdown
+  Map<String, double> _calculateTaxBreakdown(List<CartItemModel> items) {
+    final Map<String, double> taxBreakdown = {};
+    double totalTax = 0.0;
+
+    for (var item in items) {
+      final taxPercentage = item.product.taxPercentage;
+      final taxKey = '${taxPercentage.toStringAsFixed(0)}%';
+      final itemTaxAmount = item.product.taxAmount * item.quantity;
+
+      taxBreakdown[taxKey] = (taxBreakdown[taxKey] ?? 0.0) + itemTaxAmount;
+      totalTax += itemTaxAmount;
+    }
+
+    taxBreakdown['total'] = totalTax;
+    return taxBreakdown;
+  }
+
+  // Helper method to calculate subtotal (before tax)
+  double _calculateSubtotal(List<CartItemModel> items) {
+    double subtotal = 0.0;
+    for (var item in items) {
+      if (item.product.isTaxInclusive) {
+        // If tax is inclusive, subtract tax to get base price
+        final basePrice =
+            item.product.sellingPrice / (1 + item.product.taxPercentage / 100);
+        subtotal += basePrice * item.quantity;
+      } else {
+        // If tax is not inclusive, use selling price directly
+        subtotal += item.product.sellingPrice * item.quantity;
+      }
+    }
+    return subtotal;
+  }
 
   Future<void> _processPayment() async {
     setState(() => _isProcessing = true);
@@ -137,6 +173,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
             return const Center(child: Text('Cart is empty'));
           }
 
+          final taxBreakdown = _calculateTaxBreakdown(cartState.items);
+          final subtotal = _calculateSubtotal(cartState.items);
+
           return Column(
             children: [
               Expanded(
@@ -196,16 +235,24 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             const SizedBox(height: 12),
                             _SummaryRow(
                               label: 'Subtotal',
-                              value:
-                                  '₹${cartState.totalAmount.toStringAsFixed(2)}',
+                              value: '₹${subtotal.toStringAsFixed(2)}',
                               isRegular: true,
                             ),
                             const SizedBox(height: 12),
-                            _SummaryRow(
-                              label: 'Tax',
-                              value: 'Included',
-                              isRegular: true,
-                            ),
+                            // Tax Breakdown
+                            ...taxBreakdown.entries
+                                .where((entry) => entry.key != 'total')
+                                .map(
+                                  (entry) => Padding(
+                                    padding: const EdgeInsets.only(bottom: 12),
+                                    child: _SummaryRow(
+                                      label: 'Tax (${entry.key})',
+                                      value:
+                                          '₹${entry.value.toStringAsFixed(2)}',
+                                      isRegular: true,
+                                    ),
+                                  ),
+                                ),
                             const Padding(
                               padding: EdgeInsets.symmetric(vertical: 16),
                               child: Divider(height: 1),

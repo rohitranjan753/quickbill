@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:intl/intl.dart';
 import '../models/receipt_model.dart';
+import '../models/cart_item_model.dart';
 import '../services/firestore_service.dart';
 
 class ReceiptScreen extends StatefulWidget {
@@ -23,6 +24,41 @@ class _ReceiptScreenState extends State<ReceiptScreen>
   late Animation<double> _scaleAnimation;
   late Animation<double> _fadeAnimation;
   bool _showDetails = false;
+
+  // Helper method to calculate tax breakdown
+  Map<String, double> _calculateTaxBreakdown(List<CartItemModel> items) {
+    final Map<String, double> taxBreakdown = {};
+    double totalTax = 0.0;
+
+    for (var item in items) {
+      final taxPercentage = item.product.taxPercentage;
+      final taxKey = '${taxPercentage.toStringAsFixed(0)}%';
+      final itemTaxAmount = item.product.taxAmount * item.quantity;
+
+      taxBreakdown[taxKey] = (taxBreakdown[taxKey] ?? 0.0) + itemTaxAmount;
+      totalTax += itemTaxAmount;
+    }
+
+    taxBreakdown['total'] = totalTax;
+    return taxBreakdown;
+  }
+
+  // Helper method to calculate subtotal (before tax)
+  double _calculateSubtotal(List<CartItemModel> items) {
+    double subtotal = 0.0;
+    for (var item in items) {
+      if (item.product.isTaxInclusive) {
+        // If tax is inclusive, subtract tax to get base price
+        final basePrice =
+            item.product.sellingPrice / (1 + item.product.taxPercentage / 100);
+        subtotal += basePrice * item.quantity;
+      } else {
+        // If tax is not inclusive, use selling price directly
+        subtotal += item.product.sellingPrice * item.quantity;
+      }
+    }
+    return subtotal;
+  }
 
   @override
   void initState() {
@@ -99,6 +135,9 @@ class _ReceiptScreenState extends State<ReceiptScreen>
         body: const Center(child: Text('Receipt not found')),
       );
     }
+
+    final taxBreakdown = _calculateTaxBreakdown(_receipt!.items);
+    final subtotal = _calculateSubtotal(_receipt!.items);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
@@ -445,6 +484,64 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                 );
                               }),
                               const Divider(height: 32),
+                              // Subtotal
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  const Text(
+                                    'Subtotal',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w500,
+                                      color: Color(0xFF64748B),
+                                    ),
+                                  ),
+                                  Text(
+                                    '₹${subtotal.toStringAsFixed(2)}',
+                                    style: const TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.w600,
+                                      color: Color(0xFF1A1A1A),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 12),
+                              // Tax Breakdown
+                              ...taxBreakdown.entries
+                                  .where((entry) => entry.key != 'total')
+                                  .map(
+                                    (entry) => Padding(
+                                      padding: const EdgeInsets.only(
+                                        bottom: 12,
+                                      ),
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.spaceBetween,
+                                        children: [
+                                          Text(
+                                            'Tax (${entry.key})',
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w500,
+                                              color: Color(0xFF64748B),
+                                            ),
+                                          ),
+                                          Text(
+                                            '₹${entry.value.toStringAsFixed(2)}',
+                                            style: const TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              color: Color(0xFF1A1A1A),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              const Divider(height: 24),
+                              const SizedBox(height: 8),
                               Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
