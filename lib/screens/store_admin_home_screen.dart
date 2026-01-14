@@ -6,6 +6,7 @@ import '../blocs/auth/auth_state.dart';
 import '../models/product_model.dart';
 import '../services/firestore_service.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'add_product_screen.dart';
 
 class StoreAdminHomeScreen extends StatefulWidget {
   const StoreAdminHomeScreen({super.key});
@@ -38,9 +39,11 @@ class _StoreAdminHomeScreenState extends State<StoreAdminHomeScreen> {
                 icon: const Icon(Icons.add_circle_outline),
                 tooltip: 'Add Product',
                 onPressed: () {
-                  // TODO: Navigate to Add Product screen
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Add Product - Coming Soon')),
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const AddProductScreen(),
+                    ),
                   );
                 },
               ),
@@ -181,10 +184,11 @@ class _StoreAdminHomeScreenState extends State<StoreAdminHomeScreen> {
                             const SizedBox(height: 32),
                             ElevatedButton.icon(
                               onPressed: () {
-                                // TODO: Navigate to Add Product
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text('Add Product - Coming Soon'),
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const AddProductScreen(),
                                   ),
                                 );
                               },
