@@ -9,6 +9,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'add_product_screen.dart';
 import 'edit_product_screen.dart';
 import 'sales_history_screen.dart';
+import 'analytics_screen.dart';
 
 class StoreAdminHomeScreen extends StatefulWidget {
   const StoreAdminHomeScreen({super.key});
@@ -248,8 +249,11 @@ class _StoreAdminHomeScreenState extends State<StoreAdminHomeScreen> {
                   title: const Text('Analytics'),
                   onTap: () {
                     Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Analytics - Coming Soon')),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const AnalyticsScreen(),
+                      ),
                     );
                   },
                 ),
