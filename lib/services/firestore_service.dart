@@ -65,6 +65,49 @@ class FirestoreService {
             .toList());
   }
 
+  // Get all store sales/receipts
+  Stream<List<ReceiptModel>> getStoreSales(String storeId) {
+    return _firestore
+        .collection('receipts')
+        .where('storeId', isEqualTo: storeId)
+        .orderBy('purchaseDate', descending: true)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) => ReceiptModel.fromJson({...doc.data(), 'id': doc.id}),
+              )
+              .toList(),
+        );
+  }
+
+  // Get store sales with date range
+  Future<List<ReceiptModel>> getStoreSalesInRange(
+    String storeId,
+    DateTime startDate,
+    DateTime endDate,
+  ) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('receipts')
+          .where('storeId', isEqualTo: storeId)
+          .where(
+            'purchaseDate',
+            isGreaterThanOrEqualTo: startDate.toIso8601String(),
+          )
+          .where('purchaseDate', isLessThanOrEqualTo: endDate.toIso8601String())
+          .orderBy('purchaseDate', descending: true)
+          .get();
+
+      return querySnapshot.docs
+          .map((doc) => ReceiptModel.fromJson({...doc.data(), 'id': doc.id}))
+          .toList();
+    } catch (e) {
+      print('Error getting store sales in range: $e');
+      return [];
+    }
+  }
+
   // Verify receipt (for guard)
   Future<void> verifyReceipt(String receiptId) async {
     try {

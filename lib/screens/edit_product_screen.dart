@@ -286,7 +286,7 @@ class _EditProductScreenState extends State<EditProductScreen> {
               icon: Icons.settings,
               children: [
                 DropdownButtonFormField<ProductStatus>(
-                  value: _status,
+                  initialValue: _status,
                   decoration: const InputDecoration(
                     labelText: 'Product Status',
                     border: OutlineInputBorder(),

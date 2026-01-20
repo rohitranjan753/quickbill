@@ -4,6 +4,7 @@ import 'cart_item_model.dart';
 class ReceiptModel extends Equatable {
   final String id;
   final String userId;
+  final String? storeId;
   final List<CartItemModel> items;
   final double totalAmount;
   final DateTime purchaseDate;
@@ -13,6 +14,7 @@ class ReceiptModel extends Equatable {
   const ReceiptModel({
     required this.id,
     required this.userId,
+    this.storeId,
     required this.items,
     required this.totalAmount,
     required this.purchaseDate,
@@ -24,6 +26,7 @@ class ReceiptModel extends Equatable {
     return ReceiptModel(
       id: json['id'] as String,
       userId: json['userId'] as String,
+      storeId: json['storeId'] as String?,
       items: (json['items'] as List)
           .map((item) => CartItemModel.fromJson(item as Map<String, dynamic>))
           .toList(),
@@ -38,6 +41,7 @@ class ReceiptModel extends Equatable {
     return {
       'id': id,
       'userId': userId,
+      'storeId': storeId,
       'items': items.map((item) => item.toJson()).toList(),
       'totalAmount': totalAmount,
       'purchaseDate': purchaseDate.toIso8601String(),
@@ -47,5 +51,14 @@ class ReceiptModel extends Equatable {
   }
 
   @override
-  List<Object?> get props => [id, userId, items, totalAmount, purchaseDate, paymentMethod, verified];
+  List<Object?> get props => [
+    id,
+    userId,
+    storeId,
+    items,
+    totalAmount,
+    purchaseDate,
+    paymentMethod,
+    verified,
+  ];
 }
