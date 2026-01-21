@@ -150,7 +150,8 @@ class MyApp extends StatelessWidget {
               }
 
               if (state is AuthAuthenticated) {
-                return const HomeScreen();
+                // Role-based routing
+                return const HomeScreen(); // HomeScreen now handles role-based routing internally
               }
 
               return const SignInScreen();

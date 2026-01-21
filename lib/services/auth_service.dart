@@ -43,20 +43,35 @@ class AuthService {
       final User? user = userCredential.user;
       
       if (user != null) {
-        // Create user model
-        final userModel = UserModel(
-          uid: user.uid,
-          email: user.email ?? '',
-          displayName: user.displayName ?? 'User',
-          photoURL: user.photoURL,
-          createdAt: DateTime.now(),
-          lastLogin: DateTime.now(),
-        );
+        // Check if user exists in Firestore
+        final existingUser = await getUserFromFirestore(user.uid);
 
-        // Save user to Firestore
-        await _saveUserToFirestore(userModel);
-        
-        return userModel;
+        if (existingUser != null) {
+          // Update last login and profile info for existing user
+          final updatedUser = existingUser.copyWith(
+            lastLogin: DateTime.now(),
+            photoURL: user.photoURL,
+            displayName: user.displayName ?? existingUser.displayName,
+          );
+          await _saveUserToFirestore(updatedUser);
+          return updatedUser;
+        } else {
+          // Create new user with default customer role
+          final userModel = UserModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            displayName: user.displayName ?? 'User',
+            photoURL: user.photoURL,
+            role: UserRole.customer, // Default role for new users
+            createdAt: DateTime.now(),
+            lastLogin: DateTime.now(),
+          );
+
+          // Save new user to Firestore
+          await _saveUserToFirestore(userModel);
+
+          return userModel;
+        }
       }
       
       return null;
@@ -73,7 +88,7 @@ class AuthService {
       final docSnapshot = await docRef.get();
 
       if (docSnapshot.exists) {
-        // Update last login
+        // Update last login and profile info (preserve role and storeId)
         await docRef.update({
           'lastLogin': user.lastLogin.toIso8601String(),
           'photoURL': user.photoURL,
@@ -100,6 +115,26 @@ class AuthService {
     } catch (e) {
       print('Error getting user from Firestore: $e');
       return null;
+    }
+  }
+
+  // Update user role (for admin purposes or self-registration)
+  Future<void> updateUserRole({
+    required String uid,
+    required UserRole role,
+    String? storeId,
+  }) async {
+    try {
+      final updates = <String, dynamic>{'role': role.name};
+
+      if (storeId != null) {
+        updates['storeId'] = storeId;
+      }
+
+      await _firestore.collection('users').doc(uid).update(updates);
+    } catch (e) {
+      print('Error updating user role: $e');
+      rethrow;
     }
   }
 
