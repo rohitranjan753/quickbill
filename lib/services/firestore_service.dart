@@ -4,13 +4,39 @@ import '../models/product_model.dart';
 import '../models/receipt_model.dart';
 import '../models/store_model.dart';
 import '../models/user_model.dart';
+import '../models/attendance_model.dart';
 import 'package:uuid/uuid.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _uuid = const Uuid();
 
-  // Get product by barcode
+  // Get product by barcode for a specific store
+  Future<ProductModel?> getProductByBarcodeAndStore(
+    String barcode,
+    String storeId,
+  ) async {
+    print('Fetching product for barcode: $barcode in store: $storeId');
+    try {
+      final querySnapshot = await _firestore
+          .collection('products')
+          .where('barcode', isEqualTo: barcode)
+          .where('store_id', isEqualTo: storeId)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        final doc = querySnapshot.docs.first;
+        return ProductModel.fromJson({...doc.data(), 'id': doc.id});
+      }
+      return null;
+    } catch (e) {
+      print('Error getting product: $e');
+      return null;
+    }
+  }
+
+  // Get product by barcode (legacy - for backward compatibility)
   Future<ProductModel?> getProductByBarcode(String barcode) async {
     print('Fetching product for barcode: $barcode');
     try {
@@ -404,5 +430,91 @@ class FirestoreService {
       print('Error getting user by email: $e');
       return null;
     }
+  }
+
+  // ===== Attendance Management =====
+
+  // Check in guard
+  Future<AttendanceModel> checkInGuard(String guardId, String storeId) async {
+    try {
+      // Check if guard already has an active attendance
+      final existingQuery = await _firestore
+          .collection('attendance')
+          .where('guardId', isEqualTo: guardId)
+          .where('isActive', isEqualTo: true)
+          .limit(1)
+          .get();
+
+      if (existingQuery.docs.isNotEmpty) {
+        // Return existing active attendance
+        final doc = existingQuery.docs.first;
+        return AttendanceModel.fromJson({...doc.data(), 'id': doc.id});
+      }
+
+      // Create new attendance record
+      final attendance = AttendanceModel(
+        id: _uuid.v4(),
+        guardId: guardId,
+        storeId: storeId,
+        checkInTime: DateTime.now(),
+        isActive: true,
+      );
+
+      await _firestore
+          .collection('attendance')
+          .doc(attendance.id)
+          .set(attendance.toJson());
+
+      return attendance;
+    } catch (e) {
+      print('Error checking in guard: $e');
+      rethrow;
+    }
+  }
+
+  // Check out guard
+  Future<void> checkOutGuard(String attendanceId) async {
+    try {
+      await _firestore.collection('attendance').doc(attendanceId).update({
+        'checkOutTime': DateTime.now().toIso8601String(),
+        'isActive': false,
+      });
+    } catch (e) {
+      print('Error checking out guard: $e');
+      rethrow;
+    }
+  }
+
+  // Get active attendance for guard
+  Stream<AttendanceModel?> getActiveAttendance(String guardId) {
+    return _firestore
+        .collection('attendance')
+        .where('guardId', isEqualTo: guardId)
+        .where('isActive', isEqualTo: true)
+        .limit(1)
+        .snapshots()
+        .map((snapshot) {
+          if (snapshot.docs.isEmpty) return null;
+          final doc = snapshot.docs.first;
+          return AttendanceModel.fromJson({...doc.data(), 'id': doc.id});
+        });
+  }
+
+  // Get attendance history for guard
+  Stream<List<AttendanceModel>> getGuardAttendanceHistory(String guardId) {
+    return _firestore
+        .collection('attendance')
+        .where('guardId', isEqualTo: guardId)
+        .orderBy('checkInTime', descending: true)
+        .limit(30)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map(
+                (doc) =>
+                    AttendanceModel.fromJson({...doc.data(), 'id': doc.id}),
+              )
+              .toList(),
+        );
   }
 }

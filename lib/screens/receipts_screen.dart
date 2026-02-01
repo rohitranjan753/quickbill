@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_state.dart';
 import '../models/receipt_model.dart';
+import '../models/store_model.dart';
 import '../services/firestore_service.dart';
 import 'receipt_screen.dart';
 
@@ -247,6 +248,8 @@ class _ReceiptsScreenState extends State<ReceiptsScreen>
       ),
     );
 
+    final firestoreService = FirestoreService();
+
     return FadeTransition(
       opacity: animation,
       child: SlideTransition(
@@ -359,6 +362,37 @@ class _ReceiptsScreenState extends State<ReceiptsScreen>
                           ],
                         ),
                         const SizedBox(height: 6),
+                        // Store Name
+                        FutureBuilder<StoreModel?>(
+                          future: firestoreService.getStore(receipt.storeId),
+                          builder: (context, snapshot) {
+                            if (snapshot.hasData && snapshot.data != null) {
+                              return Row(
+                                children: [
+                                  Icon(
+                                    Icons.store,
+                                    size: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      snapshot.data!.name,
+                                      style: TextStyle(
+                                        fontSize: 13,
+                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            }
+                            return const SizedBox.shrink();
+                          },
+                        ),
+                        const SizedBox(height: 4),
                         Row(
                           children: [
                             Icon(

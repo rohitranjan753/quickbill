@@ -5,22 +5,42 @@ import 'package:quickbill/blocs/cart/cart_state.dart';
 import '../blocs/cart/cart_bloc.dart';
 import '../blocs/cart/cart_event.dart';
 import '../services/firestore_service.dart';
+import '../models/store_model.dart';
 
 class ScannerScreen extends StatefulWidget {
-  const ScannerScreen({super.key});
+  final StoreModel selectedStore;
+
+  const ScannerScreen({super.key, required this.selectedStore});
 
   @override
   State<ScannerScreen> createState() => _ScannerScreenState();
 }
 
-class _ScannerScreenState extends State<ScannerScreen> {
+class _ScannerScreenState extends State<ScannerScreen>
+    with SingleTickerProviderStateMixin {
   final MobileScannerController _controller = MobileScannerController();
   final FirestoreService _firestoreService = FirestoreService();
   bool _isProcessing = false;
+  late AnimationController _animationController;
+  late Animation<double> _scanLineAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _scanLineAnimation = Tween<double>(begin: 0.2, end: 0.8).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
 
   @override
   void dispose() {
     _controller.dispose();
+    _animationController.dispose();
     super.dispose();
   }
 
@@ -33,20 +53,56 @@ class _ScannerScreenState extends State<ScannerScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      // Get product from Firestore
-      final product = await _firestoreService.getProductByBarcode(barcode);
+      // Get product from Firestore for the selected store
+      final product = await _firestoreService.getProductByBarcodeAndStore(
+        barcode,
+        widget.selectedStore.id,
+      );
       if (!mounted) return;
 
       if (product != null) {
-        print("Product found: ${product.storeId}, ${product.stockQuantity}");
-        // Add to cart
-        context.read<CartBloc>().add(CartItemAdded(product));
+        // Validate product belongs to selected store
+        if (product.storeId == widget.selectedStore.id) {
+          // Add to cart
+          context.read<CartBloc>().add(CartItemAdded(product));
+        } else {
+          // Product belongs to different store
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Row(
+                children: const [
+                  Icon(Icons.error_outline, color: Colors.white),
+                  SizedBox(width: 12),
+                  Expanded(
+                    child: Text('This product belongs to a different store'),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFFEF4444),
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        }
       } else {
         // Product not found
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Product not found: $barcode'),
-            backgroundColor: Colors.orange,
+            content: Row(
+              children: const [
+                Icon(Icons.warning_amber_rounded, color: Colors.white),
+                SizedBox(width: 12),
+                Expanded(child: Text('Product not found in this store')),
+              ],
+            ),
+            backgroundColor: const Color(0xFFF59E0B),
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
             duration: const Duration(seconds: 2),
           ),
         );
@@ -55,8 +111,18 @@ class _ScannerScreenState extends State<ScannerScreen> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: Colors.red,
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Expanded(child: Text('Error: ${e.toString()}')),
+            ],
+          ),
+          backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
         ),
       );
     } finally {
@@ -71,12 +137,57 @@ class _ScannerScreenState extends State<ScannerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.black,
+      extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: const Text('Scan Product'),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: Container(
+          margin: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withOpacity(0.5),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.arrow_back, color: Colors.white),
+            onPressed: () => Navigator.pop(context),
+          ),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Scan Product',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w700,
+                fontSize: 20,
+              ),
+            ),
+            Text(
+              widget.selectedStore.name,
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
+            ),
+          ],
+        ),
         actions: [
-          IconButton(
-            icon: Icon(_controller.torchEnabled ? Icons.flash_on : Icons.flash_off),
-            onPressed: () => _controller.toggleTorch(),
+          Container(
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: Colors.black.withOpacity(0.5),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: IconButton(
+              icon: Icon(
+                _controller.torchEnabled ? Icons.flash_on : Icons.flash_off,
+                color: Colors.white,
+              ),
+              onPressed: () => _controller.toggleTorch(),
+            ),
           ),
         ],
       ),
@@ -90,15 +201,37 @@ class _ScannerScreenState extends State<ScannerScreen> {
             print("Showing error snackbar: ${state.message}");
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.red,
+                content: Row(
+                  children: [
+                    const Icon(Icons.error_outline, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(state.message)),
+                  ],
+                ),
+                backgroundColor: const Color(0xFFEF4444),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.all(16),
               ),
             );
           } else if (state is CartSuccess) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text(state.message),
-                backgroundColor: Colors.green,
+                content: Row(
+                  children: [
+                    const Icon(Icons.check_circle_outline, color: Colors.white),
+                    const SizedBox(width: 12),
+                    Expanded(child: Text(state.message)),
+                  ],
+                ),
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                margin: const EdgeInsets.all(16),
               ),
             );
           } else {
@@ -107,44 +240,191 @@ class _ScannerScreenState extends State<ScannerScreen> {
         },
         child: Stack(
           children: [
+            // Camera View
             MobileScanner(
               controller: _controller,
               onDetect: _onBarcodeDetected,
             ),
-            // Scanning frame
-            CustomPaint(
-              painter: ScannerOverlay(),
-              child: const SizedBox.expand(),
+
+            // Scanning overlay with animated scan line
+            AnimatedBuilder(
+              animation: _scanLineAnimation,
+              builder: (context, child) {
+                return CustomPaint(
+                  painter: ScannerOverlay(
+                    scanProgress: _scanLineAnimation.value,
+                  ),
+                  child: const SizedBox.expand(),
+                );
+              },
             ),
-            // Instructions
+
+            // Top Gradient
             Positioned(
-              bottom: 100,
+              top: 0,
               left: 0,
               right: 0,
               child: Container(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  children: [
-                    const Text(
-                      'Point camera at barcode',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
-                      ),
+                height: 200,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                  ),
+                ),
+              ),
+            ),
+
+            // Bottom Instructions Card
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.bottomCenter,
+                    end: Alignment.topCenter,
+                    colors: [Colors.black.withOpacity(0.9), Colors.transparent],
+                  ),
+                ),
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (_isProcessing)
+                          Container(
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      Colors.white,
+                                    ),
+                                    strokeWidth: 3,
+                                  ),
+                                ),
+                                SizedBox(width: 16),
+                                Text(
+                                  'Processing...',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.15),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: Colors.white.withOpacity(0.3),
+                                width: 1,
+                              ),
+                            ),
+                            child: Column(
+                              children: [
+                                const Icon(
+                                  Icons.qr_code_scanner_rounded,
+                                  color: Colors.white,
+                                  size: 48,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Point camera at barcode',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  'Align the barcode within the frame',
+                                  style: TextStyle(
+                                    color: Colors.white.withOpacity(0.8),
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
+                          ),
+                      ],
                     ),
-                    if (_isProcessing)
-                      const Padding(
-                        padding: EdgeInsets.only(top: 16),
-                        child: CircularProgressIndicator(
-                          valueColor: AlwaysStoppedAnimation<Color>(
-                            Colors.white,
+                  ),
+                ),
+              ),
+            ),
+
+            // Cart Counter Badge (Top Right)
+            Positioned(
+              top: 100,
+              right: 16,
+              child: BlocBuilder<CartBloc, CartState>(
+                builder: (context, state) {
+                  if (state.itemCount == 0) return const SizedBox.shrink();
+                  return Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF10B981), Color(0xFF059669)],
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: const Color(0xFF10B981).withOpacity(0.4),
+                          blurRadius: 12,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.shopping_cart,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '${state.itemCount}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                      ],
+                    ),
+                  );
+                },
               ),
             ),
           ],
@@ -155,82 +435,137 @@ class _ScannerScreenState extends State<ScannerScreen> {
 }
 
 class ScannerOverlay extends CustomPainter {
+  final double scanProgress;
+
+  ScannerOverlay({this.scanProgress = 0.5});
+
   @override
   void paint(Canvas canvas, Size size) {
+    // Dark overlay
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.5)
+      ..color = Colors.black.withOpacity(0.6)
       ..style = PaintingStyle.fill;
 
     final scanArea = Rect.fromCenter(
       center: Offset(size.width / 2, size.height / 2),
-      width: size.width * 0.7,
-      height: size.height * 0.3,
+      width: size.width * 0.75,
+      height: size.height * 0.35,
     );
 
     final path = Path()
       ..addRect(Rect.fromLTWH(0, 0, size.width, size.height))
-      ..addRRect(RRect.fromRectAndRadius(scanArea, const Radius.circular(20)))
+      ..addRRect(RRect.fromRectAndRadius(scanArea, const Radius.circular(24)))
       ..fillType = PathFillType.evenOdd;
 
     canvas.drawPath(path, paint);
 
-    // Draw corners
+    // Border glow effect
+    final glowPaint = Paint()
+      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(scanArea, const Radius.circular(24)),
+      glowPaint,
+    );
+
+    // Corner brackets
     final cornerPaint = Paint()
-      ..color = Colors.green
-      ..strokeWidth = 4
+      ..color = const Color(0xFF10B981)
+      ..strokeWidth = 5
+      ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
-    const cornerLength = 30.0;
+    const cornerLength = 40.0;
+    const cornerOffset = 8.0;
 
     // Top-left corner
     canvas.drawLine(
-      Offset(scanArea.left, scanArea.top + cornerLength),
-      Offset(scanArea.left, scanArea.top),
+      Offset(scanArea.left - cornerOffset, scanArea.top + cornerLength),
+      Offset(scanArea.left - cornerOffset, scanArea.top - cornerOffset),
       cornerPaint,
     );
     canvas.drawLine(
-      Offset(scanArea.left, scanArea.top),
-      Offset(scanArea.left + cornerLength, scanArea.top),
+      Offset(scanArea.left - cornerOffset, scanArea.top - cornerOffset),
+      Offset(scanArea.left + cornerLength, scanArea.top - cornerOffset),
       cornerPaint,
     );
 
     // Top-right corner
     canvas.drawLine(
-      Offset(scanArea.right - cornerLength, scanArea.top),
-      Offset(scanArea.right, scanArea.top),
+      Offset(scanArea.right - cornerLength, scanArea.top - cornerOffset),
+      Offset(scanArea.right + cornerOffset, scanArea.top - cornerOffset),
       cornerPaint,
     );
     canvas.drawLine(
-      Offset(scanArea.right, scanArea.top),
-      Offset(scanArea.right, scanArea.top + cornerLength),
+      Offset(scanArea.right + cornerOffset, scanArea.top - cornerOffset),
+      Offset(scanArea.right + cornerOffset, scanArea.top + cornerLength),
       cornerPaint,
     );
 
     // Bottom-left corner
     canvas.drawLine(
-      Offset(scanArea.left, scanArea.bottom - cornerLength),
-      Offset(scanArea.left, scanArea.bottom),
+      Offset(scanArea.left - cornerOffset, scanArea.bottom - cornerLength),
+      Offset(scanArea.left - cornerOffset, scanArea.bottom + cornerOffset),
       cornerPaint,
     );
     canvas.drawLine(
-      Offset(scanArea.left, scanArea.bottom),
-      Offset(scanArea.left + cornerLength, scanArea.bottom),
+      Offset(scanArea.left - cornerOffset, scanArea.bottom + cornerOffset),
+      Offset(scanArea.left + cornerLength, scanArea.bottom + cornerOffset),
       cornerPaint,
     );
 
     // Bottom-right corner
     canvas.drawLine(
-      Offset(scanArea.right - cornerLength, scanArea.bottom),
-      Offset(scanArea.right, scanArea.bottom),
+      Offset(scanArea.right - cornerLength, scanArea.bottom + cornerOffset),
+      Offset(scanArea.right + cornerOffset, scanArea.bottom + cornerOffset),
       cornerPaint,
     );
     canvas.drawLine(
-      Offset(scanArea.right, scanArea.bottom - cornerLength),
-      Offset(scanArea.right, scanArea.bottom),
+      Offset(scanArea.right + cornerOffset, scanArea.bottom - cornerLength),
+      Offset(scanArea.right + cornerOffset, scanArea.bottom + cornerOffset),
       cornerPaint,
+    );
+
+    // Animated scan line
+    final scanLineY = scanArea.top + (scanArea.height * scanProgress);
+    final scanLinePaint = Paint()
+      ..shader =
+          LinearGradient(
+            colors: [
+              Colors.transparent,
+              const Color(0xFF10B981).withOpacity(0.8),
+              Colors.transparent,
+            ],
+          ).createShader(
+            Rect.fromLTWH(scanArea.left, scanLineY - 2, scanArea.width, 4),
+          )
+      ..strokeWidth = 3
+      ..style = PaintingStyle.stroke;
+
+    canvas.drawLine(
+      Offset(scanArea.left, scanLineY),
+      Offset(scanArea.right, scanLineY),
+      scanLinePaint,
+    );
+
+    // Glow effect for scan line
+    final scanLineGlowPaint = Paint()
+      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..strokeWidth = 8
+      ..style = PaintingStyle.stroke
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);
+
+    canvas.drawLine(
+      Offset(scanArea.left, scanLineY),
+      Offset(scanArea.right, scanLineY),
+      scanLineGlowPaint,
     );
   }
 
   @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
+  bool shouldRepaint(ScannerOverlay oldDelegate) =>
+      oldDelegate.scanProgress != scanProgress;
 }
