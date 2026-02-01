@@ -83,18 +83,19 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       // Simulate payment processing
       await Future.delayed(const Duration(seconds: 2));
-
+      if (context.mounted) {
       final authState = context.read<AuthBloc>().state;
-      final cartState = context.read<CartBloc>().state;
-
+        final cartState = context.read<CartBloc>().state;
       if (authState is! AuthAuthenticated) {
         throw Exception('User not authenticated');
-      }
-
+        }
       // Create receipt
       final receipt = ReceiptModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: authState.user.uid,
+          storeId: cartState.items.isNotEmpty
+              ? cartState.items.first.product.storeId
+              : 'unknown_store',
         items: cartState.items,
         totalAmount: cartState.totalAmount,
         purchaseDate: DateTime.now(),
@@ -103,6 +104,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
 
       // Save receipt to Firestore
       final receiptId = await _firestoreService.saveReceipt(receipt);
+      await _firestoreService.updateProductStock(cartState.items);
 
       // Clear cart
       if (mounted) {
@@ -123,6 +125,10 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           (route) => route.isFirst,
         );
       }
+
+      }
+
+
     } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);

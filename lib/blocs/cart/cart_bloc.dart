@@ -16,7 +16,24 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     final existingIndex = items.indexWhere(
       (item) => item.product.barcode == event.product.barcode,
     );
+    final currentQuantity = existingIndex != -1
+        ? items[existingIndex].quantity
+        : 0;
+    final availableStock = event.product.stockQuantity;
 
+    if (double.parse(currentQuantity.toString()) + 1 > (availableStock ?? 0)) {
+      emit(state.copyWith(items: null, totalAmount: null));
+      emit(
+        CartError(
+          message:
+              'Only $availableStock units available for ${event.product.name}',
+          items: state.items,
+          totalAmount: state.totalAmount,
+        ),
+      );
+      // emit(CartInitial());
+      return;
+    }
     if (existingIndex != -1) {
       items[existingIndex] = items[existingIndex].copyWith(
         quantity: items[existingIndex].quantity + 1,
@@ -26,7 +43,14 @@ class CartBloc extends Bloc<CartEvent, CartState> {
     }
 
     final total = items.fold(0.0, (sum, item) => sum + item.totalPrice);
-    emit(state.copyWith(items: items, totalAmount: total));
+    emit(
+      CartSuccess(
+        message: "Item ${event.product.name} added",
+        items: items,
+        totalAmount: total,
+      ),
+    );
+    // emit(CartInitial());
   }
 
   void _onCartItemRemoved(CartItemRemoved event, Emitter<CartState> emit) {

@@ -8,6 +8,7 @@ import 'dashboard_screen.dart';
 import 'products_screen.dart';
 import 'sales_history_screen.dart';
 import 'analytics_screen.dart';
+import 'user_management_screen.dart';
 
 class StoreAdminHomeScreen extends StatelessWidget {
   const StoreAdminHomeScreen({super.key});
@@ -94,6 +95,19 @@ class StoreAdminHomeScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const ProductsScreen(),
+                      ),
+                    );
+                  },
+                ),
+                ListTile(
+                  leading: const Icon(Icons.people),
+                  title: const Text('User Management'),
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const UserManagementScreen(),
                       ),
                     );
                   },

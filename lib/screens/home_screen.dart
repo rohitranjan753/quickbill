@@ -220,7 +220,7 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ),
-            UploadDummyDataButton()
+            // UploadDummyDataButton()
           ],
         ),
       ),

@@ -1,11 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:quickbill/models/cart_item_model.dart';
 import '../models/product_model.dart';
 import '../models/receipt_model.dart';
 import '../models/store_model.dart';
 import '../models/user_model.dart';
+import 'package:uuid/uuid.dart';
 
 class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final _uuid = const Uuid();
 
   // Get product by barcode
   Future<ProductModel?> getProductByBarcode(String barcode) async {
@@ -39,6 +42,19 @@ class FirestoreService {
     }
   }
 
+  /// Update product stock quantity
+  Future<void> updateProductStock(List<CartItemModel> cartItem) async {
+    try {
+      for (var element in cartItem) {
+        await _firestore.collection('products').doc(element.product.id).update({
+          'stock_quantity': FieldValue.increment(-element.quantity),
+        });
+      }
+    } catch (e) {
+      print('Error updating product stock: $e');
+      rethrow;
+    }
+  }
   // Get receipt by ID
   Future<ReceiptModel?> getReceipt(String receiptId) async {
     try {
@@ -239,6 +255,140 @@ class FirestoreService {
       return doc.data();
     } catch (e) {
       print('Error getting user data: $e');
+      return null;
+    }
+  }
+
+  // Get all users for a store
+  Stream<List<UserModel>> getStoreUsers(String storeId) {
+    return _firestore
+        .collection('users')
+        .where('storeId', isEqualTo: storeId)
+        .snapshots()
+        .map(
+          (snapshot) => snapshot.docs
+              .map((doc) => UserModel.fromJson(doc.data()))
+              .toList(),
+        );
+  }
+
+  // Add user to store (creates pending user or updates existing)
+  Future<UserModel> addUserToStore({
+    required String email,
+    required String storeId,
+    required UserRole role,
+  }) async {
+    try {
+      // Check if user already exists by email
+      final existingUserQuery = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (existingUserQuery.docs.isNotEmpty) {
+        // User exists - update their role and storeId
+        final doc = existingUserQuery.docs.first;
+        final existingUser = UserModel.fromJson(doc.data());
+
+        await _firestore.collection('users').doc(doc.id).update({
+          'role': role.name,
+          'storeId': storeId,
+          'isActive': true,
+        });
+
+        return existingUser.copyWith(
+          role: role,
+          storeId: storeId,
+          isActive: true,
+        );
+      } else {
+        // Create new pending user with temporary UUID
+        final tempUid = 'temp_${_uuid.v4()}';
+        final newUser = UserModel(
+          uid: tempUid,
+          email: email,
+          displayName: email.split('@')[0], // Use email prefix as name
+          role: role,
+          storeId: storeId,
+          createdAt: DateTime.now(),
+          lastLogin: DateTime.now(),
+          isActive: true,
+          isPendingSync: true, // Mark as pending sync
+        );
+
+        await _firestore.collection('users').doc(tempUid).set(newUser.toJson());
+
+        return newUser;
+      }
+    } catch (e) {
+      print('Error adding user to store: $e');
+      rethrow;
+    }
+  }
+
+  // Update user status (active/inactive)
+  Future<void> updateUserStatus(String userId, bool isActive) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'isActive': isActive,
+      });
+    } catch (e) {
+      print('Error updating user status: $e');
+      rethrow;
+    }
+  }
+
+  // Update user role in store
+  Future<void> updateStoreUserRole(String userId, UserRole role) async {
+    try {
+      await _firestore.collection('users').doc(userId).update({
+        'role': role.name,
+      });
+    } catch (e) {
+      print('Error updating store user role: $e');
+      rethrow;
+    }
+  }
+
+  // Remove user from store
+  Future<void> removeUserFromStore(String userId) async {
+    try {
+      final userDoc = await _firestore.collection('users').doc(userId).get();
+      final user = UserModel.fromJson(userDoc.data()!);
+
+      if (user.isPendingSync) {
+        // If user is pending, delete the document
+        await _firestore.collection('users').doc(userId).delete();
+      } else {
+        // If user has signed in, just remove store association
+        await _firestore.collection('users').doc(userId).update({
+          'role': UserRole.customer.name,
+          'storeId': null,
+          'isActive': true,
+        });
+      }
+    } catch (e) {
+      print('Error removing user from store: $e');
+      rethrow;
+    }
+  }
+
+  // Get user by email
+  Future<UserModel?> getUserByEmail(String email) async {
+    try {
+      final querySnapshot = await _firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return UserModel.fromJson(querySnapshot.docs.first.data());
+      }
+      return null;
+    } catch (e) {
+      print('Error getting user by email: $e');
       return null;
     }
   }

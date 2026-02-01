@@ -11,6 +11,9 @@ class UserModel extends Equatable {
   final String? storeId; // Only for storeAdmin and guard roles
   final DateTime createdAt;
   final DateTime lastLogin;
+  final bool isActive; // Whether the user is active
+  final bool
+  isPendingSync; // True if user was added by admin but hasn't signed in yet
 
   const UserModel({
     required this.uid,
@@ -21,6 +24,8 @@ class UserModel extends Equatable {
     this.storeId,
     required this.createdAt,
     required this.lastLogin,
+    this.isActive = true,
+    this.isPendingSync = false,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -36,6 +41,8 @@ class UserModel extends Equatable {
       storeId: json['storeId'] as String?,
       createdAt: DateTime.parse(json['createdAt'] as String),
       lastLogin: DateTime.parse(json['lastLogin'] as String),
+      isActive: json['isActive'] as bool? ?? true,
+      isPendingSync: json['isPendingSync'] as bool? ?? false,
     );
   }
 
@@ -49,6 +56,8 @@ class UserModel extends Equatable {
       'storeId': storeId,
       'createdAt': createdAt.toIso8601String(),
       'lastLogin': lastLogin.toIso8601String(),
+      'isActive': isActive,
+      'isPendingSync': isPendingSync,
     };
   }
 
@@ -61,6 +70,8 @@ class UserModel extends Equatable {
     String? storeId,
     DateTime? createdAt,
     DateTime? lastLogin,
+    bool? isActive,
+    bool? isPendingSync,
   }) {
     return UserModel(
       uid: uid ?? this.uid,
@@ -71,6 +82,8 @@ class UserModel extends Equatable {
       storeId: storeId ?? this.storeId,
       createdAt: createdAt ?? this.createdAt,
       lastLogin: lastLogin ?? this.lastLogin,
+      isActive: isActive ?? this.isActive,
+      isPendingSync: isPendingSync ?? this.isPendingSync,
     );
   }
 
@@ -84,5 +97,7 @@ class UserModel extends Equatable {
     storeId,
     createdAt,
     lastLogin,
+    isActive,
+    isPendingSync,
   ];
 }

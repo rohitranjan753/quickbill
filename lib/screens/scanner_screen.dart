@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:quickbill/blocs/cart/cart_state.dart';
 import '../blocs/cart/cart_bloc.dart';
 import '../blocs/cart/cart_event.dart';
 import '../services/firestore_service.dart';
@@ -34,21 +35,12 @@ class _ScannerScreenState extends State<ScannerScreen> {
     try {
       // Get product from Firestore
       final product = await _firestoreService.getProductByBarcode(barcode);
-
       if (!mounted) return;
 
       if (product != null) {
+        print("Product found: ${product.storeId}, ${product.stockQuantity}");
         // Add to cart
         context.read<CartBloc>().add(CartItemAdded(product));
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('${product.name} added to cart'),
-            backgroundColor: Colors.green,
-            duration: const Duration(seconds: 2),
-          ),
-        );
       } else {
         // Product not found
         ScaffoldMessenger.of(context).showSnackBar(
@@ -69,7 +61,7 @@ class _ScannerScreenState extends State<ScannerScreen> {
       );
     } finally {
       // Delay before allowing next scan
-      await Future.delayed(const Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
         setState(() => _isProcessing = false);
       }
@@ -88,52 +80,75 @@ class _ScannerScreenState extends State<ScannerScreen> {
           ),
         ],
       ),
-      body: Stack(
-        children: [
-          MobileScanner(
-            controller: _controller,
-            onDetect: _onBarcodeDetected,
-          ),
-          // Scanning frame
-          CustomPaint(
-            painter: ScannerOverlay(),
-            child: const SizedBox.expand(),
-          ),
-          // Instructions
-          Positioned(
-            bottom: 100,
-            left: 0,
-            right: 0,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  const Text(
-                    'Point camera at barcode',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      shadows: [
-                        Shadow(
-                          blurRadius: 10,
-                          color: Colors.black,
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (_isProcessing)
-                    const Padding(
-                      padding: EdgeInsets.only(top: 16),
-                      child: CircularProgressIndicator(
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+      body: BlocListener<CartBloc, CartState>(
+        listenWhen: (previous, current) => previous != current,
+        listener: (BuildContext context, CartState state) {
+          final messenger = ScaffoldMessenger.of(context);
+
+          messenger.clearSnackBars();
+          if (state is CartError) {
+            print("Showing error snackbar: ${state.message}");
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.red,
+              ),
+            );
+          } else if (state is CartSuccess) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message),
+                backgroundColor: Colors.green,
+              ),
+            );
+          } else {
+            print("STATE IS: $state");
+          }
+        },
+        child: Stack(
+          children: [
+            MobileScanner(
+              controller: _controller,
+              onDetect: _onBarcodeDetected,
+            ),
+            // Scanning frame
+            CustomPaint(
+              painter: ScannerOverlay(),
+              child: const SizedBox.expand(),
+            ),
+            // Instructions
+            Positioned(
+              bottom: 100,
+              left: 0,
+              right: 0,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  children: [
+                    const Text(
+                      'Point camera at barcode',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                        fontWeight: FontWeight.bold,
+                        shadows: [Shadow(blurRadius: 10, color: Colors.black)],
                       ),
                     ),
-                ],
+                    if (_isProcessing)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 16),
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Colors.white,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

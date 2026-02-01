@@ -268,6 +268,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         builder: (context, receiptSnapshot) {
                           final products = productSnapshot.data ?? [];
                           final receipts = receiptSnapshot.data ?? [];
+                          print("Receipts: $receipts");
 
                           final activeProducts = products
                               .where((p) => p.status == ProductStatus.active)
@@ -290,11 +291,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final todayStart = DateTime(
                             today.year,
                             today.month,
-                            today.day,
+                            // today.day,
                           );
                           final todayReceipts = receipts.where(
                             (r) => r.purchaseDate.isAfter(todayStart),
                           );
+                          print("Today Receipts: $todayReceipts");
                           final todaySales = todayReceipts.fold<double>(
                             0,
                             (sum, r) => sum + r.totalAmount,

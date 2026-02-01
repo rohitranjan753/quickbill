@@ -43,7 +43,46 @@ class AuthService {
       final User? user = userCredential.user;
       
       if (user != null) {
-        // Check if user exists in Firestore
+        // Check if user was previously added by a store admin (pending sync)
+        final pendingUserQuery = await _firestore
+            .collection('users')
+            .where('email', isEqualTo: user.email)
+            .where('isPendingSync', isEqualTo: true)
+            .limit(1)
+            .get();
+
+        if (pendingUserQuery.docs.isNotEmpty) {
+          // User was pre-added by admin - migrate to real Firebase UID
+          final pendingDoc = pendingUserQuery.docs.first;
+          final pendingUser = UserModel.fromJson(pendingDoc.data());
+
+          // Create new user with real Firebase UID but keep store association
+          final migratedUser = UserModel(
+            uid: user.uid,
+            email: user.email ?? '',
+            displayName: user.displayName ?? pendingUser.displayName,
+            photoURL: user.photoURL,
+            role: pendingUser.role, // Keep role from admin
+            storeId: pendingUser.storeId, // Keep store association
+            createdAt: pendingUser.createdAt,
+            lastLogin: DateTime.now(),
+            isActive: pendingUser.isActive,
+            isPendingSync: false, // No longer pending
+          );
+
+          // Save with real Firebase UID
+          await _firestore
+              .collection('users')
+              .doc(user.uid)
+              .set(migratedUser.toJson());
+
+          // Delete the temporary pending record
+          await _firestore.collection('users').doc(pendingDoc.id).delete();
+
+          return migratedUser;
+        }
+
+        // Check if user exists in Firestore with Firebase UID
         final existingUser = await getUserFromFirestore(user.uid);
 
         if (existingUser != null) {
