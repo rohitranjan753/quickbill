@@ -55,6 +55,7 @@ class FirestoreService {
       rethrow;
     }
   }
+
   // Get receipt by ID
   Future<ReceiptModel?> getReceipt(String receiptId) async {
     try {
@@ -67,6 +68,18 @@ class FirestoreService {
       print('Error getting receipt: $e');
       return null;
     }
+  }
+
+  // Get receipt stream for real-time updates
+  Stream<ReceiptModel?> getReceiptStream(String receiptId) {
+    return _firestore.collection('receipts').doc(receiptId).snapshots().map((
+      doc,
+    ) {
+      if (doc.exists && doc.data() != null) {
+        return ReceiptModel.fromJson({...doc.data()!, 'id': doc.id});
+      }
+      return null;
+    });
   }
 
   // Get user receipts
