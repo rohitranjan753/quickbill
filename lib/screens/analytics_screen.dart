@@ -1766,7 +1766,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     Map<int, Map<String, dynamic>> hourlyData,
   ) {
     final spots = hourlyData.entries
-        .map((e) => FlSpot(e.key.toDouble(), e.value['transactions'] as double))
+        .map(
+          (e) => FlSpot(
+            e.key.toDouble(),
+            (e.value['transactions'] as int).toDouble(),
+          ),
+        )
         .toList();
 
     return LineChartData(
