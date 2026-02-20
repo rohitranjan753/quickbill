@@ -1,10 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart';
 import '../models/product_model.dart';
 
 class ProductService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final _uuid = const Uuid();
 
   // Get all products
   Future<List<ProductModel>> getAllProducts() async {
@@ -14,7 +13,7 @@ class ProductService {
           .map((doc) => ProductModel.fromJson(doc.data()))
           .toList();
     } catch (e) {
-      print('Error getting products: $e');
+      debugPrint('Error getting products: $e');
       return [];
     }
   }
@@ -28,7 +27,7 @@ class ProductService {
       }
       return null;
     } catch (e) {
-      print('Error getting product: $e');
+      debugPrint('Error getting product: $e');
       return null;
     }
   }
@@ -47,7 +46,7 @@ class ProductService {
       }
       return null;
     } catch (e) {
-      print('Error getting product by GTIN: $e');
+      debugPrint('Error getting product by GTIN: $e');
       return null;
     }
   }
@@ -60,7 +59,7 @@ class ProductService {
           .doc(product.id)
           .set(product.toJson());
     } catch (e) {
-      print('Error adding product: $e');
+      debugPrint('Error adding product: $e');
       rethrow;
     }
   }
@@ -73,7 +72,7 @@ class ProductService {
           .doc(product.id)
           .update(product.toJson());
     } catch (e) {
-      print('Error updating product: $e');
+      debugPrint('Error updating product: $e');
       rethrow;
     }
   }
@@ -83,7 +82,7 @@ class ProductService {
     try {
       await _firestore.collection('products').doc(id).delete();
     } catch (e) {
-      print('Error deleting product: $e');
+      debugPrint('Error deleting product: $e');
       rethrow;
     }
   }
@@ -99,9 +98,9 @@ class ProductService {
       }
       
       await batch.commit();
-      print('Successfully uploaded ${products.length} products to Firebase');
+      debugPrint('Successfully uploaded ${products.length} products to Firebase');
     } catch (e) {
-      print('Error batch adding products: $e');
+      debugPrint('Error batch adding products: $e');
       rethrow;
     }
   }

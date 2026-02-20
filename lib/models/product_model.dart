@@ -4,7 +4,7 @@ enum UnitType { piece, weight }
 
 enum BaseUnit { g, kg, ml, ltr, pcs }
 
-enum BarcodeType { EAN, UPC, QR }
+enum BarcodeType { ean, upc, qr }
 
 enum ProductStatus { active, inactive }
 
@@ -152,8 +152,10 @@ class ProductModel extends Equatable {
       sku: json['sku'] as String,
       barcode: json['barcode'] as String,
       barcodeType: BarcodeType.values.firstWhere(
-        (e) => e.name == json['barcode_type'],
-        orElse: () => BarcodeType.EAN,
+        (e) =>
+            e.name.toLowerCase() ==
+            (json['barcode_type'] as String? ?? '').toLowerCase(),
+        orElse: () => BarcodeType.ean,
       ),
       name: json['name'] as String,
       brandName: json['brand_name'] as String?,

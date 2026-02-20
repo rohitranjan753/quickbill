@@ -34,7 +34,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
   final _stockQuantityController = TextEditingController();
 
   // Dropdown values
-  BarcodeType _barcodeType = BarcodeType.EAN;
+  BarcodeType _barcodeType = BarcodeType.ean;
   UnitType _unitType = UnitType.piece;
   BaseUnit _baseUnit = BaseUnit.pcs;
   ProductStatus _status = ProductStatus.active;
@@ -193,7 +193,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<BarcodeType>(
-                        value: _barcodeType,
+                        initialValue: _barcodeType,
                         decoration: const InputDecoration(
                           labelText: 'Type',
                           border: OutlineInputBorder(),
@@ -263,7 +263,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   children: [
                     Expanded(
                       child: DropdownButtonFormField<UnitType>(
-                        value: _unitType,
+                        initialValue: _unitType,
                         decoration: const InputDecoration(
                           labelText: 'Unit Type',
                           border: OutlineInputBorder(),
@@ -290,7 +290,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: DropdownButtonFormField<BaseUnit>(
-                        value: _baseUnit,
+                        initialValue: _baseUnit,
                         decoration: const InputDecoration(
                           labelText: 'Base Unit',
                           border: OutlineInputBorder(),
@@ -434,7 +434,7 @@ class _AddProductScreenState extends State<AddProductScreen> {
                 ),
                 const SizedBox(height: 16),
                 DropdownButtonFormField<ProductStatus>(
-                  value: _status,
+                  initialValue: _status,
                   decoration: const InputDecoration(
                     labelText: 'Status',
                     border: OutlineInputBorder(),

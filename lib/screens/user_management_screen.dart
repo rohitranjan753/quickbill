@@ -46,7 +46,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withOpacity(0.1),
+                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -87,7 +87,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<UserRole>(
-              value: _selectedRole,
+              initialValue: _selectedRole,
               decoration: InputDecoration(
                 labelText: 'Role',
                 prefixIcon: const Icon(Icons.badge),
@@ -203,7 +203,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             ),
             const SizedBox(height: 8),
             DropdownButtonFormField<UserRole>(
-              value: user.role,
+              initialValue: user.role,
               decoration: const InputDecoration(
                 labelText: 'Role',
                 prefixIcon: Icon(Icons.badge),

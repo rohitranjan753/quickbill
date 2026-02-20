@@ -145,7 +145,7 @@ class _ScannerScreenState extends State<ScannerScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -167,7 +167,7 @@ class _ScannerScreenState extends State<ScannerScreen>
             Text(
               widget.selectedStore.name,
               style: TextStyle(
-                color: Colors.white.withOpacity(0.8),
+                color: Colors.white.withValues(alpha: 0.8),
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
               ),
@@ -178,7 +178,7 @@ class _ScannerScreenState extends State<ScannerScreen>
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -198,7 +198,7 @@ class _ScannerScreenState extends State<ScannerScreen>
 
           messenger.clearSnackBars();
           if (state is CartError) {
-            print("Showing error snackbar: ${state.message}");
+            debugPrint("Showing error snackbar: ${state.message}");
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
                 content: Row(
@@ -235,7 +235,7 @@ class _ScannerScreenState extends State<ScannerScreen>
               ),
             );
           } else {
-            print("STATE IS: $state");
+            debugPrint("STATE IS: $state");
           }
         },
         child: Stack(
@@ -270,7 +270,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                   gradient: LinearGradient(
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
-                    colors: [Colors.black.withOpacity(0.7), Colors.transparent],
+                    colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
                   ),
                 ),
               ),
@@ -286,7 +286,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                   gradient: LinearGradient(
                     begin: Alignment.bottomCenter,
                     end: Alignment.topCenter,
-                    colors: [Colors.black.withOpacity(0.9), Colors.transparent],
+                    colors: [Colors.black.withValues(alpha: 0.9), Colors.transparent],
                   ),
                 ),
                 child: SafeArea(
@@ -299,10 +299,10 @@ class _ScannerScreenState extends State<ScannerScreen>
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -335,10 +335,10 @@ class _ScannerScreenState extends State<ScannerScreen>
                           Container(
                             padding: const EdgeInsets.all(24),
                             decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.15),
+                              color: Colors.white.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: Colors.white.withOpacity(0.3),
+                                color: Colors.white.withValues(alpha: 0.3),
                                 width: 1,
                               ),
                             ),
@@ -363,7 +363,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                                 Text(
                                   'Align the barcode within the frame',
                                   style: TextStyle(
-                                    color: Colors.white.withOpacity(0.8),
+                                    color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 15,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -398,7 +398,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withOpacity(0.4),
+                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -443,7 +443,7 @@ class ScannerOverlay extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     // Dark overlay
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.6)
+      ..color = Colors.black.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     final scanArea = Rect.fromCenter(
@@ -461,7 +461,7 @@ class ScannerOverlay extends CustomPainter {
 
     // Border glow effect
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -536,7 +536,7 @@ class ScannerOverlay extends CustomPainter {
           LinearGradient(
             colors: [
               Colors.transparent,
-              const Color(0xFF10B981).withOpacity(0.8),
+              const Color(0xFF10B981).withValues(alpha: 0.8),
               Colors.transparent,
             ],
           ).createShader(
@@ -553,7 +553,7 @@ class ScannerOverlay extends CustomPainter {
 
     // Glow effect for scan line
     final scanLineGlowPaint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
       ..strokeWidth = 8
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);

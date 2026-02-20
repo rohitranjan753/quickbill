@@ -189,7 +189,7 @@ class CartScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -274,26 +274,26 @@ class CartScreen extends StatelessWidget {
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      _QuantityButton(
-                                        icon: Icons.remove,
-                                        onPressed: () {
-                                          HapticFeedback.selectionClick();
-                                          if (item.quantity > 1) {
-                                            context.read<CartBloc>().add(
-                                              CartItemQuantityUpdated(
-                                                item.product.barcode,
-                                                item.quantity - 1,
-                                              ),
-                                            );
-                                          } else {
-                                            context.read<CartBloc>().add(
-                                              CartItemRemoved(
-                                                item.product.barcode,
-                                              ),
-                                            );
-                                          }
-                                        },
-                                      ),
+                                      // _QuantityButton(
+                                      //   icon: Icons.remove,
+                                      //   onPressed: () {
+                                      //     HapticFeedback.selectionClick();
+                                      //     if (item.quantity > 1) {
+                                      //       context.read<CartBloc>().add(
+                                      //         CartItemQuantityUpdated(
+                                      //           item.product.barcode,
+                                      //           item.quantity - 1,
+                                      //         ),
+                                      //       );
+                                      //     } else {
+                                      //       context.read<CartBloc>().add(
+                                      //         CartItemRemoved(
+                                      //           item.product.barcode,
+                                      //         ),
+                                      //       );
+                                      //     }
+                                      //   },
+                                      // ),
                                       Container(
                                         constraints: const BoxConstraints(
                                           minWidth: 32,
@@ -308,18 +308,18 @@ class CartScreen extends StatelessWidget {
                                           ),
                                         ),
                                       ),
-                                      _QuantityButton(
-                                        icon: Icons.add,
-                                        onPressed: () {
-                                          HapticFeedback.selectionClick();
-                                          context.read<CartBloc>().add(
-                                            CartItemQuantityUpdated(
-                                              item.product.barcode,
-                                              item.quantity + 1,
-                                            ),
-                                          );
-                                        },
-                                      ),
+                                      // _QuantityButton(
+                                      //   icon: Icons.add,
+                                      //   onPressed: () {
+                                      //     HapticFeedback.selectionClick();
+                                      //     context.read<CartBloc>().add(
+                                      //       CartItemQuantityUpdated(
+                                      //         item.product.barcode,
+                                      //         item.quantity + 1,
+                                      //       ),
+                                      //     );
+                                      //   },
+                                      // ),
                                     ],
                                   ),
                                 ),
@@ -348,7 +348,7 @@ class CartScreen extends StatelessWidget {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, -4),
                     ),
@@ -469,29 +469,5 @@ class CartScreen extends StatelessWidget {
       default:
         return Icons.shopping_bag_outlined;
     }
-  }
-}
-
-class _QuantityButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  const _QuantityButton({required this.icon, required this.onPressed});
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onPressed,
-        borderRadius: BorderRadius.circular(8),
-        child: Container(
-          width: 32,
-          height: 32,
-          alignment: Alignment.center,
-          child: Icon(icon, size: 18, color: const Color(0xFF1A1A1A)),
-        ),
-      ),
-    );
   }
 }

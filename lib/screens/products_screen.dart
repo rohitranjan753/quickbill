@@ -36,7 +36,7 @@ class _ProductsScreenState extends State<ProductsScreen>
   bool _showLowStock = false;
   SortOption _sortOption = SortOption.newest;
   bool _isGridView = true; // Changed default to grid view
-  Set<String> _selectedProducts = {};
+  final Set<String> _selectedProducts = {};
   bool _isSelectionMode = false;
   late AnimationController _fabAnimationController;
 
@@ -62,11 +62,13 @@ class _ProductsScreenState extends State<ProductsScreen>
 
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((p) {
-        return p.name.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            p.sku.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-            (p.brandName?.toLowerCase().contains(_searchQuery.toLowerCase()) ??
-                false) ||
-            p.barcode.contains(_searchQuery);
+        final query = _searchQuery.toLowerCase();
+        return p.name.toLowerCase().contains(query) ||
+            p.sku.toLowerCase().contains(query) ||
+            (p.brandName?.toLowerCase().contains(query) ?? false) ||
+            p.barcode.contains(_searchQuery) ||
+            p.category.toLowerCase().contains(query) ||
+            (p.description?.toLowerCase().contains(query) ?? false);
       }).toList();
     }
 
@@ -216,32 +218,48 @@ class _ProductsScreenState extends State<ProductsScreen>
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            ...[
-              (SortOption.nameAsc, 'Name (A-Z)', Icons.sort_by_alpha),
-              (SortOption.nameDesc, 'Name (Z-A)', Icons.sort_by_alpha),
-              (SortOption.priceAsc, 'Price (Low to High)', Icons.arrow_upward),
-              (
-                SortOption.priceDesc,
-                'Price (High to Low)',
-                Icons.arrow_downward,
+            RadioGroup<SortOption>(
+              groupValue: _sortOption,
+              onChanged: (value) {
+                if (value == null) return;
+                setState(() => _sortOption = value);
+                Navigator.pop(context);
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ...[
+                    (SortOption.nameAsc, 'Name (A-Z)', Icons.sort_by_alpha),
+                    (SortOption.nameDesc, 'Name (Z-A)', Icons.sort_by_alpha),
+                    (
+                      SortOption.priceAsc,
+                      'Price (Low to High)',
+                      Icons.arrow_upward,
+                    ),
+                    (
+                      SortOption.priceDesc,
+                      'Price (High to Low)',
+                      Icons.arrow_downward,
+                    ),
+                    (SortOption.stockAsc, 'Stock (Low to High)', Icons.inventory),
+                    (
+                      SortOption.stockDesc,
+                      'Stock (High to Low)',
+                      Icons.inventory_2,
+                    ),
+                    (SortOption.newest, 'Newest First', Icons.access_time),
+                    (SortOption.oldest, 'Oldest First', Icons.history),
+                  ].map((option) {
+                    return RadioListTile<SortOption>(
+                      value: option.$1,
+                      title: Text(option.$2),
+                      secondary: Icon(option.$3, size: 20),
+                      contentPadding: EdgeInsets.zero,
+                    );
+                  }),
+                ],
               ),
-              (SortOption.stockAsc, 'Stock (Low to High)', Icons.inventory),
-              (SortOption.stockDesc, 'Stock (High to Low)', Icons.inventory_2),
-              (SortOption.newest, 'Newest First', Icons.access_time),
-              (SortOption.oldest, 'Oldest First', Icons.history),
-            ].map((option) {
-              return RadioListTile<SortOption>(
-                value: option.$1,
-                groupValue: _sortOption,
-                title: Text(option.$2),
-                secondary: Icon(option.$3, size: 20),
-                onChanged: (value) {
-                  setState(() => _sortOption = value!);
-                  Navigator.pop(context);
-                },
-                contentPadding: EdgeInsets.zero,
-              );
-            }).toList(),
+            ),
           ],
         ),
       ),
@@ -422,8 +440,8 @@ class _ProductsScreenState extends State<ProductsScreen>
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                   colors: [
-                    const Color(0xFF667EEA).withOpacity(0.9),
-                    const Color(0xFF764BA2).withOpacity(0.9),
+                    const Color(0xFF667EEA).withValues(alpha: 0.9),
+                    const Color(0xFF764BA2).withValues(alpha: 0.9),
                   ],
                 ),
               ),
@@ -477,7 +495,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                             borderRadius: BorderRadius.circular(20),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha: 0.1),
                                 blurRadius: 20,
                                 offset: const Offset(0, 10),
                               ),
@@ -511,7 +529,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                         borderRadius: BorderRadius.circular(20),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.red.withOpacity(0.1),
+                            color: Colors.red.withValues(alpha: 0.1),
                             blurRadius: 20,
                             offset: const Offset(0, 10),
                           ),
@@ -555,7 +573,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                         borderRadius: BorderRadius.circular(30),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.08),
+                            color: Colors.black.withValues(alpha: 0.08),
                             blurRadius: 30,
                             offset: const Offset(0, 15),
                           ),
@@ -575,7 +593,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                                 BoxShadow(
                                   color: const Color(
                                     0xFF667EEA,
-                                  ).withOpacity(0.4),
+                                  ).withValues(alpha: 0.4),
                                   blurRadius: 20,
                                   offset: const Offset(0, 10),
                                 ),
@@ -636,7 +654,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                               elevation: 8,
                               shadowColor: const Color(
                                 0xFF667EEA,
-                              ).withOpacity(0.5),
+                              ).withValues(alpha: 0.5),
                             ),
                           ),
                         ],
@@ -668,7 +686,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                                   borderRadius: BorderRadius.circular(20),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       blurRadius: 20,
                                       offset: const Offset(0, 8),
                                     ),
@@ -929,7 +947,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                                 borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
+                                    color: Colors.black.withValues(alpha: 0.05),
                                     blurRadius: 20,
                                     offset: const Offset(0, 10),
                                   ),
@@ -1074,7 +1092,7 @@ class _ProductsScreenState extends State<ProductsScreen>
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.15),
+            color: Colors.black.withValues(alpha: 0.15),
             blurRadius: 15,
             offset: const Offset(0, 8),
           ),
@@ -1086,7 +1104,7 @@ class _ProductsScreenState extends State<ProductsScreen>
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
+              color: Colors.white.withValues(alpha: 0.25),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: Colors.white, size: 24),
@@ -1107,7 +1125,7 @@ class _ProductsScreenState extends State<ProductsScreen>
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.85),
+              color: Colors.white.withValues(alpha: 0.85),
               letterSpacing: 0.5,
             ),
           ),
@@ -1175,8 +1193,8 @@ class _ProductsScreenState extends State<ProductsScreen>
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? gradientStart.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.08),
+                  ? gradientStart.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.08),
               blurRadius: isSelected ? 20 : 15,
               offset: Offset(0, isSelected ? 8 : 6),
             ),
@@ -1204,7 +1222,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.25),
+                        color: Colors.white.withValues(alpha: 0.25),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
@@ -1232,7 +1250,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                         borderRadius: BorderRadius.circular(12),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFFFF6B35).withOpacity(0.5),
+                            color: const Color(0xFFFF6B35).withValues(alpha: 0.5),
                             blurRadius: 8,
                             offset: const Offset(0, 4),
                           ),
@@ -1272,7 +1290,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.2),
+                                color: Colors.black.withValues(alpha: 0.2),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -1304,7 +1322,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                                     (product.status == ProductStatus.active
                                             ? const Color(0xFF10B981)
                                             : const Color(0xFF64748B))
-                                        .withOpacity(0.4),
+                                        .withValues(alpha: 0.4),
                                 blurRadius: 8,
                                 offset: const Offset(0, 2),
                               ),
@@ -1417,13 +1435,13 @@ class _ProductsScreenState extends State<ProductsScreen>
                           decoration: BoxDecoration(
                             gradient: LinearGradient(
                               colors: [
-                                stockBadgeColor.withOpacity(0.15),
-                                stockBadgeColor.withOpacity(0.08),
+                                stockBadgeColor.withValues(alpha: 0.15),
+                                stockBadgeColor.withValues(alpha: 0.08),
                               ],
                             ),
                             borderRadius: BorderRadius.circular(10),
                             border: Border.all(
-                              color: stockBadgeColor.withOpacity(0.3),
+                              color: stockBadgeColor.withValues(alpha: 0.3),
                               width: 1.5,
                             ),
                           ),
@@ -1506,8 +1524,8 @@ class _ProductsScreenState extends State<ProductsScreen>
           boxShadow: [
             BoxShadow(
               color: isSelected
-                  ? gradientStart.withOpacity(0.25)
-                  : Colors.black.withOpacity(0.06),
+                  ? gradientStart.withValues(alpha: 0.25)
+                  : Colors.black.withValues(alpha: 0.06),
               blurRadius: isSelected ? 16 : 12,
               offset: Offset(0, isSelected ? 6 : 4),
             ),
@@ -1528,7 +1546,7 @@ class _ProductsScreenState extends State<ProductsScreen>
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: gradientStart.withOpacity(0.3),
+                    color: gradientStart.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -1567,8 +1585,8 @@ class _ProductsScreenState extends State<ProductsScreen>
                         decoration: BoxDecoration(
                           gradient: LinearGradient(
                             colors: [
-                              gradientStart.withOpacity(0.15),
-                              gradientEnd.withOpacity(0.08),
+                              gradientStart.withValues(alpha: 0.15),
+                              gradientEnd.withValues(alpha: 0.08),
                             ],
                           ),
                           borderRadius: BorderRadius.circular(8),

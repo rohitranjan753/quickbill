@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import '../models/user_model.dart';
 
 class AuthService {
@@ -115,7 +116,7 @@ class AuthService {
       
       return null;
     } catch (e) {
-      print('Error signing in with Google: $e');
+      debugPrint('Error signing in with Google: $e');
       rethrow;
     }
   }
@@ -138,7 +139,7 @@ class AuthService {
         await docRef.set(user.toJson());
       }
     } catch (e) {
-      print('Error saving user to Firestore: $e');
+      debugPrint('Error saving user to Firestore: $e');
       rethrow;
     }
   }
@@ -152,7 +153,7 @@ class AuthService {
       }
       return null;
     } catch (e) {
-      print('Error getting user from Firestore: $e');
+      debugPrint('Error getting user from Firestore: $e');
       return null;
     }
   }
@@ -172,7 +173,7 @@ class AuthService {
 
       await _firestore.collection('users').doc(uid).update(updates);
     } catch (e) {
-      print('Error updating user role: $e');
+      debugPrint('Error updating user role: $e');
       rethrow;
     }
   }
@@ -183,7 +184,7 @@ class AuthService {
       await _googleSignIn.signOut();
       await _firebaseAuth.signOut();
     } catch (e) {
-      print('Error signing out: $e');
+      debugPrint('Error signing out: $e');
       rethrow;
     }
   }

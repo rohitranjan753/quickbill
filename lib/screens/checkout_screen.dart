@@ -20,10 +20,15 @@ class CheckoutScreen extends StatefulWidget {
 
 class _CheckoutScreenState extends State<CheckoutScreen> {
   final FirestoreService _firestoreService = FirestoreService();
-  String _selectedPaymentMethod = 'UPI';
+  String _selectedPaymentMethod = 'Cash';
   bool _isProcessing = false;
 
   final List<Map<String, dynamic>> _paymentMethods = [
+    {
+      'name': 'Cash',
+      'icon': Icons.payments_outlined,
+      'subtitle': 'Pay with cash',
+    },
     {
       'name': 'UPI',
       'icon': Icons.account_balance_wallet_outlined,
@@ -81,30 +86,39 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     HapticFeedback.heavyImpact();
 
     try {
-      // Simulate payment processing
-      await Future.delayed(const Duration(seconds: 2));
-      if (context.mounted) {
       final authState = context.read<AuthBloc>().state;
-        final cartState = context.read<CartBloc>().state;
+      final cartState = context.read<CartBloc>().state;
+      
       if (authState is! AuthAuthenticated) {
         throw Exception('User not authenticated');
-        }
+      }
+
+      // Validate stock availability BEFORE processing
+      await _firestoreService.validateAndReserveStock(cartState.items);
+
+      // Simulate payment processing
+      await Future.delayed(const Duration(seconds: 2));
+
+      if (!mounted) return;
+
       // Create receipt
       final receipt = ReceiptModel(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         userId: authState.user.uid,
-          storeId: cartState.items.isNotEmpty
-              ? cartState.items.first.product.storeId
-              : 'unknown_store',
+        storeId: cartState.items.isNotEmpty
+            ? cartState.items.first.product.storeId
+            : 'unknown_store',
         items: cartState.items,
         totalAmount: cartState.totalAmount,
         purchaseDate: DateTime.now(),
         paymentMethod: _selectedPaymentMethod,
       );
 
-      // Save receipt to Firestore
-      final receiptId = await _firestoreService.saveReceipt(receipt);
-      await _firestoreService.updateProductStock(cartState.items);
+      // Process checkout with transaction (stock update + receipt save)
+      final receiptId = await _firestoreService.processCheckout(
+        receipt,
+        cartState.items,
+      );
 
       // Clear cart
       if (mounted) {
@@ -125,10 +139,6 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
           (route) => route.isFirst,
         );
       }
-
-      }
-
-
     } catch (e) {
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -198,7 +208,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.04),
+                              color: Colors.black.withValues(alpha: 0.04),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -315,7 +325,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   BoxShadow(
                                     color: const Color(
                                       0xFF0F172A,
-                                    ).withOpacity(0.1),
+                                    ).withValues(alpha: 0.1),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -405,7 +415,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                   color: Colors.white,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.08),
+                      color: Colors.black.withValues(alpha: 0.08),
                       blurRadius: 16,
                       offset: const Offset(0, -4),
                     ),
@@ -453,6 +463,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     ),
                                   ),
                                 ],
+                                
                               ),
                       ),
                     ),

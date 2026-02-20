@@ -68,7 +68,7 @@ class StoreAdminHomeScreen extends StatelessWidget {
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
@@ -134,18 +134,6 @@ class StoreAdminHomeScreen extends StatelessWidget {
                       context,
                       MaterialPageRoute(
                         builder: (context) => const AnalyticsScreen(),
-                      ),
-                    );
-                  },
-                ),
-                ListTile(
-                  leading: const Icon(Icons.store_outlined),
-                  title: const Text('Store Settings'),
-                  onTap: () {
-                    Navigator.pop(context);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('Store Settings - Coming Soon'),
                       ),
                     );
                   },

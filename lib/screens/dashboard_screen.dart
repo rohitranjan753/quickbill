@@ -140,7 +140,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
+                            color: Colors.white.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(12),
                           ),
                           child: Row(
@@ -268,7 +268,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         builder: (context, receiptSnapshot) {
                           final products = productSnapshot.data ?? [];
                           final receipts = receiptSnapshot.data ?? [];
-                          print("Receipts: $receipts");
+                          debugPrint("Receipts: $receipts");
 
                           final activeProducts = products
                               .where((p) => p.status == ProductStatus.active)
@@ -296,7 +296,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final todayReceipts = receipts.where(
                             (r) => r.purchaseDate.isAfter(todayStart),
                           );
-                          print("Today Receipts: $todayReceipts");
+                          debugPrint("Today Receipts: $todayReceipts");
                           final todaySales = todayReceipts.fold<double>(
                             0,
                             (sum, r) => sum + r.totalAmount,
@@ -596,7 +596,7 @@ class _QuickActionCard extends StatelessWidget {
           border: Border.all(color: const Color(0xFFE2E8F0)),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               blurRadius: 8,
               offset: const Offset(0, 4),
             ),
@@ -607,7 +607,7 @@ class _QuickActionCard extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 28),
@@ -649,7 +649,7 @@ class _StatCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -660,7 +660,7 @@ class _StatCard extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: Colors.white, size: 28),

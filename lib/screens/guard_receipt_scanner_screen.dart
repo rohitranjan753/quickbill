@@ -113,8 +113,8 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: receipt.verified
-                        ? const Color(0xFF10B981).withOpacity(0.1)
-                        : const Color(0xFFF59E0B).withOpacity(0.1),
+                        ? const Color(0xFF10B981).withValues(alpha: 0.1)
+                        : const Color(0xFFF59E0B).withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -319,7 +319,7 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
       backgroundColor: Colors.black,
       appBar: AppBar(
         title: const Text('Scan Receipt QR Code'),
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.white,
         actions: [
           IconButton(
             icon: Icon(
@@ -349,7 +349,7 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
               margin: const EdgeInsets.symmetric(horizontal: 24),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.7),
+                color: Colors.black.withValues(alpha: 0.7),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Column(
@@ -378,7 +378,7 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
           ),
           if (_isProcessing)
             Container(
-              color: Colors.black.withOpacity(0.7),
+              color: Colors.black.withValues(alpha: 0.7),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -407,7 +407,7 @@ class QRScannerOverlay extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.6)
+      ..color = Colors.black.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     final scanArea = Rect.fromCenter(

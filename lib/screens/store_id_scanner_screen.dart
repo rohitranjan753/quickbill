@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/firestore_service.dart';
-import '../models/store_model.dart';
 
 class StoreIdScannerScreen extends StatefulWidget {
   const StoreIdScannerScreen({super.key});
@@ -111,7 +110,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
         leading: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.5),
+            color: Colors.black.withValues(alpha: 0.5),
             borderRadius: BorderRadius.circular(12),
           ),
           child: IconButton(
@@ -131,7 +130,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
           Container(
             margin: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.black.withOpacity(0.5),
+              color: Colors.black.withValues(alpha: 0.5),
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
@@ -175,7 +174,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                 gradient: LinearGradient(
                   begin: Alignment.bottomCenter,
                   end: Alignment.topCenter,
-                  colors: [Colors.black.withOpacity(0.9), Colors.transparent],
+                  colors: [Colors.black.withValues(alpha: 0.9), Colors.transparent],
                 ),
               ),
               child: SafeArea(
@@ -188,10 +187,10 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -224,10 +223,10 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                         Container(
                           padding: const EdgeInsets.all(24),
                           decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
+                              color: Colors.white.withValues(alpha: 0.3),
                               width: 1,
                             ),
                           ),
@@ -252,7 +251,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                               Text(
                                 'Point camera at the store\'s QR code',
                                 style: TextStyle(
-                                  color: Colors.white.withOpacity(0.8),
+                                  color: Colors.white.withValues(alpha: 0.8),
                                   fontSize: 15,
                                   fontWeight: FontWeight.w500,
                                 ),
@@ -281,7 +280,7 @@ class ScannerOverlay extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.black.withOpacity(0.6)
+      ..color = Colors.black.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
 
     final scanArea = Rect.fromCenter(
@@ -298,7 +297,7 @@ class ScannerOverlay extends CustomPainter {
     canvas.drawPath(path, paint);
 
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withOpacity(0.3)
+      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -367,7 +366,7 @@ class ScannerOverlay extends CustomPainter {
       ..shader = LinearGradient(
             colors: [
               Colors.transparent,
-              const Color(0xFF10B981).withOpacity(0.8),
+              const Color(0xFF10B981).withValues(alpha: 0.8),
               Colors.transparent,
             ],
           ).createShader(

@@ -12,9 +12,22 @@ import 'firebase_options.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    // options: DefaultFirebaseOptions.currentPlatform,
-  );
+  
+  // Initialize Firebase only if not already initialized
+  try {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
+  } catch (e) {
+    // If Firebase is already initialized, catch the duplicate app exception
+    if (e.toString().contains('duplicate-app')) {
+      debugPrint('Firebase already initialized, skipping initialization');
+    } else {
+      // Re-throw if it's a different error
+      rethrow;
+    }
+  }
+  
   runApp(const MyApp());
 }
 
@@ -43,7 +56,6 @@ class MyApp extends StatelessWidget {
               primary: const Color(0xFF0F172A),
               secondary: const Color(0xFF10B981),
               surface: Colors.white,
-              background: const Color(0xFFF8F9FA),
             ),
             useMaterial3: true,
             scaffoldBackgroundColor: const Color(0xFFF8F9FA),

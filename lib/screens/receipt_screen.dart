@@ -191,10 +191,10 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                         color: receipt.verified
                                             ? const Color(
                                                 0xFF10B981,
-                                              ).withOpacity(0.3)
+                                              ).withValues(alpha: 0.3)
                                             : const Color(
                                                 0xFFF59E0B,
-                                              ).withOpacity(0.3),
+                                              ).withValues(alpha: 0.3),
                                         blurRadius: 24,
                                         offset: const Offset(0, 8),
                                       ),
@@ -261,7 +261,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                   borderRadius: BorderRadius.circular(24),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: Colors.black.withOpacity(0.08),
+                                      color: Colors.black.withValues(alpha: 0.08),
                                       blurRadius: 24,
                                       offset: const Offset(0, 8),
                                     ),
@@ -319,7 +319,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                                   child: Container(
                                                     decoration: BoxDecoration(
                                                       color: Colors.white
-                                                          .withOpacity(0.3),
+                                                          .withValues(alpha: 0.3),
                                                       borderRadius:
                                                           BorderRadius.circular(
                                                             16,
@@ -472,7 +472,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                 borderRadius: BorderRadius.circular(16),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: Colors.black.withOpacity(0.04),
+                                    color: Colors.black.withValues(alpha: 0.04),
                                     blurRadius: 8,
                                     offset: const Offset(0, 2),
                                   ),
@@ -544,7 +544,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                     color: Colors.white,
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.08),
+                        color: Colors.black.withValues(alpha: 0.08),
                         blurRadius: 16,
                         offset: const Offset(0, -4),
                       ),
@@ -606,7 +606,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
           BoxShadow(
             color:
                 (isVerified ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
-                    .withOpacity(0.3),
+                    .withValues(alpha: 0.3),
             blurRadius: 12,
             offset: const Offset(0, 4),
           ),
@@ -617,7 +617,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
+              color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(
@@ -670,7 +670,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),

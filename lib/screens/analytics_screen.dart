@@ -211,17 +211,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     _buildCategoryAnalysis(analytics),
                     const SizedBox(height: 24),
 
-                    // Two Column Layout for Charts
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(child: _buildPaymentMethodsChart(analytics)),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildHourlySalesPattern(filteredReceipts),
-                        ),
-                      ],
-                    ),
+                    // Payment Methods Chart (Full Width)
+                    _buildPaymentMethodsChart(analytics),
+                    const SizedBox(height: 24),
+
+                    // Hourly Sales Pattern (Full Width)
+                    _buildHourlySalesPattern(filteredReceipts),
                     const SizedBox(height: 24),
 
                     // Top Products with interactive features
@@ -472,7 +467,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -542,7 +537,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           setState(() => _selectedPeriod = period);
         }
       },
-      selectedColor: const Color(0xFF10B981).withOpacity(0.2),
+      selectedColor: const Color(0xFF10B981).withValues(alpha: 0.2),
       checkmarkColor: const Color(0xFF10B981),
     );
   }
@@ -649,7 +644,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -663,7 +658,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 20),
@@ -748,12 +743,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF10B981).withOpacity(0.1),
-            const Color(0xFF3B82F6).withOpacity(0.1),
+            const Color(0xFF10B981).withValues(alpha: 0.1),
+            const Color(0xFF3B82F6).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -783,11 +778,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 Icons.star,
                 () => _scrollToTopProducts(),
               ),
-              _buildQuickActionChip(
-                'Export Data',
-                Icons.download,
-                () => _handleExport('excel', receipts.first.storeId ?? ''),
-              ),
+              if (receipts.isNotEmpty)
+                _buildQuickActionChip(
+                  'Export Data',
+                  Icons.download,
+                  () => _handleExport('excel', receipts.first.storeId),
+                ),
               _buildQuickActionChip(
                 'Peak Hours',
                 Icons.schedule,
@@ -849,7 +845,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -911,7 +907,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         padding: const EdgeInsets.symmetric(vertical: 12),
         decoration: BoxDecoration(
           color: isSelected
-              ? const Color(0xFF10B981).withOpacity(0.1)
+              ? const Color(0xFF10B981).withValues(alpha: 0.1)
               : const Color(0xFFF8F9FA),
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
@@ -971,7 +967,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1088,7 +1084,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           dotData: const FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF10B981).withOpacity(0.1),
+            color: const Color(0xFF10B981).withValues(alpha: 0.1),
           ),
         ),
       ],
@@ -1105,7 +1101,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1218,7 +1214,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           dotData: const FlDotData(show: true),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF3B82F6).withOpacity(0.1),
+            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
           ),
         ),
       ],
@@ -1235,7 +1231,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1270,7 +1266,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             toY: (product['revenue'] as double),
             color: _touchedBarIndex == index
                 ? const Color(0xFF10B981)
-                : const Color(0xFF10B981).withOpacity(0.7),
+                : const Color(0xFF10B981).withValues(alpha: 0.7),
             width: 30,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(6),
@@ -1394,7 +1390,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1580,7 +1576,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1621,14 +1617,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     _selectedCategory = selected ? entry.key : null;
                   });
                 },
-                selectedColor: const Color(0xFF10B981).withOpacity(0.2),
+                selectedColor: const Color(0xFF10B981).withValues(alpha: 0.2),
                 checkmarkColor: const Color(0xFF10B981),
                 avatar: isSelected
                     ? null
                     : CircleAvatar(
                         backgroundColor: const Color(
                           0xFF10B981,
-                        ).withOpacity(0.1),
+                        ).withValues(alpha: 0.1),
                         child: Text(
                           '${entry.value['quantity']}',
                           style: const TextStyle(
@@ -1727,7 +1723,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -1838,7 +1834,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           dotData: const FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF8B5CF6).withOpacity(0.1),
+            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
           ),
         ),
       ],
@@ -1856,7 +1852,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withOpacity(0.1),
+        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(20),
       ),
       child: Row(
@@ -1880,7 +1876,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget _buildProfitMarginAnalysis(Map<String, dynamic> analytics) {
     final profitMargin = analytics['profitMargin'] as double;
     final totalProfit = analytics['totalProfit'] as double;
-    final totalRevenue = analytics['totalRevenue'] as double;
     final taxCollected = analytics['taxCollected'] as double;
 
     return Container(
@@ -1888,12 +1883,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            const Color(0xFF06B6D4).withOpacity(0.1),
-            const Color(0xFF10B981).withOpacity(0.1),
+            const Color(0xFF06B6D4).withValues(alpha: 0.1),
+            const Color(0xFF10B981).withValues(alpha: 0.1),
           ],
         ),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF06B6D4).withOpacity(0.2)),
+        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.2)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1903,7 +1898,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withOpacity(0.2),
+                  color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -2011,7 +2006,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final repeatRate = uniqueCustomers > 0
         ? (repeatCustomers / uniqueCustomers * 100)
         : 0.0;
-    final avgOrderValue = analytics['averageOrderValue'] as double;
     final avgItemsPerOrder =
         analytics['totalItems'] /
         (analytics['totalTransactions'] > 0
@@ -2025,7 +2019,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2039,7 +2033,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEC4899).withOpacity(0.1),
+                  color: const Color(0xFFEC4899).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -2113,9 +2107,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.05),
+        color: color.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withOpacity(0.2)),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
@@ -2156,7 +2150,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2243,12 +2237,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
       switch (type) {
         case 'excel':
+          if (!mounted) return;
           await _exportService.exportToExcel(context, receipts, _selectedPeriod);
           break;
         case 'pdf':
+          if (!mounted) return;
           await _pdfService.generateAnalyticsPdf(context, receipts, _selectedPeriod);
           break;
         case 'print':
+          if (!mounted) return;
           await _pdfService.printAnalytics(context, receipts, _selectedPeriod);
           break;
       }
@@ -2266,10 +2263,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Widget _buildPaymentMethodsChart(Map<String, dynamic> analytics) {
     final paymentMethods = analytics['paymentMethods'] as Map<String, double>;
-
-    if (paymentMethods.isEmpty) {
-      return const SizedBox.shrink();
-    }
+    final isEmpty =
+        paymentMethods.isEmpty || paymentMethods.values.every((v) => v == 0);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -2278,7 +2273,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2289,7 +2284,18 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.payment, size: 18, color: Color(0xFF10B981)),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.payment,
+                  size: 18,
+                  color: Color(0xFF10B981),
+                ),
+              ),
               const SizedBox(width: 8),
               const Text(
                 'Payment Methods',
@@ -2298,72 +2304,150 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ],
           ),
           const SizedBox(height: 20),
-          ...paymentMethods.entries.map((entry) {
-            final total = paymentMethods.values.fold<double>(
-              0,
-              (sum, val) => sum + val,
-            );
-            final percentage = (entry.value / total) * 100;
+          if (isEmpty)
+            Container(
+              height: 150,
+              decoration: BoxDecoration(
+                color: const Color(0xFFF8F9FA),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: const Color(0xFFE2E8F0),
+                  style: BorderStyle.solid,
+                ),
+              ),
+              child: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.payment_outlined,
+                      size: 48,
+                      color: Colors.grey[300],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      'No Payment Data',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Payment breakdown will appear here',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
+                    ),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...paymentMethods.entries.map((entry) {
+              final total = paymentMethods.values.fold<double>(
+                0,
+                (sum, val) => sum + val,
+              );
+              final percentage = (entry.value / total) * 100;
 
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            _getPaymentIcon(entry.key),
-                            size: 16,
-                            color: _getPaymentColor(entry.key),
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(6),
+                              decoration: BoxDecoration(
+                                color: _getPaymentColor(
+                                  entry.key,
+                                ).withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Icon(
+                                _getPaymentIcon(entry.key),
+                                size: 16,
+                                color: _getPaymentColor(entry.key),
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Text(
+                              entry.key.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF1F2937),
+                              ),
+                            ),
+                          ],
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(
+                              'Rs. ${entry.value.toStringAsFixed(2)}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                                color: _getPaymentColor(entry.key),
+                              ),
+                            ),
+                            Text(
+                              '${percentage.toStringAsFixed(1)}%',
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF64748B),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Stack(
+                      children: [
+                        Container(
+                          height: 8,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE2E8F0),
+                            borderRadius: BorderRadius.circular(4),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            entry.key.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF64748B),
+                        ),
+                        FractionallySizedBox(
+                          widthFactor: percentage / 100,
+                          child: Container(
+                            height: 8,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  _getPaymentColor(entry.key).withValues(alpha: 0.7),
+                                  _getPaymentColor(entry.key),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(4),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: _getPaymentColor(
+                                    entry.key,
+                                  ).withValues(alpha: 0.3),
+                                  blurRadius: 4,
+                                  offset: const Offset(0, 2),
+                                ),
+                              ],
                             ),
                           ),
-                        ],
-                      ),
-                      Text(
-                        '₹${entry.value.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(4),
-                    child: LinearProgressIndicator(
-                      value: percentage / 100,
-                      minHeight: 6,
-                      backgroundColor: const Color(0xFFE2E8F0),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        _getPaymentColor(entry.key),
-                      ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${percentage.toStringAsFixed(1)}% of total',
-                    style: const TextStyle(
-                      fontSize: 11,
-                      color: Color(0xFF94A3B8),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }).toList(),
+                  ],
+                ),
+              );
+            }),
         ],
       ),
     );
@@ -2413,7 +2497,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2427,7 +2511,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withOpacity(0.1),
+                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
@@ -2460,7 +2544,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(
                   color: index < 3
-                      ? const Color(0xFFF59E0B).withOpacity(0.3)
+                      ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
                       : const Color(0xFFE2E8F0),
                 ),
               ),
@@ -2471,7 +2555,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     height: 32,
                     decoration: BoxDecoration(
                       color: index < 3
-                          ? const Color(0xFFF59E0B).withOpacity(0.2)
+                          ? const Color(0xFFF59E0B).withValues(alpha: 0.2)
                           : const Color(0xFFE2E8F0),
                       borderRadius: BorderRadius.circular(8),
                     ),
@@ -2511,7 +2595,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withOpacity(0.1),
+                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -2560,7 +2644,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 ],
               ),
             );
-          }).toList(),
+          }),
         ],
       ),
     );
@@ -2589,7 +2673,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
+            color: Colors.black.withValues(alpha: 0.04),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -2649,7 +2733,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               begin: Alignment.bottomCenter,
               end: Alignment.topCenter,
               colors: [
-                const Color(0xFF3B82F6).withOpacity(0.7),
+                const Color(0xFF3B82F6).withValues(alpha: 0.7),
                 const Color(0xFF3B82F6),
               ],
             ),

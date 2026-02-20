@@ -39,6 +39,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _selectStoreById(String storeId) async {
     try {
       final store = await _firestoreService.getStore(storeId.trim());
+      if (!mounted) return;
       if (store != null) {
         setState(() {
           _selectedStore = store;
@@ -75,6 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       }
     } catch (e) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error: ${e.toString()}'),
@@ -191,9 +193,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           borderRadius: BorderRadius.circular(12),
                           boxShadow: [
                             BoxShadow(
-                              color: const Color(0xFFEF4444).withOpacity(0.4),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
+                              color: const Color(
+                                0xFFEF4444,
+                              ).withValues(alpha: 0.4),
                             ),
                           ],
                         ),
@@ -237,6 +239,20 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontSize: 18,
                 ),
               ),
+              otherAccountsPictures: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Icon(
+                    Icons.person_2_outlined,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ],
               accountEmail: Text(user.email),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
@@ -373,7 +389,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     border: Border.all(color: const Color(0xFFE2E8F0)),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
+                        color: Colors.black.withValues(alpha: 0.05),
                         blurRadius: 10,
                         offset: const Offset(0, 4),
                       ),
@@ -387,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withOpacity(0.1),
+                              color: const Color(0xFF10B981).withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: const Icon(
@@ -414,10 +430,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         Container(
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withOpacity(0.1),
+                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                              color: const Color(0xFF10B981).withOpacity(0.3),
+                              color: const Color(0xFF10B981).withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -543,7 +559,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     borderRadius: BorderRadius.circular(28),
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF0F172A).withOpacity(0.3),
+                        color: const Color(0xFF0F172A).withValues(alpha: 0.3),
                         blurRadius: 24,
                         offset: const Offset(0, 12),
                       ),
@@ -562,7 +578,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             shape: BoxShape.circle,
                             gradient: RadialGradient(
                               colors: [
-                                Colors.white.withOpacity(0.1),
+                                Colors.white.withValues(alpha: 0.1),
                                 Colors.transparent,
                               ],
                             ),
@@ -576,17 +592,17 @@ class _HomeScreenState extends State<HomeScreen> {
                             Container(
                               padding: const EdgeInsets.all(24),
                               decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.1),
+                                color: Colors.white.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   width: 2,
                                 ),
                               ),
                               child: Container(
                                 padding: const EdgeInsets.all(20),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.1),
+                                  color: Colors.white.withValues(alpha: 0.1),
                                   shape: BoxShape.circle,
                                 ),
                                 child: const Icon(
@@ -637,10 +653,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                   backgroundColor: Colors.white,
                                   foregroundColor: const Color(0xFF0F172A),
                                   disabledBackgroundColor: Colors.white
-                                      .withOpacity(0.5),
+                                      .withValues(alpha: 0.5),
                                   disabledForegroundColor: const Color(
                                     0xFF0F172A,
-                                  ).withOpacity(0.5),
+                                  ).withValues(alpha: 0.5),
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(16),
@@ -776,7 +792,7 @@ class _HomeScreenState extends State<HomeScreen> {
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: gradient.colors.first.withOpacity(0.3),
+              color: gradient.colors.first.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 6),
             ),
@@ -788,7 +804,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: Colors.white, size: 28),
@@ -807,7 +823,7 @@ class _HomeScreenState extends State<HomeScreen> {
               subtitle,
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.white.withOpacity(0.9),
+                color: Colors.white.withValues(alpha: 0.9),
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -831,7 +847,7 @@ class _HomeScreenState extends State<HomeScreen> {
         border: Border.all(color: const Color(0xFFE2E8F0)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.02),
+            color: Colors.black.withValues(alpha: 0.02),
             blurRadius: 8,
             offset: const Offset(0, 2),
           ),
@@ -842,7 +858,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: color, size: 24),
@@ -931,7 +947,7 @@ class _GuardHomeView extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -1028,7 +1044,7 @@ class _GuardHomeView extends StatelessWidget {
                                   vertical: 6,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.2),
+                                  color: Colors.white.withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(20),
                                 ),
                                 child: Row(
@@ -1095,9 +1111,7 @@ class _GuardHomeView extends StatelessWidget {
                                       BoxShadow(
                                         color: const Color(
                                           0xFF3B82F6,
-                                        ).withOpacity(0.3),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 10),
+                                        ).withValues(alpha: 0.3),
                                       ),
                                     ],
                                   ),
@@ -1106,7 +1120,7 @@ class _GuardHomeView extends StatelessWidget {
                                       Container(
                                         padding: const EdgeInsets.all(20),
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.2),
+                                          color: Colors.white.withValues(alpha: 0.2),
                                           shape: BoxShape.circle,
                                         ),
                                         child: const Icon(
@@ -1140,6 +1154,24 @@ class _GuardHomeView extends StatelessWidget {
                                         height: 56,
                                         child: ElevatedButton.icon(
                                           onPressed: () {
+                                            if (activeAttendance?.isActive ==
+                                                    null ||
+                                                activeAttendance!.isActive ==
+                                                    false) {
+                                              ScaffoldMessenger.of(
+                                                context,
+                                              ).showSnackBar(
+                                                const SnackBar(
+                                                  content: Text(
+                                                    'Please check in before scanning receipts',
+                                                  ),
+                                                  backgroundColor: Color(
+                                                    0xFFEF4444,
+                                                  ),
+                                                ),
+                                              );
+                                              return;
+                                            }
                                             Navigator.push(
                                               context,
                                               MaterialPageRoute(
@@ -1254,7 +1286,7 @@ class _GuardHomeView extends StatelessWidget {
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Colors.black.withValues(alpha: 0.05),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -1265,7 +1297,7 @@ class _GuardHomeView extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
+                color: color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(icon, color: color, size: 28),
@@ -1370,9 +1402,7 @@ class _AttendanceCard extends StatelessWidget {
                 (isCheckedIn
                         ? const Color(0xFF10B981)
                         : const Color(0xFF64748B))
-                    .withOpacity(0.3),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+                    .withValues(alpha: 0.3),
           ),
         ],
       ),
@@ -1383,7 +1413,7 @@ class _AttendanceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
+                  color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
@@ -1417,7 +1447,7 @@ class _AttendanceCard extends StatelessWidget {
                             '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
                             style: TextStyle(
                               fontSize: 16,
-                              color: Colors.white.withOpacity(0.9),
+                              color: Colors.white.withValues(alpha: 0.9),
                               fontWeight: FontWeight.w600,
                               fontFeatures: const [
                                 FontFeature.tabularFigures(),
@@ -1441,6 +1471,7 @@ class _AttendanceCard extends StatelessWidget {
                   if (isCheckedIn) {
                     // Check out
                     await firestoreService.checkOutGuard(activeAttendance.id);
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Checked out successfully'),
@@ -1450,6 +1481,7 @@ class _AttendanceCard extends StatelessWidget {
                   } else {
                     // Check in
                     await firestoreService.checkInGuard(guardId, storeId);
+                    if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Checked in successfully'),
@@ -1458,6 +1490,7 @@ class _AttendanceCard extends StatelessWidget {
                     );
                   }
                 } catch (e) {
+                  if (!context.mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Error: ${e.toString()}'),

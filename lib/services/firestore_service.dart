@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:quickbill/models/cart_item_model.dart';
 import '../models/product_model.dart';
 import '../models/receipt_model.dart';
@@ -11,12 +12,25 @@ class FirestoreService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final _uuid = const Uuid();
 
+  // Constructor - Enable offline persistence
+  FirestoreService() {
+    _enableOfflinePersistence();
+  }
+
+  // Enable offline persistence for Firestore
+  void _enableOfflinePersistence() {
+    _firestore.settings = const Settings(
+      persistenceEnabled: true,
+      cacheSizeBytes: Settings.CACHE_SIZE_UNLIMITED,
+    );
+  }
+
   // Get product by barcode for a specific store
   Future<ProductModel?> getProductByBarcodeAndStore(
     String barcode,
     String storeId,
   ) async {
-    print('Fetching product for barcode: $barcode in store: $storeId');
+    debugPrint('Fetching product for barcode: $barcode in store: $storeId');
     try {
       final querySnapshot = await _firestore
           .collection('products')
@@ -31,14 +45,14 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting product: $e');
+      debugPrint('Error getting product: $e');
       return null;
     }
   }
 
   // Get product by barcode (legacy - for backward compatibility)
   Future<ProductModel?> getProductByBarcode(String barcode) async {
-    print('Fetching product for barcode: $barcode');
+    debugPrint('Fetching product for barcode: $barcode');
     try {
       final querySnapshot = await _firestore
           .collection('products')
@@ -52,7 +66,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting product: $e');
+      debugPrint('Error getting product: $e');
       return null;
     }
   }
@@ -63,21 +77,96 @@ class FirestoreService {
       final docRef = await _firestore.collection('receipts').add(receipt.toJson());
       return docRef.id;
     } catch (e) {
-      print('Error saving receipt: $e');
+      debugPrint('Error saving receipt: $e');
       rethrow;
     }
   }
 
-  /// Update product stock quantity
+  /// Update product stock
   Future<void> updateProductStock(List<CartItemModel> cartItem) async {
     try {
+      final batch = _firestore.batch();
+      
       for (var element in cartItem) {
-        await _firestore.collection('products').doc(element.product.id).update({
+        final docRef = _firestore
+            .collection('products')
+            .doc(element.product.id);
+        batch.update(docRef, {
           'stock_quantity': FieldValue.increment(-element.quantity),
         });
       }
+      
+      await batch.commit();
     } catch (e) {
-      print('Error updating product stock: $e');
+      debugPrint('Error updating product stock: $e');
+      rethrow;
+    }
+  }
+
+  /// Validate stock availability before checkout
+  Future<void> validateAndReserveStock(List<CartItemModel> cartItems) async {
+    try {
+      for (var item in cartItems) {
+        final productDoc = await _firestore
+            .collection('products')
+            .doc(item.product.id)
+            .get();
+
+        if (!productDoc.exists) {
+          throw Exception('Product ${item.product.name} no longer exists');
+        }
+
+        final data = productDoc.data()!;
+        final currentStock = data['stock_quantity'];
+
+        // Only validate if stock tracking is enabled (not null)
+        if (currentStock != null) {
+          final stockValue = (currentStock as num).toDouble();
+
+          if (stockValue < item.quantity) {
+            throw Exception(
+              'Insufficient stock for ${item.product.name}. '
+              'Available: ${stockValue.toInt()}, Required: ${item.quantity}',
+            );
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error validating stock: $e');
+      rethrow;
+    }
+  }
+
+  /// Process checkout with atomic transaction (stock update + receipt save)
+  Future<String> processCheckout(
+    ReceiptModel receipt,
+    List<CartItemModel> cartItems,
+  ) async {
+    try {
+      // Use a batch write for atomic operation
+      final batch = _firestore.batch();
+
+      // 1. Update stock for all products
+      for (var item in cartItems) {
+        final productRef = _firestore
+            .collection('products')
+            .doc(item.product.id);
+        batch.update(productRef, {
+          'stock_quantity': FieldValue.increment(-item.quantity),
+          'updated_at': DateTime.now().toIso8601String(),
+        });
+      }
+
+      // 2. Create receipt
+      final receiptRef = _firestore.collection('receipts').doc(receipt.id);
+      batch.set(receiptRef, receipt.toJson());
+
+      // 3. Commit all changes atomically
+      await batch.commit();
+
+      return receipt.id;
+    } catch (e) {
+      debugPrint('Error processing checkout: $e');
       rethrow;
     }
   }
@@ -91,7 +180,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting receipt: $e');
+      debugPrint('Error getting receipt: $e');
       return null;
     }
   }
@@ -120,12 +209,13 @@ class FirestoreService {
             .toList());
   }
 
-  // Get all store sales/receipts
-  Stream<List<ReceiptModel>> getStoreSales(String storeId) {
+  // Get all store sales/receipts with pagination support
+  Stream<List<ReceiptModel>> getStoreSales(String storeId, {int limit = 100}) {
     return _firestore
         .collection('receipts')
         .where('storeId', isEqualTo: storeId)
         .orderBy('purchaseDate', descending: true)
+        .limit(limit)
         .snapshots()
         .map(
           (snapshot) => snapshot.docs
@@ -134,6 +224,38 @@ class FirestoreService {
               )
               .toList(),
         );
+  }
+
+  // Get store sales with pagination for large datasets
+  Future<List<ReceiptModel>> getStoreSalesPaginated(
+    String storeId, {
+    int limit = 50,
+    DocumentSnapshot? startAfter,
+  }) async {
+    try {
+      Query query = _firestore
+          .collection('receipts')
+          .where('storeId', isEqualTo: storeId)
+          .orderBy('purchaseDate', descending: true)
+          .limit(limit);
+
+      if (startAfter != null) {
+        query = query.startAfterDocument(startAfter);
+      }
+
+      final querySnapshot = await query.get();
+      return querySnapshot.docs
+          .map(
+            (doc) => ReceiptModel.fromJson({
+              ...doc.data() as Map<String, dynamic>,
+              'id': doc.id,
+            }),
+          )
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting paginated store sales: $e');
+      return [];
+    }
   }
 
   // Get store sales with date range
@@ -158,7 +280,7 @@ class FirestoreService {
           .map((doc) => ReceiptModel.fromJson({...doc.data(), 'id': doc.id}))
           .toList();
     } catch (e) {
-      print('Error getting store sales in range: $e');
+      debugPrint('Error getting store sales in range: $e');
       return [];
     }
   }
@@ -166,11 +288,27 @@ class FirestoreService {
   // Verify receipt (for guard)
   Future<void> verifyReceipt(String receiptId) async {
     try {
+      // Check if receipt exists first
+      final receiptDoc = await _firestore
+          .collection('receipts')
+          .doc(receiptId)
+          .get();
+
+      if (!receiptDoc.exists) {
+        throw Exception('Receipt not found. It may have been deleted.');
+      }
+
+      final receiptData = receiptDoc.data();
+      if (receiptData?['verified'] == true) {
+        throw Exception('Receipt has already been verified.');
+      }
+
       await _firestore.collection('receipts').doc(receiptId).update({
         'verified': true,
+        'verifiedAt': DateTime.now().toIso8601String(),
       });
     } catch (e) {
-      print('Error verifying receipt: $e');
+      debugPrint('Error verifying receipt: $e');
       rethrow;
     }
   }
@@ -182,7 +320,7 @@ class FirestoreService {
     try {
       await _firestore.collection('stores').doc(store.id).set(store.toJson());
     } catch (e) {
-      print('Error creating store: $e');
+      debugPrint('Error creating store: $e');
       rethrow;
     }
   }
@@ -196,7 +334,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting store: $e');
+      debugPrint('Error getting store: $e');
       return null;
     }
   }
@@ -209,7 +347,7 @@ class FirestoreService {
           .doc(store.id)
           .update(store.toJson());
     } catch (e) {
-      print('Error updating store: $e');
+      debugPrint('Error updating store: $e');
       rethrow;
     }
   }
@@ -240,7 +378,7 @@ class FirestoreService {
           .doc(product.id)
           .set(product.toJson());
     } catch (e) {
-      print('Error adding product: $e');
+      debugPrint('Error adding product: $e');
       rethrow;
     }
   }
@@ -253,7 +391,7 @@ class FirestoreService {
           .doc(product.id)
           .update(product.toJson());
     } catch (e) {
-      print('Error updating product: $e');
+      debugPrint('Error updating product: $e');
       rethrow;
     }
   }
@@ -263,7 +401,7 @@ class FirestoreService {
     try {
       await _firestore.collection('products').doc(productId).delete();
     } catch (e) {
-      print('Error deleting product: $e');
+      debugPrint('Error deleting product: $e');
       rethrow;
     }
   }
@@ -282,7 +420,7 @@ class FirestoreService {
         'storeId': storeId,
       });
     } catch (e) {
-      print('Error updating user role: $e');
+      debugPrint('Error updating user role: $e');
       rethrow;
     }
   }
@@ -293,7 +431,7 @@ class FirestoreService {
       final doc = await _firestore.collection('users').doc(userId).get();
       return doc.data();
     } catch (e) {
-      print('Error getting user data: $e');
+      debugPrint('Error getting user data: $e');
       return null;
     }
   }
@@ -361,7 +499,7 @@ class FirestoreService {
         return newUser;
       }
     } catch (e) {
-      print('Error adding user to store: $e');
+      debugPrint('Error adding user to store: $e');
       rethrow;
     }
   }
@@ -373,7 +511,7 @@ class FirestoreService {
         'isActive': isActive,
       });
     } catch (e) {
-      print('Error updating user status: $e');
+      debugPrint('Error updating user status: $e');
       rethrow;
     }
   }
@@ -385,7 +523,7 @@ class FirestoreService {
         'role': role.name,
       });
     } catch (e) {
-      print('Error updating store user role: $e');
+      debugPrint('Error updating store user role: $e');
       rethrow;
     }
   }
@@ -408,7 +546,7 @@ class FirestoreService {
         });
       }
     } catch (e) {
-      print('Error removing user from store: $e');
+      debugPrint('Error removing user from store: $e');
       rethrow;
     }
   }
@@ -427,7 +565,7 @@ class FirestoreService {
       }
       return null;
     } catch (e) {
-      print('Error getting user by email: $e');
+      debugPrint('Error getting user by email: $e');
       return null;
     }
   }
@@ -467,7 +605,7 @@ class FirestoreService {
 
       return attendance;
     } catch (e) {
-      print('Error checking in guard: $e');
+      debugPrint('Error checking in guard: $e');
       rethrow;
     }
   }
@@ -480,7 +618,7 @@ class FirestoreService {
         'isActive': false,
       });
     } catch (e) {
-      print('Error checking out guard: $e');
+      debugPrint('Error checking out guard: $e');
       rethrow;
     }
   }
