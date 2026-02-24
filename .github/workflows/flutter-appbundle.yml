@@ -1,0 +1,105 @@
+name: Flutter Build & Versioning
+
+on:
+  push:
+    branches: [main, testing, production]
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.35.3
+
+      # ---------- VERSION LOGIC ----------
+      - name: Determine version
+        id: version
+        run: |
+          VERSION="0.0.0"
+          if git describe --tags --abbrev=0 >/dev/null 2>&1; then
+            VERSION=$(git describe --tags --abbrev=0 | sed 's/v//')
+          fi
+
+          BUILD_NUMBER=${GITHUB_RUN_NUMBER}
+
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+
+          echo "Using version: $VERSION+$BUILD_NUMBER"
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      # ---------- 🔐 ANDROID SIGNING ----------
+      - name: Decode Android keystore
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/upload-keystore.jks
+
+      - name: Create key.properties
+        if: github.ref != 'refs/heads/main'
+        run: |
+          cat <<EOF > android/key.properties
+          storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}
+          keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}
+          keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}
+          storeFile=upload-keystore.jks
+          EOF
+
+      # ---------- MAIN (DEV) ----------
+      - name: Dev Build
+        if: github.ref == 'refs/heads/main'
+        run: |
+          flutter build apk \
+            --debug \
+            --build-name=0.0.0 \
+            --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
+
+      # ---------- TESTING (QA) ----------
+      - name: QA Build
+        if: github.ref == 'refs/heads/testing'
+        run: |
+          flutter build appbundle \
+            --release \
+            --build-name=${{ steps.version.outputs.VERSION }} \
+            --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
+
+      # ---------- PRODUCTION ----------
+      - name: Production Build
+        if: github.ref == 'refs/heads/production'
+        run: |
+          flutter build appbundle \
+            --release \
+            --build-name=${{ steps.version.outputs.VERSION }} \
+            --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
+      
+      # ---------- UPLOAD DEV APK ----------
+      - name: Upload Dev Artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+
+      # ---------- UPLOAD TESTING AAB ----------
+      - name: Upload QA Artifact
+        if: github.ref == 'refs/heads/testing'
+        uses: actions/upload-artifact@v4
+        with:
+          name: testing-apk
+          path: build/app/outputs/flutter-apk/app-release.aab
+
+      # ---------- UPLOAD PRODUCTION AAB ----------
+      - name: Upload Production Artifact
+        if: github.ref == 'refs/heads/production'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-aab
+          path: build/app/outputs/bundle/release/app-release.aab
