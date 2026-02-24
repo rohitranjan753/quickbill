@@ -2,9 +2,9 @@ name: Flutter Build & Versioning
 
 on:
   push:
-    branches: [ main, testing, production ]
+    branches: [main, testing, production]
     tags:
-      - 'v*.*.*'
+      - "v*.*.*"
 
 jobs:
   build:
@@ -79,3 +79,19 @@ jobs:
             --release \
             --build-name=${{ steps.version.outputs.VERSION }} \
             --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
+
+      # ---------- UPLOAD TESTING APK ----------
+      - name: Upload QA Artifact
+        if: github.ref == 'refs/heads/testing'
+        uses: actions/upload-artifact@v4
+        with:
+          name: testing-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+
+      # ---------- UPLOAD PRODUCTION AAB ----------
+      - name: Upload Production Artifact
+        if: github.ref == 'refs/heads/production'
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-aab
+          path: build/app/outputs/bundle/release/app-release.aab
