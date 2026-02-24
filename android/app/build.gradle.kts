@@ -49,7 +49,8 @@ android {
     signingConfigs {
         if (hasReleaseSigning) {
             create("release") {
-                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                // This will read from the root folder android/upload-keystore.jks file, which is created in the GitHub Actions workflow by decoding the base64 string stored in secrets.
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
                 storePassword = keystoreProperties.getProperty("storePassword")
                 keyAlias = keystoreProperties.getProperty("keyAlias")
                 keyPassword = keystoreProperties.getProperty("keyPassword")
