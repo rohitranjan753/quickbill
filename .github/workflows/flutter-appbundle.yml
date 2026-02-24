@@ -41,7 +41,7 @@ jobs:
       - name: Decode Android keystore
         if: github.ref != 'refs/heads/main'
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/upload-keystore.jks
 
       - name: Create key.properties
         if: github.ref != 'refs/heads/main'
