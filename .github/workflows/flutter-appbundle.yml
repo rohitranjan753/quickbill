@@ -66,7 +66,7 @@ jobs:
       - name: QA Build
         if: github.ref == 'refs/heads/testing'
         run: |
-          flutter build apk \
+          flutter build appbundle \
             --release \
             --build-name=${{ steps.version.outputs.VERSION }} \
             --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
@@ -79,14 +79,22 @@ jobs:
             --release \
             --build-name=${{ steps.version.outputs.VERSION }} \
             --build-number=${{ steps.version.outputs.BUILD_NUMBER }}
+      
+      # ---------- UPLOAD DEV APK ----------
+      - name: Upload Dev Artifact
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
 
-      # ---------- UPLOAD TESTING APK ----------
+      # ---------- UPLOAD TESTING AAB ----------
       - name: Upload QA Artifact
         if: github.ref == 'refs/heads/testing'
         uses: actions/upload-artifact@v4
         with:
           name: testing-apk
-          path: build/app/outputs/flutter-apk/app-release.apk
+          path: build/app/outputs/flutter-apk/app-release.aab
 
       # ---------- UPLOAD PRODUCTION AAB ----------
       - name: Upload Production Artifact
