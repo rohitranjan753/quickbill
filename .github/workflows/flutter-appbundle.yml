@@ -103,3 +103,16 @@ jobs:
         with:
           name: production-aab
           path: build/app/outputs/bundle/release/app-release.aab
+      
+      
+      - name: Deploy to Play Store (Internal Testing)
+        if: github.ref == 'refs/heads/testing'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          packageName: com.rohit.quickbill
+          releaseFiles: app/build/outputs/bundle/release/app-release.aab
+          track: internal                          # Options: internal, alpha, beta, production
+          status: completed                        # or 'draft' if you want to review first
+          # whatsNewDirectory: distribution/whatsnew   # optional release notes folder
+
