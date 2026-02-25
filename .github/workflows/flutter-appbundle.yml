@@ -115,7 +115,7 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJson: service-account.json
-          packageName: com.rohit.quickbill
+          packageName: com.techhive.quickbill
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal                          # Options: internal, alpha, beta, production
           status: draft                        # or 'draft' if you want to review first or completed to immediately roll out
