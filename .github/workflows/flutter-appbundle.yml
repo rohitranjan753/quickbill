@@ -161,6 +161,13 @@ jobs:
         if: github.ref == 'refs/heads/testing'
         run: |
           echo '${{ secrets.PLAY_STORE_JSON_KEY }}' > service-account.json
+          # Verify service account file is valid JSON
+          if ! jq -e . service-account.json > /dev/null 2>&1; then
+            echo "❌ ERROR: PLAY_STORE_JSON_KEY is not valid JSON"
+            exit 1
+          fi
+          echo "✅ Service account JSON is valid"
+          echo "Service account email: $(jq -r .client_email service-account.json)"
 
       - name: Deploy to Play Store (Internal Testing)
         if: github.ref == 'refs/heads/testing'
