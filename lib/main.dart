@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase/supabase.dart' hide AuthState;
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/auth/auth_event.dart';
 import 'blocs/auth/auth_state.dart';
 import 'blocs/cart/cart_bloc.dart';
+import 'blocs/store/store_bloc.dart';
 import 'services/auth_service.dart';
+import 'services/store_api_service.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_screen.dart';
 import 'firebase_options.dart';
@@ -15,6 +19,11 @@ void main() async {
   
   // Initialize Firebase only if not already initialized
   try {
+    await Supabase.initialize(
+      url: 'https://uskqnzmrakiybondegdj.supabase.co',
+      anonKey:
+          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVza3Fuem1yYWtpeWJvbmRlZ2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMjkyODMsImV4cCI6MjA4ODYwNTI4M30.8D9rgv7s-pKOo95v3DiCFHZCJe0NUIki4Zlme4CO3Xs',
+    );
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -37,7 +46,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiRepositoryProvider(
-      providers: [RepositoryProvider(create: (context) => AuthService())],
+      providers: [
+        RepositoryProvider(create: (context) => AuthService()),
+        RepositoryProvider(create: (context) => StoreApiService()),
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
@@ -46,6 +58,11 @@ class MyApp extends StatelessWidget {
                   ..add(AuthCheckRequested()),
           ),
           BlocProvider(create: (context) => CartBloc()),
+          BlocProvider(
+            create: (context) => StoreBloc(
+              storeApiService: context.read<StoreApiService>(),
+            ),
+          ),
         ],
         child: MaterialApp(
           title: 'QuickBill',

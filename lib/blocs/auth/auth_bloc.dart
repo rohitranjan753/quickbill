@@ -20,17 +20,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   ) async {
     emit(AuthLoading());
     try {
-      final user = _authService.currentUser;
-      if (user != null) {
-        final userModel = await _authService.getUserFromFirestore(user.uid);
-        if (userModel != null) {
-          emit(AuthAuthenticated(userModel));
-        } else {
-          emit(AuthUnauthenticated());
-        }
-      } else {
+      // final user = _authService.currentUser;
+      // if (user != null) {
+      //   final userModel = await _authService.getUserFromFirestore(user.uid);
+      //   if (userModel != null) {
+      //     emit(AuthAuthenticated(userModel));
+      //   } else {
+      //     emit(AuthUnauthenticated());
+      //   }
+      // } else {
+      //   emit(AuthUnauthenticated());
+      // }
         emit(AuthUnauthenticated());
-      }
     } catch (e) {
       emit(AuthError(e.toString()));
     }

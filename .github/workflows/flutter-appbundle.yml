@@ -6,6 +6,9 @@ on:
     tags:
       - "v*.*.*"
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,17 +27,20 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 3.35.3
+          flutter-version: 3.41.8
 
       # ----------------------------
       # VERSION LOGIC
       # ----------------------------
-      - name: Determine version
+      - name: Determine and Bump Version
         id: version
         run: |
+          git config user.name "github-actions"
+          git config user.email "github-actions@github.com"
+
           git fetch --tags
 
-          # Default if no tag exists
+          # Get latest tag or default
           if git describe --tags --abbrev=0 >/dev/null 2>&1; then
             CURRENT_TAG=$(git describe --tags --abbrev=0)
           else
@@ -50,15 +56,30 @@ jobs:
           elif [ "${GITHUB_REF}" = "refs/heads/production" ]; then
             MINOR=$((MINOR + 1))
             PATCH=0
+          else
+            # No bump for main/dev
+            echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+            echo "BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
+            exit 0
           fi
 
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
-          BUILD_NUMBER=${GITHUB_RUN_NUMBER}
+          NEW_TAG="v$NEW_VERSION"
+
+          echo "Checking if tag exists: $NEW_TAG"
+
+          if git rev-parse "$NEW_TAG" >/dev/null 2>&1; then
+            echo "Tag $NEW_TAG already exists. Skipping tag creation."
+          else
+            echo "Creating tag: $NEW_TAG"
+            git tag $NEW_TAG
+            git push origin $NEW_TAG
+          fi
 
           echo "VERSION=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "BUILD_NUMBER=$BUILD_NUMBER" >> $GITHUB_OUTPUT
+          echo "BUILD_NUMBER=${GITHUB_RUN_NUMBER}" >> $GITHUB_OUTPUT
 
-          echo "Using version: $NEW_VERSION+$BUILD_NUMBER"
+          echo "Using version: $NEW_VERSION+${GITHUB_RUN_NUMBER}"
 
       - name: Flutter pub get
         run: flutter pub get
@@ -128,7 +149,7 @@ jobs:
         if: github.ref == 'refs/heads/testing'
         uses: actions/upload-artifact@v4
         with:
-          name: testing-aab
+          name: testing-aab-${{steps.version.outputs.VERSION}}
           path: build/app/outputs/bundle/release/app-release.aab
 
       - name: Upload Production Artifact
@@ -145,6 +166,13 @@ jobs:
         if: github.ref == 'refs/heads/testing'
         run: |
           echo '${{ secrets.PLAY_STORE_JSON_KEY }}' > service-account.json
+          # Verify service account file is valid JSON
+          if ! jq -e . service-account.json > /dev/null 2>&1; then
+            echo "❌ ERROR: PLAY_STORE_JSON_KEY is not valid JSON"
+            exit 1
+          fi
+          echo "✅ Service account JSON is valid"
+          echo "Service account email: $(jq -r .client_email service-account.json)"
 
       - name: Deploy to Play Store (Internal Testing)
         if: github.ref == 'refs/heads/testing'
