@@ -45,11 +45,6 @@ class AuthService {
       // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth =
           await googleUser.authentication;
-      print("Access token ${googleAuth.accessToken}");
-      print("id token ${googleAuth.idToken}");
-
-      print("Full name ${googleUser.displayName}");
-
       try {
         final response = await http.post(
           Uri.parse('http://10.0.2.2:3000/api/auth/google'),
@@ -63,14 +58,9 @@ class AuthService {
 
         if (response.statusCode == 200) {
           final data = jsonDecode(response.body);
-          print('Backend response: $data');
-
           if (data['success'] == true) {
             final userData = data['data']['user'];
             final sessionData = data['data']['session'];
-
-            // Store tokens for future API calls
-            print('Access token: ${sessionData['access_token']}');
 
             // Create UserModel from backend response
             return UserModel(
