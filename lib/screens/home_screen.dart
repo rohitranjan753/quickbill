@@ -17,6 +17,7 @@ import 'store_admin_home_screen.dart';
 import 'guard_receipt_scanner_screen.dart';
 import 'guard_scanned_receipts_screen.dart';
 import 'store_id_scanner_screen.dart';
+import 'customer_home_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -25,14 +26,35 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
+class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
   StoreModel? _selectedStore;
   final FirestoreService _firestoreService = FirestoreService();
   final TextEditingController _storeIdController = TextEditingController();
+  late AnimationController _fabAnimationController;
+  late Animation<double> _fabScaleAnimation;
+  late Animation<double> _fabRotationAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _fabAnimationController = AnimationController(
+      duration: const Duration(milliseconds: 1500),
+      vsync: this,
+    )..repeat(reverse: true);
+
+    _fabScaleAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
+    );
+
+    _fabRotationAnimation = Tween<double>(begin: -0.02, end: 0.02).animate(
+      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
+    );
+  }
 
   @override
   void dispose() {
     _storeIdController.dispose();
+    _fabAnimationController.dispose();
     super.dispose();
   }
 
@@ -136,15 +158,69 @@ class _HomeScreenState extends State<HomeScreen> {
           return _GuardHomeView(user: user);
         }
 
-        // Default: Customer view
-        return _buildCustomerView(context, user);
+        // Default: Customer view - Use new modern home screen
+        return const CustomerHomeScreen();
       },
     );
   }
 
   Widget _buildCustomerView(BuildContext context, UserModel user) {
+    final hasActiveSession = _selectedStore != null;
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      floatingActionButton: hasActiveSession
+          ? AnimatedBuilder(
+              animation: _fabAnimationController,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _fabScaleAnimation.value,
+                  child: Transform.rotate(
+                    angle: _fabRotationAnimation.value,
+                    child: FloatingActionButton.extended(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => ScannerScreen(
+                              selectedStore: _selectedStore!,
+                            ),
+                          ),
+                        );
+                      },
+                      backgroundColor: const Color(0xFF10B981),
+                      elevation: 8,
+                      icon: const Icon(
+                        Icons.shopping_cart_checkout,
+                        size: 24,
+                      ),
+                      label: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Active Session',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          Text(
+                            _selectedStore!.name,
+                            style: const TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                );
+              },
+            )
+          : null,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
