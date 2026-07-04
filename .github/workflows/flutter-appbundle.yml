@@ -163,7 +163,7 @@ jobs:
       # PLAY STORE DEPLOY (Testing)
       # ----------------------------
       - name: Create Google Play service account file
-        if: github.ref == 'refs/heads/testing'
+        if: github.ref == 'refs/heads/testing' || github.ref == 'refs/heads/production'
         run: |
           echo '${{ secrets.PLAY_STORE_JSON_KEY }}' > service-account.json
           # Verify service account file is valid JSON
@@ -183,4 +183,18 @@ jobs:
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           track: internal
           status: draft
+          whatsNewDirectory: distribution/whatsnew
+
+      # ----------------------------
+      # PLAY STORE DEPLOY (Production)
+      # ----------------------------
+      - name: Deploy to Play Store (Production)
+        if: github.ref == 'refs/heads/production'
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: service-account.json
+          packageName: com.techhive.quickbill
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: production
+          status: completed
           whatsNewDirectory: distribution/whatsnew

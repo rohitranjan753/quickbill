@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -39,84 +40,42 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: Text('Not authenticated')),
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: Text(
+                'Not authenticated',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
           );
         }
 
         final user = authState.user;
         if (user.storeId == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Analytics')),
+            backgroundColor: AppColors.background,
+            appBar: _buildAppBar(null),
             body: const Center(
-              child: Text('No store associated with this account'),
+              child: Text(
+                'No store associated with this account',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
           );
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
-          appBar: AppBar(
-            title: const Text('Analytics Dashboard'),
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: Icon(
-                  _showComparison ? Icons.compare_arrows : Icons.insights,
-                  color: _showComparison ? const Color(0xFF10B981) : null,
-                ),
-                tooltip: 'Toggle Comparison',
-                onPressed: () =>
-                    setState(() => _showComparison = !_showComparison),
-              ),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                tooltip: 'Refresh',
-                onPressed: () => setState(() {}),
-              ),
-              PopupMenuButton<String>(
-                icon: const Icon(Icons.download),
-                tooltip: 'Export Data',
-                onSelected: (value) => _handleExport(value, user.storeId!),
-                itemBuilder: (context) => [
-                  const PopupMenuItem(
-                    value: 'excel',
-                    child: Row(
-                      children: [
-                        Icon(Icons.table_chart, color: Color(0xFF10B981)),
-                        SizedBox(width: 12),
-                        Text('Export to Excel'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'pdf',
-                    child: Row(
-                      children: [
-                        Icon(Icons.picture_as_pdf, color: Color(0xFFEF4444)),
-                        SizedBox(width: 12),
-                        Text('Export to PDF'),
-                      ],
-                    ),
-                  ),
-                  const PopupMenuItem(
-                    value: 'print',
-                    child: Row(
-                      children: [
-                        Icon(Icons.print, color: Color(0xFF3B82F6)),
-                        SizedBox(width: 12),
-                        Text('Print Report'),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
+          backgroundColor: AppColors.background,
+          appBar: _buildAppBar(user.storeId),
           body: StreamBuilder<List<ReceiptModel>>(
             stream: _firestoreService.getStoreSales(user.storeId!),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
@@ -124,14 +83,35 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: AppColors.errorSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.error_outline,
+                          size: 40,
+                          color: AppColors.error,
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      Text('Error: ${snapshot.error}'),
+                      Text(
+                        'Error: ${snapshot.error}',
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                       const SizedBox(height: 16),
-                      ElevatedButton.icon(
+                      OutlinedButton.icon(
                         onPressed: () => setState(() {}),
-                        icon: const Icon(Icons.refresh),
+                        icon: const Icon(Icons.refresh_rounded, size: 18),
                         label: const Text('Retry'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: AppColors.textPrimary,
+                          side: const BorderSide(color: AppColors.border),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -155,26 +135,34 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.analytics_outlined,
-                        size: 120,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'No Data Yet',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[600],
+                      Container(
+                        padding: const EdgeInsets.all(24),
+                        decoration: BoxDecoration(
+                          color: AppColors.surfaceElevated,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.border),
+                        ),
+                        child: const Icon(
+                          Icons.analytics_outlined,
+                          size: 48,
+                          color: AppColors.textTertiary,
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
+                      const SizedBox(height: 20),
+                      const Text(
+                        'No Data Yet',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      const Text(
                         'Analytics will appear once you have sales',
                         style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[500],
+                          fontSize: 14,
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -187,56 +175,44 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Period Selector
                     _buildPeriodSelector(),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Key Metrics Cards
                     _buildKeyMetrics(analytics, previousAnalytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Quick Actions
                     _buildQuickActions(filteredReceipts),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Interactive Chart Selector
                     _buildChartTypeSelector(),
                     const SizedBox(height: 16),
 
-                    // Main Chart (Dynamic based on selection)
                     _buildMainChart(filteredReceipts, analytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Category Filter & Analysis
                     _buildCategoryAnalysis(analytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Payment Methods Chart (Full Width)
                     _buildPaymentMethodsChart(analytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Hourly Sales Pattern (Full Width)
                     _buildHourlySalesPattern(filteredReceipts),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Top Products with interactive features
                     _buildTopProducts(analytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Sales by Day Chart
                     _buildSalesByDayChart(filteredReceipts),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Profit Margin Analysis
                     _buildProfitMarginAnalysis(analytics),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Customer Behavior Insights
                     _buildCustomerBehaviorInsights(analytics, filteredReceipts),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
-                    // Additional Insights
                     _buildAdditionalInsights(analytics),
+                    const SizedBox(height: 24),
                   ],
                 ),
               );
@@ -244,6 +220,136 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           ),
         );
       },
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar(String? storeId) {
+    return AppBar(
+      backgroundColor: AppColors.surface,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      title: const Text(
+        'Analytics',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 17,
+        ),
+      ),
+      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.border),
+      ),
+      actions: [
+        IconButton(
+          icon: Icon(
+            _showComparison ? Icons.compare_arrows_rounded : Icons.insights_rounded,
+            color: _showComparison ? AppColors.accent : AppColors.textPrimary,
+          ),
+          tooltip: 'Toggle Comparison',
+          onPressed: () => setState(() => _showComparison = !_showComparison),
+        ),
+        IconButton(
+          icon: const Icon(Icons.refresh_rounded, color: AppColors.textPrimary),
+          tooltip: 'Refresh',
+          onPressed: () => setState(() {}),
+        ),
+        if (storeId != null)
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.download_rounded, color: AppColors.textPrimary),
+            tooltip: 'Export Data',
+            color: AppColors.surface,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+              side: const BorderSide(color: AppColors.border),
+            ),
+            onSelected: (value) => _handleExport(value, storeId),
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                value: 'excel',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.successSurface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.table_chart_rounded,
+                        color: AppColors.success,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Export to Excel',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'pdf',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.errorSurface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.picture_as_pdf_rounded,
+                        color: AppColors.error,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Export to PDF',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
+                value: 'print',
+                child: Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppColors.infoSurface,
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Icon(
+                        Icons.print_rounded,
+                        color: AppColors.info,
+                        size: 16,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    const Text(
+                      'Print Report',
+                      style: TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+      ],
     );
   }
 
@@ -300,20 +406,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       };
     }
 
-    // Basic metrics
     final totalRevenue = receipts.fold<double>(0, (sum, r) => sum + r.totalAmount);
     final totalTransactions = receipts.length;
     final averageOrderValue = totalRevenue / totalTransactions;
     final totalItems = receipts.fold<int>(0, (sum, r) => sum + r.items.length);
 
-    // Payment methods breakdown
     final paymentMethods = <String, double>{};
     for (var receipt in receipts) {
       final method = receipt.paymentMethod.toLowerCase();
       paymentMethods[method] = (paymentMethods[method] ?? 0) + receipt.totalAmount;
     }
 
-    // Category analysis
     final categories = <String, Map<String, dynamic>>{};
     for (var receipt in receipts) {
       for (var item in receipt.items) {
@@ -331,7 +434,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       }
     }
 
-    // Hourly sales pattern
     final hourlyData = <int, Map<String, dynamic>>{};
     for (var i = 0; i < 24; i++) {
       hourlyData[i] = {'revenue': 0.0, 'transactions': 0};
@@ -342,7 +444,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       hourlyData[hour]!['transactions'] += 1;
     }
 
-    // Customer analysis
     final customerIds = receipts.map((r) => r.userId).toSet();
     final uniqueCustomers = customerIds.length;
     final customerPurchases = <String, int>{};
@@ -354,7 +455,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         .where((count) => count > 1)
         .length;
 
-    // Profit and tax calculations
     var totalProfit = 0.0;
     var taxCollected = 0.0;
     for (var receipt in receipts) {
@@ -370,7 +470,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ? (totalProfit / totalRevenue) * 100
         : 0.0;
 
-    // Top products
     final productSales = <String, Map<String, dynamic>>{};
     for (var receipt in receipts) {
       for (var item in receipt.items) {
@@ -395,7 +494,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     final topProducts = productSales.values.toList()
       ..sort((a, b) => (b['revenue'] as double).compareTo(a['revenue'] as double));
 
-    // Growth calculations
     final periodDuration = _getPeriodDuration();
     final previousPeriodReceipts = _getPreviousPeriodReceipts(receipts, periodDuration);
     final previousRevenue = previousPeriodReceipts.fold<double>(0, (sum, r) => sum + r.totalAmount);
@@ -459,28 +557,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         .toList();
   }
 
+  // ──────────────────────────────────────────
+  // Period Selector
+  // ──────────────────────────────────────────
+
   Widget _buildPeriodSelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Time Period',
             style: TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 12),
@@ -499,12 +590,12 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               _customStartDate != null &&
               _customEndDate != null)
             Padding(
-              padding: const EdgeInsets.only(top: 12),
+              padding: const EdgeInsets.only(top: 10),
               child: Text(
-                '${DateFormat('MMM dd, yyyy').format(_customStartDate!)} - ${DateFormat('MMM dd, yyyy').format(_customEndDate!)}',
+                '${DateFormat('MMM dd, yyyy').format(_customStartDate!)} — ${DateFormat('MMM dd, yyyy').format(_customEndDate!)}',
                 style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF64748B),
+                  fontSize: 12,
+                  color: AppColors.textSecondary,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -516,15 +607,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   Widget _buildPeriodChip(String label, AnalyticsPeriod period) {
     final isSelected = _selectedPeriod == period;
-    return FilterChip(
-      label: Text(label),
-      selected: isSelected,
-      onSelected: (selected) async {
+    return GestureDetector(
+      onTap: () async {
         if (period == AnalyticsPeriod.custom) {
           final DateTimeRange? picked = await showDateRangePicker(
             context: context,
             firstDate: DateTime(2020),
             lastDate: DateTime.now(),
+            builder: (context, child) => Theme(
+              data: Theme.of(context).copyWith(
+                colorScheme: const ColorScheme.light(
+                  primary: AppColors.accent,
+                  onPrimary: Colors.white,
+                ),
+              ),
+              child: child!,
+            ),
           );
           if (picked != null) {
             setState(() {
@@ -537,10 +635,30 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           setState(() => _selectedPeriod = period);
         }
       },
-      selectedColor: const Color(0xFF10B981).withValues(alpha: 0.2),
-      checkmarkColor: const Color(0xFF10B981),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.accent : AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(
+            color: isSelected ? AppColors.accent : AppColors.border,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: isSelected ? Colors.white : AppColors.textPrimary,
+          ),
+        ),
+      ),
     );
   }
+
+  // ──────────────────────────────────────────
+  // Key Metrics
+  // ──────────────────────────────────────────
 
   Widget _buildKeyMetrics(
     Map<String, dynamic> analytics,
@@ -552,11 +670,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.currency_rupee,
+                icon: Icons.currency_rupee_rounded,
                 label: 'Total Revenue',
                 value: '₹${analytics['totalRevenue'].toStringAsFixed(2)}',
                 growth: analytics['revenueGrowth'],
-                color: const Color(0xFF10B981),
+                stripColor: AppColors.accent,
                 previousValue: previousAnalytics != null
                     ? '₹${previousAnalytics['totalRevenue'].toStringAsFixed(2)}'
                     : null,
@@ -565,11 +683,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.receipt_long,
+                icon: Icons.receipt_long_rounded,
                 label: 'Transactions',
                 value: '${analytics['totalTransactions']}',
                 growth: analytics['transactionsGrowth'],
-                color: const Color(0xFF3B82F6),
+                stripColor: AppColors.info,
                 previousValue: previousAnalytics != null
                     ? '${previousAnalytics['totalTransactions']}'
                     : null,
@@ -582,21 +700,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.trending_up,
+                icon: Icons.trending_up_rounded,
                 label: 'Avg Order Value',
                 value: '₹${analytics['averageOrderValue'].toStringAsFixed(2)}',
                 growth: null,
-                color: const Color(0xFF8B5CF6),
+                stripColor: AppColors.success,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.shopping_bag,
+                icon: Icons.shopping_bag_outlined,
                 label: 'Items Sold',
                 value: '${analytics['totalItems']}',
                 growth: null,
-                color: const Color(0xFFF59E0B),
+                stripColor: AppColors.warning,
               ),
             ),
           ],
@@ -606,21 +724,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           children: [
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.people,
+                icon: Icons.people_rounded,
                 label: 'Unique Customers',
                 value: '${analytics['uniqueCustomers']}',
                 growth: null,
-                color: const Color(0xFFEC4899),
+                stripColor: AppColors.accent,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: _buildMetricCard(
-                icon: Icons.account_balance_wallet,
+                icon: Icons.account_balance_wallet_outlined,
                 label: 'Profit Margin',
                 value: '${analytics['profitMargin'].toStringAsFixed(1)}%',
                 growth: null,
-                color: const Color(0xFF06B6D4),
+                stripColor: AppColors.info,
               ),
             ),
           ],
@@ -632,23 +750,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget _buildMetricCard({
     required IconData icon,
     required String label,
+    required Color stripColor,
     required String value,
-    required Color color,
     double? growth,
     String? previousValue,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -658,40 +770,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
+                  color: stripColor.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: Icon(icon, color: color, size: 20),
+                child: Icon(icon, color: stripColor, size: 18),
               ),
               const Spacer(),
               if (growth != null)
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                   decoration: BoxDecoration(
                     color: growth >= 0
-                        ? const Color(0xFFECFDF5)
-                        : const Color(0xFFFEF2F2),
+                        ? AppColors.successSurface
+                        : AppColors.errorSurface,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        growth >= 0 ? Icons.trending_up : Icons.trending_down,
-                        size: 12,
-                        color: growth >= 0
-                            ? const Color(0xFF10B981)
-                            : const Color(0xFFEF4444),
+                        growth >= 0
+                            ? Icons.trending_up_rounded
+                            : Icons.trending_down_rounded,
+                        size: 11,
+                        color: growth >= 0 ? AppColors.success : AppColors.error,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 3),
                       Text(
                         '${growth.abs().toStringAsFixed(1)}%',
                         style: TextStyle(
-                          fontSize: 11,
+                          fontSize: 10,
                           fontWeight: FontWeight.w700,
-                          color: growth >= 0
-                              ? const Color(0xFF10B981)
-                              : const Color(0xFFEF4444),
+                          color: growth >= 0 ? AppColors.success : AppColors.error,
                         ),
                       ),
                     ],
@@ -702,10 +813,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 24,
+            style: const TextStyle(
+              fontSize: 20,
               fontWeight: FontWeight.w800,
-              color: color,
+              color: AppColors.textPrimary,
+              letterSpacing: -0.3,
             ),
           ),
           const SizedBox(height: 4),
@@ -715,8 +827,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF64748B),
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -726,7 +838,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   'vs $previousValue',
                   style: const TextStyle(
                     fontSize: 10,
-                    color: Color(0xFF94A3B8),
+                    color: AppColors.textTertiary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -737,29 +849,26 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // ──────────────────────────────────────────
+  // Quick Actions
+  // ──────────────────────────────────────────
+
   Widget _buildQuickActions(List<ReceiptModel> receipts) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF10B981).withValues(alpha: 0.1),
-            const Color(0xFF3B82F6).withValues(alpha: 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.2)),
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Row(
             children: [
-              Icon(Icons.bolt, color: Color(0xFF10B981), size: 20),
+              Icon(Icons.bolt_rounded, color: AppColors.accent, size: 18),
               SizedBox(width: 8),
               Text(
                 'Quick Actions',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -770,25 +879,25 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             children: [
               _buildQuickActionChip(
                 'Today\'s Sales',
-                Icons.today,
+                Icons.today_rounded,
                 () => setState(() => _selectedPeriod = AnalyticsPeriod.today),
               ),
               _buildQuickActionChip(
                 'Best Sellers',
-                Icons.star,
+                Icons.star_rounded,
                 () => _scrollToTopProducts(),
               ),
               if (receipts.isNotEmpty)
                 _buildQuickActionChip(
                   'Export Data',
-                  Icons.download,
+                  Icons.download_rounded,
                   () => _handleExport('excel', receipts.first.storeId),
                 ),
               _buildQuickActionChip(
                 'Peak Hours',
-                Icons.schedule,
-                () =>
-                    setState(() => _selectedChartType = ChartType.transactions),
+                Icons.schedule_rounded,
+                () => setState(
+                    () => _selectedChartType = ChartType.transactions),
               ),
             ],
           ),
@@ -802,24 +911,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     IconData icon,
     VoidCallback onTap,
   ) {
-    return InkWell(
+    return GestureDetector(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(20),
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
+          border: Border.all(color: AppColors.border),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 16, color: const Color(0xFF10B981)),
+            Icon(icon, size: 14, color: AppColors.accent),
             const SizedBox(width: 6),
             Text(
               label,
-              style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
             ),
           ],
         ),
@@ -828,7 +940,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   void _scrollToTopProducts() {
-    // Implement scroll to top products section
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Scroll down to see Top Products'),
@@ -837,26 +948,22 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // ──────────────────────────────────────────
+  // Chart Type Selector
+  // ──────────────────────────────────────────
+
   Widget _buildChartTypeSelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Chart View',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: TextStyle(
+              fontSize: 15,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
           ),
           const SizedBox(height: 12),
           Row(
@@ -865,7 +972,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildChartTypeChip(
                   'Revenue',
                   ChartType.revenue,
-                  Icons.attach_money,
+                  Icons.attach_money_rounded,
                 ),
               ),
               const SizedBox(width: 8),
@@ -873,7 +980,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildChartTypeChip(
                   'Transactions',
                   ChartType.transactions,
-                  Icons.receipt,
+                  Icons.receipt_rounded,
                 ),
               ),
               const SizedBox(width: 8),
@@ -881,7 +988,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildChartTypeChip(
                   'Products',
                   ChartType.products,
-                  Icons.inventory,
+                  Icons.inventory_rounded,
                 ),
               ),
               const SizedBox(width: 8),
@@ -889,7 +996,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildChartTypeChip(
                   'Categories',
                   ChartType.categories,
-                  Icons.category,
+                  Icons.category_rounded,
                 ),
               ),
             ],
@@ -904,35 +1011,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return GestureDetector(
       onTap: () => setState(() => _selectedChartType = type),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 12),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF10B981).withValues(alpha: 0.1)
-              : const Color(0xFFF8F9FA),
+          color: isSelected ? AppColors.accentSurface : AppColors.surfaceElevated,
           borderRadius: BorderRadius.circular(8),
           border: Border.all(
-            color: isSelected ? const Color(0xFF10B981) : Colors.transparent,
-            width: 2,
+            color: isSelected ? AppColors.accent : AppColors.border,
+            width: isSelected ? 1.5 : 1,
           ),
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              color: isSelected
-                  ? const Color(0xFF10B981)
-                  : const Color(0xFF64748B),
-              size: 20,
+              color: isSelected ? AppColors.accent : AppColors.textSecondary,
+              size: 18,
             ),
             const SizedBox(height: 4),
             Text(
               label,
               style: TextStyle(
-                fontSize: 11,
+                fontSize: 10,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF64748B),
+                color: isSelected ? AppColors.accent : AppColors.textSecondary,
               ),
             ),
           ],
@@ -957,38 +1058,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     }
   }
 
+  // ──────────────────────────────────────────
+  // Revenue Chart
+  // ──────────────────────────────────────────
+
   Widget _buildRevenueChart(List<ReceiptModel> receipts) {
     if (receipts.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Revenue Trend',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
             height: 200,
-            child: LineChart(
-              _createRevenueChartData(receipts),
-            ),
+            child: LineChart(_createRevenueChartData(receipts)),
           ),
         ],
       ),
@@ -997,7 +1089,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
   LineChartData _createRevenueChartData(List<ReceiptModel> receipts) {
     final dailyRevenue = <DateTime, double>{};
-    
+
     for (var receipt in receipts) {
       final date = DateTime(
         receipt.purchaseDate.year,
@@ -1009,7 +1101,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
 
     final sortedDates = dailyRevenue.keys.toList()..sort();
     final spots = <FlSpot>[];
-    
+
     for (var i = 0; i < sortedDates.length; i++) {
       spots.add(FlSpot(i.toDouble(), dailyRevenue[sortedDates[i]]!));
     }
@@ -1020,16 +1112,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: 1000,
         getDrawingHorizontalLine: (value) {
-          return FlLine(
-            color: const Color(0xFFE2E8F0),
-            strokeWidth: 1,
-          );
+          return FlLine(color: AppColors.border, strokeWidth: 1);
         },
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -1043,7 +1134,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     DateFormat('MM/dd').format(sortedDates[value.toInt()]),
                     style: const TextStyle(
                       fontSize: 10,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 );
@@ -1062,7 +1153,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 '₹${(value / 1000).toStringAsFixed(0)}k',
                 style: const TextStyle(
                   fontSize: 10,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               );
             },
@@ -1078,46 +1169,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         LineChartBarData(
           spots: spots,
           isCurved: true,
-          color: const Color(0xFF10B981),
-          barWidth: 3,
+          color: AppColors.accent,
+          barWidth: 2.5,
           isStrokeCapRound: true,
           dotData: const FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+            color: AppColors.accent.withValues(alpha: 0.08),
           ),
         ),
       ],
     );
   }
 
+  // ──────────────────────────────────────────
+  // Transactions Chart
+  // ──────────────────────────────────────────
+
   Widget _buildTransactionsChart(List<ReceiptModel> receipts) {
     if (receipts.isEmpty) return const SizedBox.shrink();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Transaction Volume',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
             height: 200,
             child: LineChart(_createTransactionsChartData(receipts)),
@@ -1154,15 +1238,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: 5,
         getDrawingHorizontalLine: (value) {
-          return FlLine(color: const Color(0xFFE2E8F0), strokeWidth: 1);
+          return FlLine(color: AppColors.border, strokeWidth: 1);
         },
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -1176,7 +1260,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     DateFormat('MM/dd').format(sortedDates[value.toInt()]),
                     style: const TextStyle(
                       fontSize: 10,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 );
@@ -1193,7 +1277,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             getTitlesWidget: (value, meta) {
               return Text(
                 '${value.toInt()}',
-                style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               );
             },
           ),
@@ -1208,43 +1295,39 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         LineChartBarData(
           spots: spots,
           isCurved: true,
-          color: const Color(0xFF3B82F6),
-          barWidth: 3,
+          color: AppColors.info,
+          barWidth: 2.5,
           isStrokeCapRound: true,
           dotData: const FlDotData(show: true),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+            color: AppColors.info.withValues(alpha: 0.08),
           ),
         ),
       ],
     );
   }
 
+  // ──────────────────────────────────────────
+  // Products Chart
+  // ──────────────────────────────────────────
+
   Widget _buildProductsChart(Map<String, dynamic> analytics) {
     final topProducts = (analytics['topProducts'] as List).take(5).toList();
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Top 5 Products by Revenue',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
             height: 250,
             child: BarChart(_createProductsBarChartData(topProducts)),
@@ -1265,8 +1348,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           BarChartRodData(
             toY: (product['revenue'] as double),
             color: _touchedBarIndex == index
-                ? const Color(0xFF10B981)
-                : const Color(0xFF10B981).withValues(alpha: 0.7),
+                ? AppColors.accent
+                : AppColors.accent.withValues(alpha: 0.7),
             width: 30,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(6),
@@ -1300,7 +1383,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           });
         },
         touchTooltipData: BarTouchTooltipData(
-          getTooltipColor: (_) => const Color(0xFF1F2937),
+          getTooltipColor: (_) => AppColors.primary,
           tooltipRoundedRadius: 8,
           getTooltipItem: (group, groupIndex, rod, rodIndex) {
             final product = products[groupIndex];
@@ -1313,9 +1396,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               ),
               children: [
                 TextSpan(
-                  text: '₹${(product['revenue'] as double).toStringAsFixed(2)}',
+                  text:
+                      '₹${(product['revenue'] as double).toStringAsFixed(2)}',
                   style: const TextStyle(
-                    color: Color(0xFF10B981),
+                    color: AppColors.accentSurface,
                     fontSize: 11,
                   ),
                 ),
@@ -1326,10 +1410,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -1344,7 +1428,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         : productName,
                     style: const TextStyle(
                       fontSize: 10,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1361,7 +1445,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             getTitlesWidget: (value, meta) {
               return Text(
                 '₹${(value / 1000).toStringAsFixed(0)}k',
-                style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               );
             },
           ),
@@ -1372,42 +1459,43 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: 1000,
         getDrawingHorizontalLine: (value) {
-          return FlLine(color: const Color(0xFFE2E8F0), strokeWidth: 1);
+          return FlLine(color: AppColors.border, strokeWidth: 1);
         },
       ),
       borderData: FlBorderData(show: false),
     );
   }
 
+  // ──────────────────────────────────────────
+  // Categories Chart
+  // ──────────────────────────────────────────
+
   Widget _buildCategoriesChart(Map<String, dynamic> analytics) {
     final categories =
         analytics['categories'] as Map<String, Map<String, dynamic>>;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Sales by Category',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
             height: 250,
             child: categories.isEmpty
-                ? const Center(child: Text('No category data available'))
+                ? Center(
+                    child: Text(
+                      'No category data available',
+                      style: TextStyle(color: AppColors.textSecondary),
+                    ),
+                  )
                 : Row(
                     children: [
                       Expanded(
@@ -1417,8 +1505,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         ),
                       ),
                       const SizedBox(width: 24),
-                      Expanded(
-                        child: _buildCategoryLegend(categories)),
+                      Expanded(child: _buildCategoryLegend(categories)),
                     ],
                   ),
           ),
@@ -1427,28 +1514,29 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // Pie chart colours are intentionally distinct but not rainbow-gradient
+  static const _pieColors = [
+    AppColors.accent,
+    AppColors.info,
+    AppColors.success,
+    AppColors.warning,
+    Color(0xFF7C3AED),
+    Color(0xFF0891B2),
+    Color(0xFFDB2777),
+  ];
+
   PieChartData _createCategoriesPieChartData(
     Map<String, Map<String, dynamic>> categories,
   ) {
-    final colors = [
-      const Color(0xFF10B981),
-      const Color(0xFF3B82F6),
-      const Color(0xFF8B5CF6),
-      const Color(0xFFF59E0B),
-      const Color(0xFFEC4899),
-      const Color(0xFF06B6D4),
-      const Color(0xFFEF4444),
-    ];
-
     final sections = categories.entries.toList().asMap().entries.map((entry) {
       final index = entry.key;
       final categoryEntry = entry.value;
       final isTouched = index == _touchedIndex;
-      final fontSize = isTouched ? 16.0 : 12.0;
+      final fontSize = isTouched ? 15.0 : 11.0;
       final radius = isTouched ? 70.0 : 60.0;
-      
+
       return PieChartSectionData(
-        color: colors[index % colors.length],
+        color: _pieColors[index % _pieColors.length],
         value: categoryEntry.value['revenue'] as double,
         title: isTouched
             ? '${((categoryEntry.value['revenue'] as double) / categories.values.fold<double>(0, (sum, cat) => sum + (cat['revenue'] as double)) * 100).toStringAsFixed(1)}%'
@@ -1485,16 +1573,6 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   }
 
   Widget _buildCategoryLegend(Map<String, Map<String, dynamic>> categories) {
-    final colors = [
-      const Color(0xFF10B981),
-      const Color(0xFF3B82F6),
-      const Color(0xFF8B5CF6),
-      const Color(0xFFF59E0B),
-      const Color(0xFFEC4899),
-      const Color(0xFF06B6D4),
-      const Color(0xFFEF4444),
-    ];
-
     final total = categories.values.fold<double>(
       0,
       (sum, cat) => sum + (cat['revenue'] as double),
@@ -1510,21 +1588,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           final percentage =
               ((categoryEntry.value['revenue'] as double) / total * 100)
                   .toStringAsFixed(1);
-          final color = colors[index % colors.length];
+          final color = _pieColors[index % _pieColors.length];
 
           return Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
                 Container(
-                  width: 12,
-                  height: 12,
+                  width: 10,
+                  height: 10,
                   decoration: BoxDecoration(
                     color: color,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 7),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1534,7 +1612,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -1544,6 +1622,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         style: const TextStyle(
                           fontSize: 10,
                           fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
@@ -1557,6 +1636,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // ──────────────────────────────────────────
+  // Category Analysis
+  // ──────────────────────────────────────────
+
   Widget _buildCategoryAnalysis(Map<String, dynamic> analytics) {
     final categories =
         analytics['categories'] as Map<String, Map<String, dynamic>>;
@@ -1569,19 +1652,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         ),
       );
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1589,60 +1660,95 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             children: [
               const Text(
                 'Category Performance',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const Spacer(),
               if (_selectedCategory != null)
-                TextButton.icon(
-                  onPressed: () => setState(() => _selectedCategory = null),
-                  icon: const Icon(Icons.clear, size: 16),
-                  label: const Text('Clear Filter'),
-                  style: TextButton.styleFrom(
-                    foregroundColor: const Color(0xFF10B981),
+                GestureDetector(
+                  onTap: () => setState(() => _selectedCategory = null),
+                  child: const Text(
+                    'Clear',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: AppColors.accent,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 14),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: categoryList.take(8).map((entry) {
               final isSelected = _selectedCategory == entry.key;
-              return FilterChip(
-                label: Text(entry.key),
-                selected: isSelected,
-                onSelected: (selected) {
-                  setState(() {
-                    _selectedCategory = selected ? entry.key : null;
-                  });
-                },
-                selectedColor: const Color(0xFF10B981).withValues(alpha: 0.2),
-                checkmarkColor: const Color(0xFF10B981),
-                avatar: isSelected
-                    ? null
-                    : CircleAvatar(
-                        backgroundColor: const Color(
-                          0xFF10B981,
-                        ).withValues(alpha: 0.1),
-                        child: Text(
-                          '${entry.value['quantity']}',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
+              return GestureDetector(
+                onTap: () => setState(() {
+                  _selectedCategory = isSelected ? null : entry.key;
+                }),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 7,
+                  ),
+                  decoration: BoxDecoration(
+                    color: isSelected ? AppColors.accentSurface : AppColors.surfaceElevated,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: isSelected ? AppColors.accent : AppColors.border,
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      if (!isSelected) ...[
+                        Container(
+                          width: 18,
+                          height: 18,
+                          decoration: BoxDecoration(
+                            color: AppColors.accentSurface,
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${entry.value['quantity']}',
+                              style: const TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.accent,
+                              ),
+                            ),
                           ),
                         ),
+                        const SizedBox(width: 6),
+                      ],
+                      Text(
+                        entry.key,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? AppColors.accent : AppColors.textPrimary,
+                        ),
                       ),
+                    ],
+                  ),
+                ),
               );
             }).toList(),
           ),
           if (_selectedCategory != null) ...[
             const SizedBox(height: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FA),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
               ),
               child: Row(
                 children: [
@@ -1650,31 +1756,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     child: _buildCategoryMetric(
                       'Revenue',
                       '₹${categories[_selectedCategory]!['revenue'].toStringAsFixed(2)}',
-                      Icons.currency_rupee,
+                      Icons.currency_rupee_rounded,
                     ),
                   ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: const Color(0xFFE2E8F0),
-                  ),
+                  Container(width: 1, height: 40, color: AppColors.border),
                   Expanded(
                     child: _buildCategoryMetric(
                       'Quantity',
                       '${categories[_selectedCategory]!['quantity']}',
-                      Icons.inventory_2,
+                      Icons.inventory_2_rounded,
                     ),
                   ),
-                  Container(
-                    width: 1,
-                    height: 40,
-                    color: const Color(0xFFE2E8F0),
-                  ),
+                  Container(width: 1, height: 40, color: AppColors.border),
                   Expanded(
                     child: _buildCategoryMetric(
                       'Transactions',
                       '${categories[_selectedCategory]!['transactions']}',
-                      Icons.receipt,
+                      Icons.receipt_rounded,
                     ),
                   ),
                 ],
@@ -1689,20 +1787,27 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   Widget _buildCategoryMetric(String label, String value, IconData icon) {
     return Column(
       children: [
-        Icon(icon, size: 20, color: const Color(0xFF10B981)),
+        Icon(icon, size: 18, color: AppColors.accent),
         const SizedBox(height: 4),
         Text(
           value,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700,
+          style: const TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
         ),
         Text(
           label,
-          style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+          style: const TextStyle(fontSize: 11, color: AppColors.textSecondary),
         ),
       ],
     );
   }
+
+  // ──────────────────────────────────────────
+  // Hourly Sales Pattern
+  // ──────────────────────────────────────────
 
   Widget _buildHourlySalesPattern(List<ReceiptModel> receipts) {
     final hourlyData = <int, Map<String, dynamic>>{};
@@ -1716,43 +1821,42 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       hourlyData[hour]!['transactions'] += 1;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.access_time, size: 18, color: Color(0xFF8B5CF6)),
-              const SizedBox(width: 8),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: AppColors.accentSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.access_time_rounded,
+                  size: 16,
+                  color: AppColors.accent,
+                ),
+              ),
+              const SizedBox(width: 10),
               const Text(
                 'Hourly Pattern',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           SizedBox(
             height: 150,
-            child: LineChart(_createHourlyChartData(hourlyData),
-            ),
+            child: LineChart(_createHourlyChartData(hourlyData)),
           ),
           const SizedBox(height: 12),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [_buildPeakHourIndicator(hourlyData)],
-          ),
+          Center(child: _buildPeakHourIndicator(hourlyData)),
         ],
       ),
     );
@@ -1776,13 +1880,15 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: 2,
         getDrawingHorizontalLine: (value) {
-          return FlLine(color: const Color(0xFFE2E8F0), strokeWidth: 1);
+          return FlLine(color: AppColors.border, strokeWidth: 1);
         },
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -1794,7 +1900,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                   '${value.toInt()}h',
                   style: const TextStyle(
                     fontSize: 9,
-                    color: Color(0xFF64748B),
+                    color: AppColors.textSecondary,
                   ),
                 ),
               );
@@ -1811,7 +1917,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 '${value.toInt()}',
                 style: const TextStyle(
                   fontSize: 9,
-                  color: Color(0xFF64748B),
+                  color: AppColors.textSecondary,
                 ),
               );
             },
@@ -1828,13 +1934,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         LineChartBarData(
           spots: spots,
           isCurved: true,
-          color: const Color(0xFF8B5CF6),
+          color: AppColors.accent,
           barWidth: 2,
           isStrokeCapRound: true,
           dotData: const FlDotData(show: false),
           belowBarData: BarAreaData(
             show: true,
-            color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+            color: AppColors.accent.withValues(alpha: 0.08),
           ),
         ),
       ],
@@ -1852,20 +1958,21 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: const Color(0xFF8B5CF6).withValues(alpha: 0.1),
+        color: AppColors.accentSurface,
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: AppColors.accent.withValues(alpha: 0.3)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Icon(Icons.star, size: 14, color: Color(0xFF8B5CF6)),
+          const Icon(Icons.star_rounded, size: 13, color: AppColors.accent),
           const SizedBox(width: 6),
           Text(
             'Peak: ${peakHour.key}:00 (${peakHour.value['transactions']} sales)',
             style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w600,
-              color: Color(0xFF8B5CF6),
+              color: AppColors.accent,
             ),
           ),
         ],
@@ -1873,23 +1980,16 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // ──────────────────────────────────────────
+  // Profit Margin Analysis
+  // ──────────────────────────────────────────
+
   Widget _buildProfitMarginAnalysis(Map<String, dynamic> analytics) {
     final profitMargin = analytics['profitMargin'] as double;
     final totalProfit = analytics['totalProfit'] as double;
     final taxCollected = analytics['taxCollected'] as double;
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            const Color(0xFF06B6D4).withValues(alpha: 0.1),
-            const Color(0xFF10B981).withValues(alpha: 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFF06B6D4).withValues(alpha: 0.2)),
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1898,19 +1998,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF06B6D4).withValues(alpha: 0.2),
+                  color: AppColors.infoSurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.account_balance_wallet,
-                  color: Color(0xFF06B6D4),
-                  size: 20,
+                  Icons.account_balance_wallet_rounded,
+                  color: AppColors.info,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Profit & Tax Analysis',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -1921,8 +2025,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildProfitMetric(
                   'Gross Profit',
                   '₹${totalProfit.toStringAsFixed(2)}',
-                  Icons.trending_up,
-                  const Color(0xFF10B981),
+                  Icons.trending_up_rounded,
+                  AppColors.success,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1930,8 +2034,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildProfitMetric(
                   'Profit Margin',
                   '${profitMargin.toStringAsFixed(1)}%',
-                  Icons.percent,
-                  const Color(0xFF06B6D4),
+                  Icons.percent_rounded,
+                  AppColors.info,
                 ),
               ),
               const SizedBox(width: 12),
@@ -1939,22 +2043,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildProfitMetric(
                   'Tax Collected',
                   '₹${taxCollected.toStringAsFixed(2)}',
-                  Icons.receipt_long,
-                  const Color(0xFF8B5CF6),
+                  Icons.receipt_long_rounded,
+                  AppColors.accent,
                 ),
               ),
             ],
           ),
           const SizedBox(height: 16),
           ClipRRect(
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(6),
             child: LinearProgressIndicator(
               value: profitMargin / 100,
-              minHeight: 8,
-              backgroundColor: const Color(0xFFE2E8F0),
-              valueColor: const AlwaysStoppedAnimation<Color>(
-                Color(0xFF06B6D4),
-              ),
+              minHeight: 7,
+              backgroundColor: AppColors.surfaceElevated,
+              valueColor: const AlwaysStoppedAnimation<Color>(AppColors.info),
             ),
           ),
         ],
@@ -1971,31 +2073,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         children: [
-          Icon(icon, size: 20, color: color),
-          const SizedBox(height: 8),
+          Icon(icon, size: 18, color: color),
+          const SizedBox(height: 6),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 18,
+            style: const TextStyle(
+              fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: color,
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 3),
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 11, color: Color(0xFF64748B)),
+            style: const TextStyle(fontSize: 10, color: AppColors.textSecondary),
           ),
         ],
       ),
     );
   }
+
+  // ──────────────────────────────────────────
+  // Customer Behavior Insights
+  // ──────────────────────────────────────────
 
   Widget _buildCustomerBehaviorInsights(
     Map<String, dynamic> analytics,
@@ -2012,19 +2119,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             ? analytics['totalTransactions']
             : 1);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -2033,19 +2128,23 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFEC4899).withValues(alpha: 0.1),
+                  color: AppColors.accentSurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.people,
-                  color: Color(0xFFEC4899),
-                  size: 20,
+                  Icons.people_rounded,
+                  color: AppColors.accent,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Customer Behavior',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -2056,8 +2155,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildBehaviorCard(
                   'Unique Customers',
                   '$uniqueCustomers',
-                  Icons.person,
-                  const Color(0xFFEC4899),
+                  Icons.person_rounded,
+                  AppColors.accent,
                 ),
               ),
               const SizedBox(width: 12),
@@ -2065,8 +2164,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildBehaviorCard(
                   'Repeat Customers',
                   '$repeatCustomers',
-                  Icons.repeat,
-                  const Color(0xFF10B981),
+                  Icons.repeat_rounded,
+                  AppColors.success,
                 ),
               ),
             ],
@@ -2078,8 +2177,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildBehaviorCard(
                   'Repeat Rate',
                   '${repeatRate.toStringAsFixed(1)}%',
-                  Icons.loyalty,
-                  const Color(0xFF3B82F6),
+                  Icons.loyalty_rounded,
+                  AppColors.info,
                 ),
               ),
               const SizedBox(width: 12),
@@ -2087,8 +2186,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 child: _buildBehaviorCard(
                   'Avg Items/Order',
                   avgItemsPerOrder.toStringAsFixed(1),
-                  Icons.shopping_cart,
-                  const Color(0xFFF59E0B),
+                  Icons.shopping_cart_rounded,
+                  AppColors.warning,
                 ),
               ),
             ],
@@ -2107,13 +2206,20 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        color: AppColors.surfaceElevated,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
-          Icon(icon, size: 20, color: color),
+          Container(
+            padding: const EdgeInsets.all(7),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(7),
+            ),
+            child: Icon(icon, size: 16, color: color),
+          ),
           const SizedBox(width: 8),
           Expanded(
             child: Column(
@@ -2121,17 +2227,17 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
               children: [
                 Text(
                   value,
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: const TextStyle(
+                    fontSize: 16,
                     fontWeight: FontWeight.w700,
-                    color: color,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 Text(
                   label,
                   style: const TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF64748B),
+                    fontSize: 10,
+                    color: AppColors.textSecondary,
                   ),
                 ),
               ],
@@ -2142,40 +2248,33 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
+  // ──────────────────────────────────────────
+  // Additional Insights
+  // ──────────────────────────────────────────
+
   Widget _buildAdditionalInsights(Map<String, dynamic> analytics) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
             'Additional Insights',
             style: TextStyle(
-              fontSize: 18,
+              fontSize: 16,
               fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
           const SizedBox(height: 16),
           _buildInsightRow(
             'Average Items per Transaction',
             '${(analytics['totalItems'] / (analytics['totalTransactions'] > 0 ? analytics['totalTransactions'] : 1)).toStringAsFixed(1)}',
-            Icons.shopping_cart,
+            Icons.shopping_cart_rounded,
           ),
           _buildInsightRow(
             'Highest Single Transaction',
             '₹${analytics['totalRevenue'].toStringAsFixed(2)}',
-            Icons.star,
+            Icons.star_rounded,
           ),
         ],
       ),
@@ -2190,26 +2289,28 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8F9FA),
+              color: AppColors.surfaceElevated,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF64748B)),
+            child: Icon(icon, size: 18, color: AppColors.textSecondary),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               label,
               style: const TextStyle(
-                fontSize: 14,
-                color: Color(0xFF64748B),
+                fontSize: 13,
+                color: AppColors.textSecondary,
               ),
             ),
           ),
           Text(
             value,
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -2217,126 +2318,70 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
     );
   }
 
-  Future<void> _handleExport(String type, String storeId) async {
-    try {
-      // Get all receipts for the selected period
-      final allReceipts = await _firestoreService.getStoreSales(storeId).first;
-      final receipts = _filterReceiptsByPeriod(allReceipts);
-
-      if (receipts.isEmpty) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('No data to export for selected period'),
-              backgroundColor: Color(0xFFF59E0B),
-            ),
-          );
-        }
-        return;
-      }
-
-      switch (type) {
-        case 'excel':
-          if (!mounted) return;
-          await _exportService.exportToExcel(context, receipts, _selectedPeriod);
-          break;
-        case 'pdf':
-          if (!mounted) return;
-          await _pdfService.generateAnalyticsPdf(context, receipts, _selectedPeriod);
-          break;
-        case 'print':
-          if (!mounted) return;
-          await _pdfService.printAnalytics(context, receipts, _selectedPeriod);
-          break;
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error: $e'),
-            backgroundColor: const Color(0xFFEF4444),
-          ),
-        );
-      }
-    }
-  }
+  // ──────────────────────────────────────────
+  // Payment Methods Chart
+  // ──────────────────────────────────────────
 
   Widget _buildPaymentMethodsChart(Map<String, dynamic> analytics) {
     final paymentMethods = analytics['paymentMethods'] as Map<String, double>;
     final isEmpty =
         paymentMethods.isEmpty || paymentMethods.values.every((v) => v == 0);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                  color: AppColors.accentSurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.payment,
-                  size: 18,
-                  color: Color(0xFF10B981),
+                  Icons.payment_rounded,
+                  size: 16,
+                  color: AppColors.accent,
                 ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Text(
                 'Payment Methods',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
           const SizedBox(height: 20),
           if (isEmpty)
             Container(
-              height: 150,
+              height: 120,
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FA),
+                color: AppColors.surfaceElevated,
                 borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: const Color(0xFFE2E8F0),
-                  style: BorderStyle.solid,
-                ),
+                border: Border.all(color: AppColors.border),
               ),
               child: Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: const [
                     Icon(
                       Icons.payment_outlined,
-                      size: 48,
-                      color: Colors.grey[300],
+                      size: 36,
+                      color: AppColors.textTertiary,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 8),
                     Text(
-                      'No Payment Data',
+                      'No payment data',
                       style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.grey[500],
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w500,
                       ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      'Payment breakdown will appear here',
-                      style: TextStyle(fontSize: 11, color: Colors.grey[400]),
                     ),
                   ],
                 ),
@@ -2344,11 +2389,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             )
           else
             ...paymentMethods.entries.map((entry) {
-              final total = paymentMethods.values.fold<double>(
-                0,
-                (sum, val) => sum + val,
-              );
+              final total = paymentMethods.values
+                  .fold<double>(0, (sum, val) => sum + val);
               final percentage = (entry.value / total) * 100;
+              final color = _getPaymentColor(entry.key);
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
@@ -2363,15 +2407,13 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             Container(
                               padding: const EdgeInsets.all(6),
                               decoration: BoxDecoration(
-                                color: _getPaymentColor(
-                                  entry.key,
-                                ).withValues(alpha: 0.1),
+                                color: color.withValues(alpha: 0.12),
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Icon(
                                 _getPaymentIcon(entry.key),
-                                size: 16,
-                                color: _getPaymentColor(entry.key),
+                                size: 15,
+                                color: color,
                               ),
                             ),
                             const SizedBox(width: 10),
@@ -2380,7 +2422,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               style: const TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF1F2937),
+                                color: AppColors.textPrimary,
                               ),
                             ),
                           ],
@@ -2389,11 +2431,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           children: [
                             Text(
-                              'Rs. ${entry.value.toStringAsFixed(2)}',
-                              style: TextStyle(
+                              '₹${entry.value.toStringAsFixed(2)}',
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
-                                color: _getPaymentColor(entry.key),
+                                color: AppColors.textPrimary,
                               ),
                             ),
                             Text(
@@ -2401,7 +2443,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                               style: const TextStyle(
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -2412,33 +2454,19 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     Stack(
                       children: [
                         Container(
-                          height: 8,
+                          height: 6,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFE2E8F0),
-                            borderRadius: BorderRadius.circular(4),
+                            color: AppColors.surfaceElevated,
+                            borderRadius: BorderRadius.circular(3),
                           ),
                         ),
                         FractionallySizedBox(
                           widthFactor: percentage / 100,
                           child: Container(
-                            height: 8,
+                            height: 6,
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  _getPaymentColor(entry.key).withValues(alpha: 0.7),
-                                  _getPaymentColor(entry.key),
-                                ],
-                              ),
-                              borderRadius: BorderRadius.circular(4),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: _getPaymentColor(
-                                    entry.key,
-                                  ).withValues(alpha: 0.3),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
-                                ),
-                              ],
+                              color: color,
+                              borderRadius: BorderRadius.circular(3),
                             ),
                           ),
                         ),
@@ -2456,32 +2484,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
   IconData _getPaymentIcon(String method) {
     switch (method.toLowerCase()) {
       case 'cash':
-        return Icons.money;
+        return Icons.money_rounded;
       case 'card':
-        return Icons.credit_card;
+        return Icons.credit_card_rounded;
       case 'upi':
-        return Icons.qr_code_scanner;
+        return Icons.qr_code_scanner_rounded;
       case 'wallet':
-        return Icons.account_balance_wallet;
+        return Icons.account_balance_wallet_rounded;
       default:
-        return Icons.payment;
+        return Icons.payment_rounded;
     }
   }
 
   Color _getPaymentColor(String method) {
     switch (method.toLowerCase()) {
       case 'cash':
-        return const Color(0xFF10B981);
+        return AppColors.success;
       case 'card':
-        return const Color(0xFF3B82F6);
+        return AppColors.info;
       case 'upi':
-        return const Color(0xFF8B5CF6);
+        return AppColors.accent;
       case 'wallet':
-        return const Color(0xFFF59E0B);
+        return AppColors.warning;
       default:
-        return const Color(0xFF64748B);
+        return AppColors.textSecondary;
     }
   }
+
+  // ──────────────────────────────────────────
+  // Top Products
+  // ──────────────────────────────────────────
 
   Widget _buildTopProducts(Map<String, dynamic> analytics) {
     final topProducts = analytics['topProducts'] as List;
@@ -2490,40 +2522,32 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       return const SizedBox.shrink();
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
               Container(
-                padding: const EdgeInsets.all(8),
+                padding: const EdgeInsets.all(7),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                  color: AppColors.warningSurface,
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: const Icon(
-                  Icons.star,
-                  color: Color(0xFFF59E0B),
-                  size: 20,
+                  Icons.star_rounded,
+                  color: AppColors.warning,
+                  size: 18,
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Top Selling Products',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
@@ -2535,39 +2559,45 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             final quantity = product['quantity'];
             final name = product['name'] as String;
             final category = product['category'] as String;
+            final isTop3 = index < 3;
 
             return Container(
-              margin: const EdgeInsets.only(bottom: 12),
+              margin: const EdgeInsets.only(bottom: 10),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: const Color(0xFFF8F9FA),
-                borderRadius: BorderRadius.circular(8),
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
                 border: Border.all(
-                  color: index < 3
-                      ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
-                      : const Color(0xFFE2E8F0),
+                  color: isTop3
+                      ? AppColors.warning.withValues(alpha: 0.35)
+                      : AppColors.border,
                 ),
               ),
               child: Row(
                 children: [
                   Container(
-                    width: 32,
-                    height: 32,
+                    width: 30,
+                    height: 30,
                     decoration: BoxDecoration(
-                      color: index < 3
-                          ? const Color(0xFFF59E0B).withValues(alpha: 0.2)
-                          : const Color(0xFFE2E8F0),
+                      color: isTop3
+                          ? AppColors.warningSurface
+                          : AppColors.surface,
                       borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: isTop3
+                            ? AppColors.warning.withValues(alpha: 0.3)
+                            : AppColors.border,
+                      ),
                     ),
                     child: Center(
                       child: Text(
                         '${index + 1}',
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 13,
                           fontWeight: FontWeight.w800,
-                          color: index < 3
-                              ? const Color(0xFFF59E0B)
-                              : const Color(0xFF64748B),
+                          color: isTop3
+                              ? AppColors.warning
+                              : AppColors.textSecondary,
                         ),
                       ),
                     ),
@@ -2580,8 +2610,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         Text(
                           name,
                           style: const TextStyle(
-                            fontSize: 14,
+                            fontSize: 13,
                             fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -2591,11 +2622,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 8,
+                                horizontal: 7,
                                 vertical: 2,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                color: AppColors.accentSurface,
                                 borderRadius: BorderRadius.circular(4),
                               ),
                               child: Text(
@@ -2603,7 +2634,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w600,
-                                  color: Color(0xFF10B981),
+                                  color: AppColors.accent,
                                 ),
                               ),
                             ),
@@ -2611,8 +2642,8 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                             Text(
                               'Qty: $quantity',
                               style: const TextStyle(
-                                fontSize: 11,
-                                color: Color(0xFF64748B),
+                                fontSize: 10,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ],
@@ -2626,9 +2657,9 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                       Text(
                         '₹${revenue.toStringAsFixed(2)}',
                         style: const TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF10B981),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 2),
@@ -2636,7 +2667,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                         '${product['transactions']} orders',
                         style: const TextStyle(
                           fontSize: 10,
-                          color: Color(0xFF64748B),
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -2649,6 +2680,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
     );
   }
+
+  // ──────────────────────────────────────────
+  // Sales by Day of Week
+  // ──────────────────────────────────────────
 
   Widget _buildSalesByDayChart(List<ReceiptModel> receipts) {
     if (receipts.isEmpty) return const SizedBox.shrink();
@@ -2666,37 +2701,36 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       dayData[day]!['transactions'] += 1;
     }
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
+    return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(
-                Icons.calendar_today,
-                size: 18,
-                color: Color(0xFF3B82F6),
+              Container(
+                padding: const EdgeInsets.all(7),
+                decoration: BoxDecoration(
+                  color: AppColors.infoSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(
+                  Icons.calendar_today_rounded,
+                  size: 16,
+                  color: AppColors.info,
+                ),
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 10),
               const Text(
                 'Sales by Day of Week',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           SizedBox(
             height: 200,
             child: BarChart(_createDayOfWeekChartData(dayData, dayNames)),
@@ -2723,19 +2757,11 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         barRods: [
           BarChartRodData(
             toY: revenue,
-            color: const Color(0xFF3B82F6),
-            width: 24,
+            color: AppColors.info,
+            width: 22,
             borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(6),
-              topRight: Radius.circular(6),
-            ),
-            gradient: LinearGradient(
-              begin: Alignment.bottomCenter,
-              end: Alignment.topCenter,
-              colors: [
-                const Color(0xFF3B82F6).withValues(alpha: 0.7),
-                const Color(0xFF3B82F6),
-              ],
+              topLeft: Radius.circular(5),
+              topRight: Radius.circular(5),
             ),
           ),
         ],
@@ -2749,7 +2775,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       barTouchData: BarTouchData(
         enabled: true,
         touchTooltipData: BarTouchTooltipData(
-          getTooltipColor: (_) => const Color(0xFF1F2937),
+          getTooltipColor: (_) => AppColors.primary,
           tooltipRoundedRadius: 8,
           getTooltipItem: (group, groupIndex, rod, rodIndex) {
             final data = dayData[groupIndex]!;
@@ -2764,14 +2790,14 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                 TextSpan(
                   text: '₹${(data['revenue'] as double).toStringAsFixed(2)}\n',
                   style: const TextStyle(
-                    color: Color(0xFF3B82F6),
+                    color: AppColors.accentSurface,
                     fontSize: 11,
                   ),
                 ),
                 TextSpan(
                   text: '${data['transactions']} orders',
-                  style: const TextStyle(
-                    color: Color(0xFF94A3B8),
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.6),
                     fontSize: 10,
                   ),
                 ),
@@ -2782,10 +2808,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
       ),
       titlesData: FlTitlesData(
         show: true,
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        topTitles:
+            const AxisTitles(sideTitles: SideTitles(showTitles: false)),
         bottomTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
@@ -2797,7 +2823,7 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
                     dayNames[value.toInt()],
                     style: const TextStyle(
                       fontSize: 11,
-                      color: Color(0xFF64748B),
+                      color: AppColors.textSecondary,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -2814,7 +2840,10 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
             getTitlesWidget: (value, meta) {
               return Text(
                 '₹${(value / 1000).toStringAsFixed(0)}k',
-                style: const TextStyle(fontSize: 10, color: Color(0xFF64748B)),
+                style: const TextStyle(
+                  fontSize: 10,
+                  color: AppColors.textSecondary,
+                ),
               );
             },
           ),
@@ -2825,10 +2854,72 @@ class _AnalyticsScreenState extends State<AnalyticsScreen> {
         drawVerticalLine: false,
         horizontalInterval: maxRevenue / 5,
         getDrawingHorizontalLine: (value) {
-          return FlLine(color: const Color(0xFFE2E8F0), strokeWidth: 1);
+          return FlLine(color: AppColors.border, strokeWidth: 1);
         },
       ),
       borderData: FlBorderData(show: false),
+    );
+  }
+
+  // ──────────────────────────────────────────
+  // Export
+  // ──────────────────────────────────────────
+
+  Future<void> _handleExport(String type, String storeId) async {
+    try {
+      final allReceipts =
+          await _firestoreService.getStoreSales(storeId).first;
+      final receipts = _filterReceiptsByPeriod(allReceipts);
+
+      if (receipts.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('No data to export for selected period'),
+            ),
+          );
+        }
+        return;
+      }
+
+      switch (type) {
+        case 'excel':
+          if (!mounted) return;
+          await _exportService.exportToExcel(context, receipts, _selectedPeriod);
+          break;
+        case 'pdf':
+          if (!mounted) return;
+          await _pdfService.generateAnalyticsPdf(
+              context, receipts, _selectedPeriod);
+          break;
+        case 'print':
+          if (!mounted) return;
+          await _pdfService.printAnalytics(context, receipts, _selectedPeriod);
+          break;
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error: $e')),
+        );
+      }
+    }
+  }
+
+  // ──────────────────────────────────────────
+  // Shared Card container
+  // ──────────────────────────────────────────
+
+  Widget _card({required Widget child}) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: child,
     );
   }
 }

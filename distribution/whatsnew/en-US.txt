@@ -1,4 +1,4 @@
-🚀 QuickBill Internal Testing Release
+🚀 QuickBill Production Release
 
 • Improved invoice calculation logic
 • Performance optimizations

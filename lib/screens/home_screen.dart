@@ -1,143 +1,20 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/auth/auth_event.dart';
 import '../blocs/auth/auth_state.dart';
-import '../blocs/cart/cart_bloc.dart';
-import '../blocs/cart/cart_state.dart';
 import '../models/user_model.dart';
 import '../models/store_model.dart';
 import '../services/firestore_service.dart';
-import 'scanner_screen.dart';
-import 'cart_screen.dart';
-import 'receipts_screen.dart';
-import 'register_store_screen.dart';
 import 'store_admin_home_screen.dart';
 import 'guard_receipt_scanner_screen.dart';
 import 'guard_scanned_receipts_screen.dart';
-import 'store_id_scanner_screen.dart';
 import 'customer_home_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
-
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
-  StoreModel? _selectedStore;
-  final FirestoreService _firestoreService = FirestoreService();
-  final TextEditingController _storeIdController = TextEditingController();
-  late AnimationController _fabAnimationController;
-  late Animation<double> _fabScaleAnimation;
-  late Animation<double> _fabRotationAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _fabAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1500),
-      vsync: this,
-    )..repeat(reverse: true);
-
-    _fabScaleAnimation = Tween<double>(begin: 0.95, end: 1.05).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
-    );
-
-    _fabRotationAnimation = Tween<double>(begin: -0.02, end: 0.02).animate(
-      CurvedAnimation(parent: _fabAnimationController, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _storeIdController.dispose();
-    _fabAnimationController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _selectStoreById(String storeId) async {
-    try {
-      final store = await _firestoreService.getStore(storeId.trim());
-      if (!mounted) return;
-      if (store != null) {
-        setState(() {
-          _selectedStore = store;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                Expanded(child: Text('Store selected: ${store.name}')),
-              ],
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
-              children: [
-                Icon(Icons.warning_amber_rounded, color: Colors.white),
-                SizedBox(width: 12),
-                Expanded(child: Text('Store not found')),
-              ],
-            ),
-            backgroundColor: Color(0xFFF59E0B),
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error: ${e.toString()}'),
-          backgroundColor: const Color(0xFFEF4444),
-        ),
-      );
-    }
-  }
-
-  void _showStoreIdInputDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Enter Store ID'),
-        content: TextField(
-          controller: _storeIdController,
-          decoration: const InputDecoration(
-            hintText: 'Store ID',
-            border: OutlineInputBorder(),
-          ),
-          autofocus: true,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.pop(context);
-              _selectStoreById(_storeIdController.text);
-              _storeIdController.clear();
-            },
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -145,826 +22,20 @@ class _HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateM
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(child: CircularProgressIndicator(color: AppColors.accent)),
           );
         }
 
         final user = authState.user;
 
-        // Route based on user role
         if (user.role == UserRole.storeAdmin) {
           return const StoreAdminHomeScreen();
         } else if (user.role == UserRole.guard) {
           return _GuardHomeView(user: user);
         }
 
-        // Default: Customer view - Use new modern home screen
         return const CustomerHomeScreen();
       },
-    );
-  }
-
-  Widget _buildCustomerView(BuildContext context, UserModel user) {
-    final hasActiveSession = _selectedStore != null;
-
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
-      floatingActionButton: hasActiveSession
-          ? AnimatedBuilder(
-              animation: _fabAnimationController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: _fabScaleAnimation.value,
-                  child: Transform.rotate(
-                    angle: _fabRotationAnimation.value,
-                    child: FloatingActionButton.extended(
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => ScannerScreen(
-                              selectedStore: _selectedStore!,
-                            ),
-                          ),
-                        );
-                      },
-                      backgroundColor: const Color(0xFF10B981),
-                      elevation: 8,
-                      icon: const Icon(
-                        Icons.shopping_cart_checkout,
-                        size: 24,
-                      ),
-                      label: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Active Session',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                          Text(
-                            _selectedStore!.name,
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            )
-          : null,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        title: const Text(
-          'QuickBill',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF1A1A1A),
-            letterSpacing: -0.5,
-          ),
-        ),
-        actions: [
-          BlocBuilder<CartBloc, CartState>(
-            builder: (context, cartState) {
-              return Stack(
-                children: [
-                  Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    child: IconButton(
-                      icon: const Icon(
-                        Icons.shopping_cart_outlined,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                      onPressed: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                CartScreen(selectedStore: _selectedStore),
-                          ),
-                        );
-                      },
-                    ),
-                  ),
-                  if (cartState.itemCount > 0)
-                    Positioned(
-                      right: 12,
-                      top: 8,
-                      child: Container(
-                        padding: const EdgeInsets.all(5),
-                        decoration: BoxDecoration(
-                          gradient: const LinearGradient(
-                            colors: [Color(0xFFEF4444), Color(0xFFDC2626)],
-                          ),
-                          borderRadius: BorderRadius.circular(12),
-                          boxShadow: [
-                            BoxShadow(
-                              color: const Color(
-                                0xFFEF4444,
-                              ).withValues(alpha: 0.4),
-                            ),
-                          ],
-                        ),
-                        constraints: const BoxConstraints(
-                          minWidth: 20,
-                          minHeight: 20,
-                        ),
-                        child: Text(
-                          '${cartState.itemCount}',
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ),
-                    ),
-                ],
-              );
-            },
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            UserAccountsDrawerHeader(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                ),
-              ),
-              accountName: Text(
-                user.displayName,
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 18,
-                ),
-              ),
-              otherAccountsPictures: [
-                Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Icon(
-                    Icons.person_2_outlined,
-                    color: Colors.white,
-                    size: 20,
-                  ),
-                ),
-              ],
-              accountEmail: Text(user.email),
-              currentAccountPicture: CircleAvatar(
-                backgroundColor: Colors.white,
-                child: user.photoURL != null
-                    ? ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: user.photoURL!,
-                          width: 90,
-                          height: 90,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              const CircularProgressIndicator(),
-                          errorWidget: (context, url, error) => Text(
-                            user.displayName[0].toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 40,
-                              color: Color(0xFF0F172A),
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                      )
-                    : Text(
-                        user.displayName[0].toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 40,
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.home, color: Color(0xFF0F172A)),
-              title: const Text(
-                'Home',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              onTap: () => Navigator.pop(context),
-            ),
-            ListTile(
-              leading: const Icon(Icons.receipt_long, color: Color(0xFF0F172A)),
-              title: const Text(
-                'My Receipts',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                Navigator.pop(context);
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const ReceiptsScreen(),
-                  ),
-                );
-              },
-            ),
-            const Divider(),
-            // Register as Store button (only for customers)
-            if (user.role == UserRole.customer)
-              ListTile(
-                leading: const Icon(Icons.store, color: Color(0xFF10B981)),
-                title: const Text(
-                  'Register as Store',
-                  style: TextStyle(
-                    color: Color(0xFF10B981),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                onTap: () {
-                  Navigator.pop(context);
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const RegisterStoreScreen(),
-                    ),
-                  );
-                },
-              ),
-            if (user.role == UserRole.customer) const Divider(),
-            ListTile(
-              leading: const Icon(Icons.logout, color: Color(0xFFEF4444)),
-              title: const Text(
-                'Sign Out',
-                style: TextStyle(fontWeight: FontWeight.w500),
-              ),
-              onTap: () {
-                context.read<AuthBloc>().add(AuthSignOutRequested());
-              },
-            ),
-          ],
-        ),
-      ),
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFF8F9FA), Colors.white],
-          ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Welcome Section
-                const Text(
-                  'Hello,',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  user.displayName,
-                  style: const TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w800,
-                    color: Color(0xFF0F172A),
-                    letterSpacing: -1,
-                  ),
-                ),
-                const SizedBox(height: 32),
-
-                // Store Selection Section
-                Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(color: const Color(0xFFE2E8F0)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.store,
-                              color: Color(0xFF10B981),
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Text(
-                              'Select Store',
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w700,
-                                color: Color(0xFF0F172A),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      if (_selectedStore != null)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: const Color(0xFF10B981).withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: Row(
-                            children: [
-                              const Icon(
-                                Icons.check_circle,
-                                color: Color(0xFF10B981),
-                                size: 24,
-                              ),
-                              const SizedBox(width: 12),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      _selectedStore!.name,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF0F172A),
-                                      ),
-                                    ),
-                                    Text(
-                                      _selectedStore!.city,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        color: Color(0xFF64748B),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              IconButton(
-                                icon: const Icon(Icons.close, size: 20),
-                                onPressed: () {
-                                  setState(() {
-                                    _selectedStore = null;
-                                  });
-                                },
-                              ),
-                            ],
-                          ),
-                        )
-                      else
-                        const Text(
-                          'Please select a store to start shopping',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Color(0xFF64748B),
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: OutlinedButton.icon(
-                              onPressed: _showStoreIdInputDialog,
-                              icon: const Icon(Icons.edit_outlined, size: 20),
-                              label: const Text('Enter ID'),
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                side: const BorderSide(
-                                  color: Color(0xFF10B981),
-                                ),
-                                foregroundColor: const Color(0xFF10B981),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ElevatedButton.icon(
-                              onPressed: () async {
-                                final store = await Navigator.push<StoreModel>(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) =>
-                                        const StoreIdScannerScreen(),
-                                  ),
-                                );
-                                if (store != null) {
-                                  setState(() {
-                                    _selectedStore = store;
-                                  });
-                                }
-                              },
-                              icon: const Icon(Icons.qr_code_scanner, size: 20),
-                              label: const Text('Scan QR'),
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 14,
-                                ),
-                                backgroundColor: const Color(0xFF10B981),
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Main Scanner Card
-                Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
-                    ),
-                    borderRadius: BorderRadius.circular(28),
-                    boxShadow: [
-                      BoxShadow(
-                        color: const Color(0xFF0F172A).withValues(alpha: 0.3),
-                        blurRadius: 24,
-                        offset: const Offset(0, 12),
-                      ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      // Decorative circles
-                      Positioned(
-                        top: -50,
-                        right: -50,
-                        child: Container(
-                          width: 200,
-                          height: 200,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: RadialGradient(
-                              colors: [
-                                Colors.white.withValues(alpha: 0.1),
-                                Colors.transparent,
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.all(32),
-                        child: Column(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  width: 2,
-                                ),
-                              ),
-                              child: Container(
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.1),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: const Icon(
-                                  Icons.qr_code_scanner_rounded,
-                                  size: 64,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 28),
-                            const Text(
-                              'Ready to Shop?',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                                letterSpacing: -0.5,
-                              ),
-                            ),
-                            const SizedBox(height: 12),
-                            const Text(
-                              'Scan product barcodes to add them\nto your cart instantly',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: Color(0xFFCBD5E1),
-                                height: 1.6,
-                              ),
-                            ),
-                            const SizedBox(height: 32),
-                            SizedBox(
-                              width: double.infinity,
-                              height: 60,
-                              child: ElevatedButton(
-                                onPressed: _selectedStore == null
-                                    ? null
-                                    : () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) => ScannerScreen(
-                                              selectedStore: _selectedStore!,
-                                            ),
-                                          ),
-                                        );
-                                      },
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  foregroundColor: const Color(0xFF0F172A),
-                                  disabledBackgroundColor: Colors.white
-                                      .withValues(alpha: 0.5),
-                                  disabledForegroundColor: const Color(
-                                    0xFF0F172A,
-                                  ).withValues(alpha: 0.5),
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  shadowColor: Colors.transparent,
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Icon(Icons.qr_code_scanner, size: 24),
-                                    SizedBox(width: 12),
-                                    Text(
-                                      'Start Scanning',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                const SizedBox(height: 32),
-
-                // Quick Actions Grid
-                const Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildQuickActionCard(
-                        context: context,
-                        icon: Icons.shopping_cart_outlined,
-                        title: 'My Cart',
-                        subtitle: 'View items',
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  CartScreen(selectedStore: _selectedStore),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: _buildQuickActionCard(
-                        context: context,
-                        icon: Icons.receipt_long_outlined,
-                        title: 'Receipts',
-                        subtitle: 'View history',
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        ),
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const ReceiptsScreen(),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-
-                const SizedBox(height: 32),
-
-                // Features Section
-                _buildFeatureItem(
-                  icon: Icons.flash_on,
-                  title: 'Quick Checkout',
-                  subtitle: 'No waiting in lines',
-                  color: const Color(0xFFF59E0B),
-                ),
-                const SizedBox(height: 16),
-                _buildFeatureItem(
-                  icon: Icons.receipt,
-                  title: 'Digital Receipts',
-                  subtitle: 'All your receipts in one place',
-                  color: const Color(0xFF8B5CF6),
-                ),
-                const SizedBox(height: 16),
-                _buildFeatureItem(
-                  icon: Icons.security,
-                  title: 'Secure Shopping',
-                  subtitle: 'Safe and verified transactions',
-                  color: const Color(0xFF06B6D4),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildQuickActionCard({
-    required BuildContext context,
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Gradient gradient,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: gradient.colors.first.withValues(alpha: 0.3),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(icon, color: Colors.white, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.9),
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFeatureItem({
-    required IconData icon,
-    required String title,
-    required String subtitle,
-    required Color color,
-  }) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF64748B),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
@@ -980,18 +51,39 @@ class _GuardHomeView extends StatelessWidget {
     final firestoreService = FirestoreService();
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Guard Dashboard'),
+        backgroundColor: AppColors.surface,
         elevation: 0,
-        backgroundColor: const Color(0xFF3B82F6),
+        surfaceTintColor: Colors.transparent,
+        title: const Text(
+          'Guard Dashboard',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
       ),
       drawer: Drawer(
+        backgroundColor: AppColors.surface,
         child: ListView(
           padding: EdgeInsets.zero,
           children: [
             UserAccountsDrawerHeader(
-              accountName: Text(user.displayName),
-              accountEmail: Text(user.email),
+              accountName: Text(
+                user.displayName,
+                style: const TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 18,
+                  color: Colors.white,
+                ),
+              ),
+              accountEmail: Text(
+                user.email,
+                style: const TextStyle(color: Color(0xFFA1A1B0)),
+              ),
               currentAccountPicture: CircleAvatar(
                 backgroundColor: Colors.white,
                 child: user.photoURL != null
@@ -1005,25 +97,31 @@ class _GuardHomeView extends StatelessWidget {
                               const CircularProgressIndicator(),
                           errorWidget: (context, url, error) => Text(
                             user.displayName[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 40),
+                            style: const TextStyle(
+                              fontSize: 40,
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ),
                       )
                     : Text(
                         user.displayName[0].toUpperCase(),
-                        style: const TextStyle(fontSize: 40),
+                        style: const TextStyle(
+                          fontSize: 40,
+                          color: AppColors.primary,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
               ),
               decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                ),
+                color: AppColors.primary,
               ),
               otherAccountsPictures: [
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: const Icon(
@@ -1035,13 +133,19 @@ class _GuardHomeView extends StatelessWidget {
               ],
             ),
             ListTile(
-              leading: const Icon(Icons.dashboard),
-              title: const Text('Dashboard'),
+              leading: const Icon(Icons.dashboard_outlined, color: AppColors.textSecondary),
+              title: const Text(
+                'Dashboard',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+              ),
               onTap: () => Navigator.pop(context),
             ),
             ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('Scanned Receipts'),
+              leading: const Icon(Icons.history, color: AppColors.textSecondary),
+              title: const Text(
+                'Scanned Receipts',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 Navigator.push(
@@ -1055,10 +159,13 @@ class _GuardHomeView extends StatelessWidget {
                 );
               },
             ),
-            const Divider(),
+            Divider(color: AppColors.divider, height: 1),
             ListTile(
-              leading: const Icon(Icons.logout),
-              title: const Text('Sign Out'),
+              leading: const Icon(Icons.logout, color: AppColors.error),
+              title: const Text(
+                'Sign Out',
+                style: TextStyle(color: AppColors.textPrimary, fontWeight: FontWeight.w500),
+              ),
               onTap: () {
                 context.read<AuthBloc>().add(AuthSignOutRequested());
               },
@@ -1076,263 +183,216 @@ class _GuardHomeView extends StatelessWidget {
             builder: (context, attendanceSnapshot) {
               final activeAttendance = attendanceSnapshot.data;
 
-              return Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [Color(0xFF3B82F6), Color(0xFFF8F9FA)],
-                    stops: [0.0, 0.3],
-                  ),
-                ),
-                child: SafeArea(
+              return SafeArea(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Header Section with Store Name
-                      Padding(
-                        padding: const EdgeInsets.all(24),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Welcome Back,',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: Colors.white70,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              user.displayName,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            if (storeSnapshot.hasData &&
-                                storeSnapshot.data != null)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 12,
-                                  vertical: 6,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(20),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(
-                                      Icons.store,
-                                      size: 16,
-                                      color: Colors.white,
-                                    ),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      storeSnapshot.data!.name,
-                                      style: const TextStyle(
-                                        color: Colors.white,
-                                        fontWeight: FontWeight.w600,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                          ],
+                      // Welcome header
+                      const Text(
+                        'Welcome Back,',
+                        style: TextStyle(
+                          fontSize: 15,
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w400,
                         ),
                       ),
-
-                      // Main Content
-                      Expanded(
-                        child: Container(
-                          width: double.infinity,
-                          decoration: const BoxDecoration(
-                            color: Color(0xFFF8F9FA),
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(30),
-                              topRight: Radius.circular(30),
+                      const SizedBox(height: 4),
+                      Text(
+                        user.displayName,
+                        style: const TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.textPrimary,
+                          letterSpacing: -0.8,
+                        ),
+                      ),
+                      if (storeSnapshot.hasData && storeSnapshot.data != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 5,
                             ),
-                          ),
-                          child: SingleChildScrollView(
-                            padding: const EdgeInsets.all(24),
-                            child: Column(
+                            decoration: BoxDecoration(
+                              color: AppColors.accentSurface,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
                               children: [
-                                // Attendance Card
-                                _AttendanceCard(
-                                  guardId: user.uid,
-                                  storeId: user.storeId ?? '',
-                                  activeAttendance: activeAttendance,
+                                const Icon(
+                                  Icons.store_outlined,
+                                  size: 14,
+                                  color: AppColors.accent,
                                 ),
-
-                                const SizedBox(height: 24),
-
-                                // Main Scanner Card
-                                Container(
-                                  width: double.infinity,
-                                  padding: const EdgeInsets.all(32),
-                                  decoration: BoxDecoration(
-                                    gradient: const LinearGradient(
-                                      colors: [
-                                        Color(0xFF3B82F6),
-                                        Color(0xFF2563EB),
-                                      ],
-                                    ),
-                                    borderRadius: BorderRadius.circular(24),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: const Color(
-                                          0xFF3B82F6,
-                                        ).withValues(alpha: 0.3),
-                                      ),
-                                    ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  storeSnapshot.data!.name,
+                                  style: const TextStyle(
+                                    color: AppColors.accent,
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
                                   ),
-                                  child: Column(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(20),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.2),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.qr_code_scanner,
-                                          size: 80,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 24),
-                                      const Text(
-                                        'Receipt Verification',
-                                        style: TextStyle(
-                                          fontSize: 24,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 12),
-                                      const Text(
-                                        'Scan customer receipt QR codes to verify purchases before exit',
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 15,
-                                          color: Colors.white70,
-                                          height: 1.5,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 32),
-                                      SizedBox(
-                                        width: double.infinity,
-                                        height: 56,
-                                        child: ElevatedButton.icon(
-                                          onPressed: () {
-                                            if (activeAttendance?.isActive ==
-                                                    null ||
-                                                activeAttendance!.isActive ==
-                                                    false) {
-                                              ScaffoldMessenger.of(
-                                                context,
-                                              ).showSnackBar(
-                                                const SnackBar(
-                                                  content: Text(
-                                                    'Please check in before scanning receipts',
-                                                  ),
-                                                  backgroundColor: Color(
-                                                    0xFFEF4444,
-                                                  ),
-                                                ),
-                                              );
-                                              return;
-                                            }
-                                            Navigator.push(
-                                              context,
-                                              MaterialPageRoute(
-                                                builder: (context) =>
-                                                    GuardReceiptScannerScreen(
-                                                      guardId: user.uid,
-                                                      storeId:
-                                                          user.storeId ?? '',
-                                                    ),
-                                              ),
-                                            );
-                                          },
-                                          icon: const Icon(
-                                            Icons.qr_code_scanner,
-                                            size: 28,
-                                          ),
-                                          label: const Text(
-                                            'Scan Receipt',
-                                            style: TextStyle(
-                                              fontSize: 18,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          style: ElevatedButton.styleFrom(
-                                            backgroundColor: Colors.white,
-                                            foregroundColor: const Color(
-                                              0xFF3B82F6,
-                                            ),
-                                            elevation: 0,
-                                            shape: RoundedRectangleBorder(
-                                              borderRadius:
-                                                  BorderRadius.circular(16),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-
-                                const SizedBox(height: 24),
-
-                                // Quick Stats Cards
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        context,
-                                        icon: Icons.verified_outlined,
-                                        title: 'View History',
-                                        subtitle: 'See all scans',
-                                        color: const Color(0xFF10B981),
-                                        onTap: () {
-                                          Navigator.push(
-                                            context,
-                                            MaterialPageRoute(
-                                              builder: (context) =>
-                                                  GuardScannedReceiptsScreen(
-                                                    guardId: user.uid,
-                                                    storeId: user.storeId ?? '',
-                                                  ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: _buildStatCard(
-                                        context,
-                                        icon: Icons.info_outline,
-                                        title: 'Instructions',
-                                        subtitle: 'How to verify',
-                                        color: const Color(0xFFF59E0B),
-                                        onTap: () {
-                                          _showInstructionsDialog(context);
-                                        },
-                                      ),
-                                    ),
-                                  ],
                                 ),
                               ],
                             ),
                           ),
                         ),
+
+                      const SizedBox(height: 24),
+
+                      // Attendance Card
+                      _AttendanceCard(
+                        guardId: user.uid,
+                        storeId: user.storeId ?? '',
+                        activeAttendance: activeAttendance,
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Main Scanner Card
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(28),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(24),
+                        ),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(18),
+                              decoration: BoxDecoration(
+                                color: Colors.white.withValues(alpha: 0.1),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.qr_code_scanner,
+                                size: 64,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 20),
+                            const Text(
+                              'Receipt Verification',
+                              style: TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                                letterSpacing: -0.3,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              'Scan customer receipt QR codes to verify purchases before exit',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.white.withValues(alpha: 0.65),
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 28),
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton.icon(
+                                onPressed: () {
+                                  if (activeAttendance?.isActive == null ||
+                                      activeAttendance!.isActive == false) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text(
+                                          'Please check in before scanning receipts',
+                                        ),
+                                        backgroundColor: AppColors.error,
+                                      ),
+                                    );
+                                    return;
+                                  }
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) =>
+                                          GuardReceiptScannerScreen(
+                                            guardId: user.uid,
+                                            storeId: user.storeId ?? '',
+                                          ),
+                                    ),
+                                  );
+                                },
+                                icon: const Icon(
+                                  Icons.qr_code_scanner,
+                                  size: 22,
+                                  color: AppColors.primary,
+                                ),
+                                label: const Text(
+                                  'Scan Receipt',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.primary,
+                                  ),
+                                ),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: AppColors.primary,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Quick Stats Cards
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              icon: Icons.verified_outlined,
+                              title: 'View History',
+                              subtitle: 'See all scans',
+                              iconColor: AppColors.success,
+                              iconBg: AppColors.successSurface,
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        GuardScannedReceiptsScreen(
+                                          guardId: user.uid,
+                                          storeId: user.storeId ?? '',
+                                        ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: _buildStatCard(
+                              context,
+                              icon: Icons.info_outline_rounded,
+                              title: 'Instructions',
+                              subtitle: 'How to verify',
+                              iconColor: AppColors.warning,
+                              iconBg: AppColors.warningSurface,
+                              onTap: () {
+                                _showInstructionsDialog(context);
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -1350,48 +410,43 @@ class _GuardHomeView extends StatelessWidget {
     required IconData icon,
     required String title,
     required String subtitle,
-    required Color color,
+    required Color iconColor,
+    required Color iconBg,
     required VoidCallback onTap,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(11),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: iconBg,
+                borderRadius: BorderRadius.circular(10),
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(icon, color: iconColor, size: 26),
             ),
             const SizedBox(height: 12),
             Text(
               title,
               style: const TextStyle(
-                fontSize: 15,
-                fontWeight: FontWeight.bold,
-                color: Color(0xFF1A1A1A),
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               subtitle,
-              style: const TextStyle(fontSize: 12, color: Color(0xFF64748B)),
+              style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -1404,11 +459,20 @@ class _GuardHomeView extends StatelessWidget {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Row(
-          children: const [
-            Icon(Icons.info_outline, color: Color(0xFF3B82F6)),
-            SizedBox(width: 12),
-            Text('Verification Instructions'),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.info_outline_rounded, color: AppColors.accent),
+            SizedBox(width: 10),
+            Text(
+              'Verification Instructions',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 17,
+              ),
+            ),
           ],
         ),
         content: Column(
@@ -1436,8 +500,16 @@ class _GuardHomeView extends StatelessWidget {
           ],
         ),
         actions: [
-          TextButton(
+          ElevatedButton(
             onPressed: () => Navigator.pop(context),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(10),
+              ),
+            ),
             child: const Text('Got it'),
           ),
         ],
@@ -1464,23 +536,15 @@ class _AttendanceCard extends StatelessWidget {
     final isCheckedIn = activeAttendance != null;
 
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isCheckedIn
-              ? [const Color(0xFF10B981), const Color(0xFF059669)]
-              : [const Color(0xFF64748B), const Color(0xFF475569)],
-        ),
+        color: isCheckedIn ? AppColors.successSurface : AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color:
-                (isCheckedIn
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFF64748B))
-                    .withValues(alpha: 0.3),
-          ),
-        ],
+        border: Border.all(
+          color: isCheckedIn
+              ? AppColors.success.withValues(alpha: 0.3)
+              : AppColors.border,
+        ),
       ),
       child: Column(
         children: [
@@ -1489,13 +553,15 @@ class _AttendanceCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
+                  color: isCheckedIn
+                      ? AppColors.success.withValues(alpha: 0.15)
+                      : AppColors.border,
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(
-                  isCheckedIn ? Icons.timer : Icons.timer_off,
-                  color: Colors.white,
-                  size: 28,
+                  isCheckedIn ? Icons.timer_rounded : Icons.timer_off_rounded,
+                  color: isCheckedIn ? AppColors.success : AppColors.textSecondary,
+                  size: 26,
                 ),
               ),
               const SizedBox(width: 16),
@@ -1505,10 +571,10 @@ class _AttendanceCard extends StatelessWidget {
                   children: [
                     Text(
                       isCheckedIn ? 'On Duty' : 'Off Duty',
-                      style: const TextStyle(
-                        fontSize: 20,
+                      style: TextStyle(
+                        fontSize: 18,
                         fontWeight: FontWeight.w700,
-                        color: Colors.white,
+                        color: isCheckedIn ? AppColors.success : AppColors.textSecondary,
                       ),
                     ),
                     if (isCheckedIn)
@@ -1521,13 +587,11 @@ class _AttendanceCard extends StatelessWidget {
                           final seconds = (duration?.inSeconds ?? 0) % 60;
                           return Text(
                             '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${seconds.toString().padLeft(2, '0')}',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.white.withValues(alpha: 0.9),
+                            style: const TextStyle(
+                              fontSize: 15,
+                              color: AppColors.success,
                               fontWeight: FontWeight.w600,
-                              fontFeatures: const [
-                                FontFeature.tabularFigures(),
-                              ],
+                              fontFeatures: [FontFeature.tabularFigures()],
                             ),
                           );
                         },
@@ -1537,31 +601,29 @@ class _AttendanceCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 18),
           SizedBox(
             width: double.infinity,
-            height: 50,
+            height: 48,
             child: ElevatedButton.icon(
               onPressed: () async {
                 try {
                   if (isCheckedIn) {
-                    // Check out
                     await firestoreService.checkOutGuard(activeAttendance.id);
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Checked out successfully'),
-                        backgroundColor: Color(0xFF10B981),
+                        backgroundColor: AppColors.success,
                       ),
                     );
                   } else {
-                    // Check in
                     await firestoreService.checkInGuard(guardId, storeId);
                     if (!context.mounted) return;
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
                         content: Text('Checked in successfully'),
-                        backgroundColor: Color(0xFF10B981),
+                        backgroundColor: AppColors.success,
                       ),
                     );
                   }
@@ -1570,24 +632,26 @@ class _AttendanceCard extends StatelessWidget {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text('Error: ${e.toString()}'),
-                      backgroundColor: const Color(0xFFEF4444),
+                      backgroundColor: AppColors.error,
                     ),
                   );
                 }
               },
-              icon: Icon(isCheckedIn ? Icons.logout : Icons.login, size: 24),
+              icon: Icon(
+                isCheckedIn ? Icons.logout : Icons.login,
+                size: 20,
+                color: isCheckedIn ? AppColors.error : AppColors.success,
+              ),
               label: Text(
                 isCheckedIn ? 'Check Out' : 'Check In',
                 style: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w700,
                 ),
               ),
               style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: isCheckedIn
-                    ? const Color(0xFF10B981)
-                    : const Color(0xFF64748B),
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -1616,7 +680,7 @@ class _InstructionStep extends StatelessWidget {
           width: 28,
           height: 28,
           decoration: BoxDecoration(
-            color: const Color(0xFF3B82F6),
+            color: AppColors.accent,
             borderRadius: BorderRadius.circular(14),
           ),
           child: Center(
@@ -1624,8 +688,8 @@ class _InstructionStep extends StatelessWidget {
               number,
               style: const TextStyle(
                 color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
               ),
             ),
           ),
@@ -1638,7 +702,7 @@ class _InstructionStep extends StatelessWidget {
               text,
               style: const TextStyle(
                 fontSize: 14,
-                color: Color(0xFF1A1A1A),
+                color: AppColors.textPrimary,
                 height: 1.4,
               ),
             ),

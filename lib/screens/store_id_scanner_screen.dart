@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import '../services/firestore_service.dart';
@@ -46,15 +47,12 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
     setState(() => _isProcessing = true);
 
     try {
-      // Get store from Firestore
       final store = await _firestoreService.getStore(storeId);
       if (!mounted) return;
 
       if (store != null) {
-        // Store found - return to home screen
         Navigator.pop(context, store);
       } else {
-        // Store not found
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -64,7 +62,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                 Expanded(child: Text('Store not found')),
               ],
             ),
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: AppColors.warning,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -84,7 +82,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
               Expanded(child: Text('Error: ${e.toString()}')),
             ],
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -119,7 +117,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
           ),
         ),
         title: const Text(
-          'Scan Store ID',
+          'Scan Store QR',
           style: TextStyle(
             color: Colors.white,
             fontWeight: FontWeight.w700,
@@ -164,6 +162,23 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
             },
           ),
 
+          // Top gradient fade
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 200,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.black.withValues(alpha: 0.7), Colors.transparent],
+                ),
+              ),
+            ),
+          ),
+
           // Bottom Instructions Card
           Positioned(
             bottom: 0,
@@ -187,10 +202,10 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                         Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -198,13 +213,13 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: const [
                               SizedBox(
-                                width: 24,
-                                height: 24,
+                                width: 22,
+                                height: 22,
                                 child: CircularProgressIndicator(
                                   valueColor: AlwaysStoppedAnimation<Color>(
                                     Colors.white,
                                   ),
-                                  strokeWidth: 3,
+                                  strokeWidth: 2.5,
                                 ),
                               ),
                               SizedBox(width: 16),
@@ -212,7 +227,7 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                                 'Processing...',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 18,
+                                  fontSize: 17,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -221,12 +236,15 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                         )
                       else
                         Container(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 20,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(20),
+                            color: Colors.white.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
+                              color: Colors.white.withValues(alpha: 0.2),
                               width: 1,
                             ),
                           ),
@@ -235,25 +253,25 @@ class _StoreIdScannerScreenState extends State<StoreIdScannerScreen>
                               const Icon(
                                 Icons.qr_code_scanner_rounded,
                                 color: Colors.white,
-                                size: 48,
+                                size: 40,
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: 12),
                               const Text(
                                 'Scan Store QR Code',
                                 style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 20,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w700,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Text(
                                 'Point camera at the store\'s QR code',
                                 style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 15,
-                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white.withValues(alpha: 0.65),
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w400,
                                 ),
                                 textAlign: TextAlign.center,
                               ),
@@ -296,8 +314,9 @@ class ScannerOverlay extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
+    // Border glow — accent indigo
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
+      ..color = const Color(0xFF5B5FEF).withValues(alpha: 0.3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -307,8 +326,9 @@ class ScannerOverlay extends CustomPainter {
       glowPaint,
     );
 
+    // Corner brackets — accent indigo
     final cornerPaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = const Color(0xFF5B5FEF)
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -316,7 +336,7 @@ class ScannerOverlay extends CustomPainter {
     const cornerLength = 40.0;
     const cornerOffset = 8.0;
 
-    // Draw corners (same as product scanner)
+    // Top-left
     canvas.drawLine(
       Offset(scanArea.left - cornerOffset, scanArea.top + cornerLength),
       Offset(scanArea.left - cornerOffset, scanArea.top - cornerOffset),
@@ -328,6 +348,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
+    // Top-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.top - cornerOffset),
       Offset(scanArea.right + cornerOffset, scanArea.top - cornerOffset),
@@ -339,6 +360,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
+    // Bottom-left
     canvas.drawLine(
       Offset(scanArea.left - cornerOffset, scanArea.bottom - cornerLength),
       Offset(scanArea.left - cornerOffset, scanArea.bottom + cornerOffset),
@@ -350,6 +372,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
+    // Bottom-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.bottom + cornerOffset),
       Offset(scanArea.right + cornerOffset, scanArea.bottom + cornerOffset),
@@ -361,17 +384,18 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
+    // Animated scan line — accent indigo
     final scanLineY = scanArea.top + (scanArea.height * scanProgress);
     final scanLinePaint = Paint()
       ..shader = LinearGradient(
-            colors: [
-              Colors.transparent,
-              const Color(0xFF10B981).withValues(alpha: 0.8),
-              Colors.transparent,
-            ],
-          ).createShader(
-            Rect.fromLTWH(scanArea.left, scanLineY - 2, scanArea.width, 4),
-          )
+        colors: [
+          Colors.transparent,
+          const Color(0xFF5B5FEF).withValues(alpha: 0.85),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromLTWH(scanArea.left, scanLineY - 2, scanArea.width, 4),
+      )
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 

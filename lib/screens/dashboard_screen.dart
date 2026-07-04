@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -27,7 +28,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            ),
           );
         }
 
@@ -35,23 +39,39 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
         if (user.storeId == null) {
           return const Scaffold(
+            backgroundColor: AppColors.background,
             body: Center(child: Text('No store associated with this account')),
           );
         }
 
         return Scaffold(
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('Dashboard'),
+            backgroundColor: AppColors.surface,
             elevation: 0,
+            surfaceTintColor: Colors.transparent,
+            title: const Text(
+              'Dashboard',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
             actions: [
               IconButton(
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh, color: AppColors.textSecondary),
                 tooltip: 'Refresh',
                 onPressed: () => setState(() {}),
               ),
             ],
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: AppColors.border),
+            ),
           ),
           body: RefreshIndicator(
+            color: AppColors.accent,
             onRefresh: () async {
               setState(() {});
             },
@@ -60,17 +80,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Welcome Header
+                  // Welcome Header — solid near-black container
                   Container(
                     width: double.infinity,
-                    padding: const EdgeInsets.all(24),
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                    ),
+                    color: AppColors.primary,
+                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 28),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -80,19 +94,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               ClipOval(
                                 child: CachedNetworkImage(
                                   imageUrl: user.photoURL!,
-                                  width: 50,
-                                  height: 50,
+                                  width: 48,
+                                  height: 48,
                                   fit: BoxFit.cover,
                                   placeholder: (context, url) =>
-                                      const CircularProgressIndicator(),
+                                      const CircularProgressIndicator(
+                                        color: AppColors.accent,
+                                      ),
                                   errorWidget: (context, url, error) =>
                                       CircleAvatar(
-                                        backgroundColor: Colors.white,
+                                        backgroundColor: AppColors.accent,
+                                        radius: 24,
                                         child: Text(
                                           user.displayName[0].toUpperCase(),
                                           style: const TextStyle(
-                                            fontSize: 24,
-                                            color: Color(0xFF10B981),
+                                            fontSize: 20,
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w700,
                                           ),
                                         ),
                                       ),
@@ -100,13 +118,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               )
                             else
                               CircleAvatar(
-                                backgroundColor: Colors.white,
-                                radius: 25,
+                                backgroundColor: AppColors.accent,
+                                radius: 24,
                                 child: Text(
                                   user.displayName[0].toUpperCase(),
                                   style: const TextStyle(
-                                    fontSize: 24,
-                                    color: Color(0xFF10B981),
+                                    fontSize: 20,
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w700,
                                   ),
                                 ),
                               ),
@@ -115,20 +134,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Welcome back,',
                                     style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 14,
+                                      color: Colors.white.withValues(alpha: 0.6),
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w400,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
+                                  const SizedBox(height: 2),
                                   Text(
                                     user.displayName,
                                     style: const TextStyle(
                                       color: Colors.white,
-                                      fontSize: 22,
-                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.w700,
+                                      letterSpacing: -0.3,
                                     ),
                                   ),
                                 ],
@@ -136,26 +157,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 20),
+                        // Store ID chip
                         Container(
-                          padding: const EdgeInsets.all(12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.white.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15),
+                            ),
                           ),
                           child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.store,
-                                color: Colors.white,
-                                size: 20,
+                              Icon(
+                                Icons.store_outlined,
+                                color: Colors.white.withValues(alpha: 0.7),
+                                size: 15,
                               ),
-                              const SizedBox(width: 8),
+                              const SizedBox(width: 6),
                               Text(
                                 'Store ID: ${user.storeId}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 13,
+                                style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.85),
+                                  fontSize: 12,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
@@ -168,25 +197,28 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   // Quick Actions
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
                           'Quick Actions',
                           style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.2,
                           ),
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 14),
                         Row(
                           children: [
                             Expanded(
                               child: _QuickActionCard(
-                                icon: Icons.add_box,
+                                icon: Icons.add_box_outlined,
                                 label: 'Add Product',
-                                color: const Color(0xFF10B981),
+                                iconBg: AppColors.accentSurface,
+                                iconColor: AppColors.accent,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -201,9 +233,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _QuickActionCard(
-                                icon: Icons.inventory,
+                                icon: Icons.inventory_outlined,
                                 label: 'Products',
-                                color: const Color(0xFF3B82F6),
+                                iconBg: AppColors.surfaceElevated,
+                                iconColor: AppColors.textPrimary,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -222,9 +255,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           children: [
                             Expanded(
                               child: _QuickActionCard(
-                                icon: Icons.receipt_long,
+                                icon: Icons.receipt_long_outlined,
                                 label: 'Sales',
-                                color: const Color(0xFFF59E0B),
+                                iconBg: AppColors.warningSurface,
+                                iconColor: AppColors.warning,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -239,9 +273,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _QuickActionCard(
-                                icon: Icons.analytics,
+                                icon: Icons.analytics_outlined,
                                 label: 'Analytics',
-                                color: const Color(0xFF8B5CF6),
+                                iconBg: AppColors.successSurface,
+                                iconColor: AppColors.success,
                                 onTap: () {
                                   Navigator.push(
                                     context,
@@ -304,82 +339,67 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           final todayTransactions = todayReceipts.length;
 
                           return Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 const Text(
                                   'Overview',
                                   style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w700,
+                                    color: AppColors.textPrimary,
+                                    letterSpacing: -0.2,
                                   ),
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 14),
                                 _StatCard(
-                                  icon: Icons.trending_up,
+                                  icon: Icons.trending_up_rounded,
                                   label: "Today's Sales",
                                   value: '₹${todaySales.toStringAsFixed(2)}',
                                   subtitle: '$todayTransactions transactions',
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF10B981),
-                                      Color(0xFF059669),
-                                    ],
-                                  ),
+                                  accentColor: AppColors.accent,
+                                  iconBg: AppColors.accentSurface,
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
                                     Expanded(
                                       child: _StatCard(
-                                        icon: Icons.inventory_2,
+                                        icon: Icons.inventory_2_outlined,
                                         label: 'Total Products',
                                         value: '${products.length}',
                                         subtitle: '$activeProducts active',
-                                        gradient: const LinearGradient(
-                                          colors: [
-                                            Color(0xFF3B82F6),
-                                            Color(0xFF2563EB),
-                                          ],
-                                        ),
+                                        accentColor: AppColors.info,
+                                        iconBg: AppColors.infoSurface,
                                       ),
                                     ),
                                     const SizedBox(width: 12),
                                     Expanded(
                                       child: _StatCard(
-                                        icon: Icons.warning_amber,
+                                        icon: Icons.warning_amber_outlined,
                                         label: 'Low Stock',
                                         value: '$lowStockCount',
                                         subtitle: 'items',
-                                        gradient: LinearGradient(
-                                          colors: lowStockCount > 0
-                                              ? [
-                                                  const Color(0xFFEF4444),
-                                                  const Color(0xFFDC2626),
-                                                ]
-                                              : [
-                                                  const Color(0xFF64748B),
-                                                  const Color(0xFF475569),
-                                                ],
-                                        ),
+                                        accentColor: lowStockCount > 0
+                                            ? AppColors.error
+                                            : AppColors.textTertiary,
+                                        iconBg: lowStockCount > 0
+                                            ? AppColors.errorSurface
+                                            : AppColors.surfaceElevated,
                                       ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
                                 _StatCard(
-                                  icon: Icons.account_balance_wallet,
+                                  icon: Icons.account_balance_wallet_outlined,
                                   label: 'Inventory Value',
                                   value:
                                       '₹${totalInventoryValue.toStringAsFixed(2)}',
                                   subtitle: 'Total stock worth',
-                                  gradient: const LinearGradient(
-                                    colors: [
-                                      Color(0xFF8B5CF6),
-                                      Color(0xFF7C3AED),
-                                    ],
-                                  ),
+                                  accentColor: AppColors.success,
+                                  iconBg: AppColors.successSurface,
                                 ),
                               ],
                             ),
@@ -391,7 +411,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
                   // Recent Activity
                   Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 20, 16, 0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -401,8 +421,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             const Text(
                               'Recent Sales',
                               style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.textPrimary,
+                                letterSpacing: -0.2,
                               ),
                             ),
                             TextButton(
@@ -415,11 +437,23 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                   ),
                                 );
                               },
-                              child: const Text('View All'),
+                              style: TextButton.styleFrom(
+                                foregroundColor: AppColors.accent,
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: const Text(
+                                'View All',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 13,
+                                ),
+                              ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 12),
+                        const SizedBox(height: 14),
                         StreamBuilder<List<ReceiptModel>>(
                           stream: _firestoreService.getStoreSales(
                             user.storeId!,
@@ -428,7 +462,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             if (snapshot.connectionState ==
                                 ConnectionState.waiting) {
                               return const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.accent,
+                                ),
                               );
                             }
 
@@ -439,23 +475,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
                               return Container(
                                 padding: const EdgeInsets.all(32),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
+                                  color: AppColors.surface,
                                   borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.border),
                                 ),
-                                child: const Center(
+                                child: Center(
                                   child: Column(
                                     children: [
-                                      Icon(
-                                        Icons.receipt_long_outlined,
-                                        size: 48,
-                                        color: Color(0xFF64748B),
+                                      Container(
+                                        width: 56,
+                                        height: 56,
+                                        decoration: const BoxDecoration(
+                                          color: AppColors.surfaceElevated,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.receipt_long_outlined,
+                                          size: 28,
+                                          color: AppColors.textTertiary,
+                                        ),
                                       ),
-                                      SizedBox(height: 12),
-                                      Text(
+                                      const SizedBox(height: 12),
+                                      const Text(
                                         'No recent sales',
                                         style: TextStyle(
-                                          color: Color(0xFF64748B),
-                                          fontSize: 16,
+                                          color: AppColors.textSecondary,
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w500,
                                         ),
                                       ),
                                     ],
@@ -467,32 +513,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
                             return Column(
                               children: recentReceipts.map((receipt) {
                                 return Container(
-                                  margin: const EdgeInsets.only(bottom: 12),
-                                  padding: const EdgeInsets.all(16),
+                                  margin: const EdgeInsets.only(bottom: 10),
+                                  padding: const EdgeInsets.all(14),
                                   decoration: BoxDecoration(
-                                    color: Colors.white,
-                                    borderRadius: BorderRadius.circular(12),
-                                    border: Border.all(
-                                      color: const Color(0xFFE2E8F0),
-                                    ),
+                                    color: AppColors.surface,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border: Border.all(color: AppColors.border),
                                   ),
                                   child: Row(
                                     children: [
                                       Container(
-                                        padding: const EdgeInsets.all(12),
+                                        width: 44,
+                                        height: 44,
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF1F5F9),
+                                          color: AppColors.accentSurface,
                                           borderRadius: BorderRadius.circular(
                                             10,
                                           ),
                                         ),
                                         child: const Icon(
-                                          Icons.receipt,
-                                          color: Color(0xFF10B981),
-                                          size: 24,
+                                          Icons.receipt_outlined,
+                                          color: AppColors.accent,
+                                          size: 22,
                                         ),
                                       ),
-                                      const SizedBox(width: 16),
+                                      const SizedBox(width: 14),
                                       Expanded(
                                         child: Column(
                                           crossAxisAlignment:
@@ -502,17 +547,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                               '${receipt.items.length} items',
                                               style: const TextStyle(
                                                 fontWeight: FontWeight.w600,
-                                                fontSize: 15,
+                                                fontSize: 14,
+                                                color: AppColors.textPrimary,
                                               ),
                                             ),
-                                            const SizedBox(height: 4),
+                                            const SizedBox(height: 3),
                                             Text(
                                               _formatDateTime(
                                                 receipt.purchaseDate,
                                               ),
                                               style: const TextStyle(
-                                                color: Color(0xFF64748B),
-                                                fontSize: 13,
+                                                color: AppColors.textSecondary,
+                                                fontSize: 12,
                                               ),
                                             ),
                                           ],
@@ -521,9 +567,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                       Text(
                                         '₹${receipt.totalAmount.toStringAsFixed(2)}',
                                         style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF10B981),
+                                          fontSize: 15,
+                                          fontWeight: FontWeight.w700,
+                                          color: AppColors.textPrimary,
                                         ),
                                       ),
                                     ],
@@ -537,7 +583,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     ),
                   ),
 
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 32),
                 ],
               ),
             ),
@@ -573,13 +619,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
 class _QuickActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
+  final Color iconBg;
+  final Color iconColor;
   final VoidCallback onTap;
 
   const _QuickActionCard({
     required this.icon,
     required this.label,
-    required this.color,
+    required this.iconBg,
+    required this.iconColor,
     required this.onTap,
   });
 
@@ -589,33 +637,31 @@ class _QuickActionCard extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: const Color(0xFFE2E8F0)),
-          boxShadow: [
-            BoxShadow(
-              color: color.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(12),
+              width: 48,
+              height: 48,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: iconBg,
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(icon, color: iconColor, size: 24),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 10),
             Text(
               label,
-              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
               textAlign: TextAlign.center,
             ),
           ],
@@ -630,72 +676,89 @@ class _StatCard extends StatelessWidget {
   final String label;
   final String value;
   final String subtitle;
-  final Gradient gradient;
+  final Color accentColor;
+  final Color iconBg;
 
   const _StatCard({
     required this.icon,
     required this.label,
     required this.value,
     required this.subtitle,
-    required this.gradient,
+    required this.accentColor,
+    required this.iconBg,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: gradient,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
       ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+      clipBehavior: Clip.hardEdge,
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            // Left colored accent strip
+            Container(width: 4, color: accentColor),
+            // Content
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Row(
+                  children: [
+                    Container(
+                      width: 44,
+                      height: 44,
+                      decoration: BoxDecoration(
+                        color: iconBg,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Icon(icon, color: accentColor, size: 22),
+                    ),
+                    const SizedBox(width: 14),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            label,
+                            style: const TextStyle(
+                              color: AppColors.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            value,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 22,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            subtitle,
+                            style: const TextStyle(
+                              color: AppColors.textTertiary,
+                              fontSize: 11,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
             ),
-            child: Icon(icon, color: Colors.white, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  label,
-                  style: const TextStyle(
-                    color: Colors.white70,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  value,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: const TextStyle(color: Colors.white70, fontSize: 12),
-                ),
-              ],
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

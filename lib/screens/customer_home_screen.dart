@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -56,7 +57,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
       // Get current position
       final position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
       );
 
       if (!mounted) return;
@@ -75,7 +78,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(message),
-        backgroundColor: const Color(0xFFEF4444),
+        backgroundColor: AppColors.error,
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -84,7 +87,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5FBF4),
+      backgroundColor: AppColors.background,
       body: SafeArea(
         child: _selectedNavIndex == 0
             ? _buildHomeContent()
@@ -104,6 +107,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         _buildHeader(),
         Expanded(
           child: RefreshIndicator(
+            color: AppColors.accent,
             onRefresh: () async {
               context.read<StoreBloc>().add(const RefreshNearbyStores());
             },
@@ -139,8 +143,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         }
 
         return Container(
-          padding: const EdgeInsets.all(16),
-          color: const Color(0xFFF5FBF4),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+          color: AppColors.background,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -151,7 +155,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     height: 48,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      color: const Color(0xFFDEE4DE),
+                      color: AppColors.surfaceElevated,
                       image: photoUrl != null
                           ? DecorationImage(
                               image: NetworkImage(photoUrl),
@@ -164,9 +168,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                             child: Text(
                               userName[0].toUpperCase(),
                               style: const TextStyle(
-                                fontSize: 20,
+                                fontSize: 18,
                                 fontWeight: FontWeight.bold,
-                                color: Color(0xFF006948),
+                                color: AppColors.accent,
                               ),
                             ),
                           )
@@ -177,57 +181,50 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       const Text(
-                        'Welcome back,',
+                        'Welcome back',
                         style: TextStyle(
                           fontSize: 12,
-                          color: Color(0xFF3D4A42),
+                          color: AppColors.textTertiary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),
                       Text(
-                        'Hi, $userName 👋',
+                        userName,
                         style: const TextStyle(
                           fontSize: 18,
                           fontWeight: FontWeight.bold,
-                          color: Color(0xFF171D19),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                     ],
                   ),
                 ],
               ),
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: Colors.transparent,
-                ),
-                child: Stack(
-                  children: [
-                    const Icon(
-                      Icons.notifications_outlined,
-                      color: Color(0xFF171D19),
-                      size: 24,
-                    ),
-                    Positioned(
-                      top: 0,
-                      right: 0,
-                      child: Container(
-                        width: 10,
-                        height: 10,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFBA1A1A),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: const Color(0xFFF5FBF4),
-                            width: 2,
-                          ),
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  const Icon(
+                    Icons.notifications_outlined,
+                    color: AppColors.primary,
+                    size: 26,
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      width: 9,
+                      height: 9,
+                      decoration: BoxDecoration(
+                        color: AppColors.error,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.background,
+                          width: 1.5,
                         ),
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -238,27 +235,33 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   Widget _buildSearchBar() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        height: 56,
+        height: 52,
         decoration: BoxDecoration(
-          color: const Color(0xFFDEE4DE),
-          borderRadius: BorderRadius.circular(16),
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: TextField(
           controller: _searchController,
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 15,
+          ),
           decoration: const InputDecoration(
             hintText: 'Search for stores near you...',
             hintStyle: TextStyle(
-              color: Color(0xFF6D7A72),
-              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
+              fontWeight: FontWeight.w400,
+              fontSize: 15,
             ),
             prefixIcon: Icon(
-              Icons.search,
-              color: Color(0xFF6D7A72),
+              Icons.search_rounded,
+              color: AppColors.textSecondary,
+              size: 22,
             ),
             border: InputBorder.none,
-            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
           ),
         ),
       ),
@@ -273,7 +276,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             child: Padding(
               padding: EdgeInsets.all(32.0),
               child: CircularProgressIndicator(
-                color: Color(0xFF006948),
+                color: AppColors.accent,
               ),
             ),
           );
@@ -286,25 +289,36 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               child: Column(
                 children: [
                   const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Color(0xFFEF4444),
+                    Icons.error_outline_rounded,
+                    size: 56,
+                    color: AppColors.textTertiary,
                   ),
                   const SizedBox(height: 16),
                   Text(
                     state.message,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
-                      color: Color(0xFF3D4A42),
+                      color: AppColors.textSecondary,
+                      fontSize: 14,
                     ),
                   ),
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _loadNearbyStores,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF006948),
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 24, vertical: 12),
                     ),
-                    child: const Text('Retry'),
+                    child: const Text(
+                      'Retry',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
                   ),
                 ],
               ),
@@ -318,26 +332,35 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               padding: const EdgeInsets.all(32.0),
               child: Column(
                 children: [
-                  const Icon(
-                    Icons.store_outlined,
-                    size: 64,
-                    color: Color(0xFF6D7A72),
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: AppColors.surfaceElevated,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.store_outlined,
+                      size: 36,
+                      color: AppColors.textTertiary,
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
                     'No stores found nearby',
                     style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF171D19),
+                      fontSize: 17,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Text(
+                  const Text(
                     'Try expanding the search radius or check back later',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      color: Color(0xFF3D4A42),
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
                     ),
                   ),
                 ],
@@ -356,7 +379,8 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 child: Text(
                   'No stores match your search',
                   style: TextStyle(
-                    color: Color(0xFF3D4A42),
+                    color: AppColors.textSecondary,
+                    fontSize: 14,
                   ),
                 ),
               ),
@@ -369,27 +393,33 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
           return Column(
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: const EdgeInsets.symmetric(horizontal: 20),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
                       'Nearby Stores',
                       style: TextStyle(
-                        fontSize: 20,
+                        fontSize: 19,
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF171D19),
+                        color: AppColors.textPrimary,
                       ),
                     ),
                     TextButton(
                       onPressed: () {
                         // TODO: Navigate to all stores screen
                       },
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppColors.accent,
+                        padding: EdgeInsets.zero,
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
                       child: const Text(
                         'See all',
                         style: TextStyle(
-                          color: Color(0xFF006948),
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 14,
                         ),
                       ),
                     ),
@@ -413,7 +443,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   Widget _buildFeaturedStoreCard(NearbyStoreModel store) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: GestureDetector(
         onTap: () {
           context.read<StoreBloc>().add(SelectStore(store.id));
@@ -421,15 +451,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
         },
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: AppColors.surface,
             borderRadius: BorderRadius.circular(16),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 10,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            border: Border.all(color: AppColors.border, width: 1),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -443,7 +467,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                       borderRadius: const BorderRadius.vertical(
                         top: Radius.circular(16),
                       ),
-                      color: const Color(0xFFE9F0E9),
+                      color: AppColors.surfaceElevated,
                     ),
                     child: ClipRRect(
                       borderRadius: const BorderRadius.vertical(
@@ -455,7 +479,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                               width: double.infinity,
                               fit: BoxFit.cover,
                               placeholder: (context, url) => const Center(
-                                child: CircularProgressIndicator(),
+                                child: CircularProgressIndicator(
+                                  color: AppColors.accent,
+                                ),
                               ),
                               errorWidget: (context, url, error) =>
                                   _buildStorePlaceholder(),
@@ -464,37 +490,33 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                     ),
                   ),
                   Positioned(
-                    top: 16,
-                    right: 16,
+                    top: 14,
+                    right: 14,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                        horizontal: 10,
+                        vertical: 5,
                       ),
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.9),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.1),
-                            blurRadius: 4,
-                          ),
-                        ],
+                        border: Border.all(color: AppColors.border, width: 1),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           const Icon(
-                            Icons.star,
-                            color: Color(0xFFFFB800),
-                            size: 18,
+                            Icons.star_rounded,
+                            color: AppColors.amber,
+                            size: 16,
                           ),
                           const SizedBox(width: 4),
                           Text(
                             store.formattedRating,
                             style: const TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 13,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -509,72 +531,60 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                store.name,
-                                style: const TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w800,
-                                  color: Color(0xFF171D19),
-                                  height: 1.2,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                '${store.address}, ${store.city}',
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF6D7A72),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    Text(
+                      store.name,
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                        height: 1.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '${store.address}, ${store.city}',
+                      style: const TextStyle(
+                        fontSize: 13,
+                        color: AppColors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: 12),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 12,
+                            horizontal: 10,
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF81F9C2),
-                            borderRadius: BorderRadius.circular(4),
+                            color: AppColors.accentSurface,
+                            borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
                             '${store.formattedDistance} away',
                             style: const TextStyle(
                               fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF002114),
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.accent,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 10),
                         if (store.isCurrentlyOpen)
                           Row(
                             children: [
                               const Icon(
-                                Icons.schedule,
-                                size: 14,
-                                color: Color(0xFF006948),
+                                Icons.schedule_rounded,
+                                size: 13,
+                                color: AppColors.textSecondary,
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 'Open until ${store.closingTime ?? "10 PM"}',
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF006948),
+                                  fontWeight: FontWeight.w500,
+                                  color: AppColors.textSecondary,
                                 ),
                               ),
                             ],
@@ -596,12 +606,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       height: 180,
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 20),
         itemCount: stores.length,
         itemBuilder: (context, index) {
           final store = stores[index];
           return Padding(
-            padding: const EdgeInsets.only(right: 16),
+            padding: const EdgeInsets.only(right: 14),
             child: _buildSmallStoreCard(store),
           );
         },
@@ -618,26 +628,20 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       child: Container(
         width: 160,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: AppColors.border, width: 1),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
-              height: 112,
+              height: 108,
               decoration: BoxDecoration(
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(16),
                 ),
-                color: const Color(0xFFE9F0E9),
+                color: AppColors.surfaceElevated,
               ),
               child: ClipRRect(
                 borderRadius: const BorderRadius.vertical(
@@ -649,7 +653,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                         width: double.infinity,
                         fit: BoxFit.cover,
                         placeholder: (context, url) => const Center(
-                          child: CircularProgressIndicator(),
+                          child: CircularProgressIndicator(
+                            color: AppColors.accent,
+                            strokeWidth: 2,
+                          ),
                         ),
                         errorWidget: (context, url, error) =>
                             _buildStorePlaceholder(),
@@ -658,21 +665,21 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(11),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     store.name,
                     style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF171D19),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 7),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -682,31 +689,32 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                           vertical: 2,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF81F9C2),
+                          color: AppColors.accentSurface,
                           borderRadius: BorderRadius.circular(4),
                         ),
                         child: Text(
                           store.formattedDistance,
                           style: const TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF002114),
+                            fontSize: 10,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.accent,
                           ),
                         ),
                       ),
                       Row(
                         children: [
                           const Icon(
-                            Icons.star,
-                            color: Color(0xFFFFB800),
-                            size: 12,
+                            Icons.star_rounded,
+                            color: AppColors.amber,
+                            size: 13,
                           ),
                           const SizedBox(width: 2),
                           Text(
                             store.formattedRating,
                             style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -724,12 +732,12 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   Widget _buildStorePlaceholder() {
     return Container(
-      color: const Color(0xFFE9F0E9),
+      color: AppColors.surfaceElevated,
       child: const Center(
         child: Icon(
-          Icons.store,
-          size: 48,
-          color: Color(0xFF006948),
+          Icons.store_outlined,
+          size: 40,
+          color: AppColors.accent,
         ),
       ),
     );
@@ -737,15 +745,11 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
 
   Widget _buildPromoBanner() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16),
+      padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
         padding: const EdgeInsets.all(24),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(
-            colors: [Color(0xFF006948), Color(0xFF00855C)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          color: AppColors.primary,
           borderRadius: BorderRadius.circular(16),
         ),
         child: Row(
@@ -757,7 +761,7 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   const Text(
                     'Skip the Queue.',
                     style: TextStyle(
-                      fontSize: 24,
+                      fontSize: 22,
                       fontWeight: FontWeight.w800,
                       color: Colors.white,
                       height: 1.2,
@@ -767,9 +771,10 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
                   Text(
                     'Scan items as you walk and pay instantly through QuickBill.',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.8),
-                      fontWeight: FontWeight.w500,
+                      fontSize: 13,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontWeight: FontWeight.w400,
+                      height: 1.5,
                     ),
                   ),
                 ],
@@ -777,14 +782,14 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             ),
             const SizedBox(width: 16),
             Container(
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
+                color: AppColors.accent,
                 shape: BoxShape.circle,
               ),
               child: const Icon(
-                Icons.bolt,
-                size: 48,
+                Icons.bolt_rounded,
+                size: 32,
                 color: Colors.white,
               ),
             ),
@@ -806,15 +811,15 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
             ),
           );
         },
-        backgroundColor: const Color(0xFF006948),
-        elevation: 4,
-        icon: const Icon(Icons.qr_code_scanner, color: Colors.white),
+        backgroundColor: AppColors.accent,
+        elevation: 0,
+        icon: const Icon(Icons.qr_code_scanner_rounded, color: Colors.white),
         label: const Text(
           'Scan Store QR',
           style: TextStyle(
             color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            fontSize: 15,
           ),
         ),
       ),
@@ -824,59 +829,48 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
   Widget _buildBottomNavBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.8),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        border: Border.all(
-          color: const Color(0xFFBCCAC0).withOpacity(0.15),
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.border, width: 1),
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF006948).withOpacity(0.06),
-            blurRadius: 20,
-            offset: const Offset(0, -4),
+      ),
+      child: BottomNavigationBar(
+        currentIndex: _selectedNavIndex,
+        onTap: (index) {
+          setState(() {
+            _selectedNavIndex = index;
+          });
+        },
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: AppColors.surface,
+        elevation: 0,
+        selectedItemColor: AppColors.accent,
+        unselectedItemColor: AppColors.textTertiary,
+        selectedFontSize: 11,
+        unselectedFontSize: 11,
+        selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
+        items: const [
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home_outlined),
+            activeIcon: Icon(Icons.home_rounded),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.receipt_long_outlined),
+            activeIcon: Icon(Icons.receipt_long_rounded),
+            label: 'Orders',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite_outline_rounded),
+            activeIcon: Icon(Icons.favorite_rounded),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.person_outline_rounded),
+            activeIcon: Icon(Icons.person_rounded),
+            label: 'Profile',
           ),
         ],
-      ),
-      child: ClipRRect(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        child: BottomNavigationBar(
-          currentIndex: _selectedNavIndex,
-          onTap: (index) {
-            setState(() {
-              _selectedNavIndex = index;
-            });
-          },
-          type: BottomNavigationBarType.fixed,
-          backgroundColor: Colors.transparent,
-          elevation: 0,
-          selectedItemColor: const Color(0xFF006948),
-          unselectedItemColor: const Color(0xFF6D7A72),
-          selectedFontSize: 11,
-          unselectedFontSize: 11,
-          selectedLabelStyle: const TextStyle(fontWeight: FontWeight.w600),
-          items: const [
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home_outlined),
-              activeIcon: Icon(Icons.home),
-              label: 'Home',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.receipt_long_outlined),
-              activeIcon: Icon(Icons.receipt_long),
-              label: 'Orders',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.favorite_outline),
-              activeIcon: Icon(Icons.favorite),
-              label: 'Favorites',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.person_outline),
-              activeIcon: Icon(Icons.person),
-              label: 'Profile',
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -886,9 +880,9 @@ class _CustomerHomeScreenState extends State<CustomerHomeScreen> {
       child: Text(
         '$title - Coming Soon',
         style: const TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-          color: Color(0xFF6D7A72),
+          fontSize: 16,
+          fontWeight: FontWeight.w500,
+          color: AppColors.textSecondary,
         ),
       ),
     );

@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/product_model.dart';
@@ -34,13 +35,16 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   void initState() {
     super.initState();
-    
-    // Initialize controllers with current values
+
     _nameController = TextEditingController(text: widget.product.name);
-    _brandNameController = TextEditingController(text: widget.product.brandName ?? '');
-    _descriptionController = TextEditingController(text: widget.product.description ?? '');
-    _mrpController = TextEditingController(text: widget.product.mrp.toStringAsFixed(2));
-    _sellingPriceController = TextEditingController(text: widget.product.sellingPrice.toStringAsFixed(2));
+    _brandNameController =
+        TextEditingController(text: widget.product.brandName ?? '');
+    _descriptionController =
+        TextEditingController(text: widget.product.description ?? '');
+    _mrpController =
+        TextEditingController(text: widget.product.mrp.toStringAsFixed(2));
+    _sellingPriceController = TextEditingController(
+        text: widget.product.sellingPrice.toStringAsFixed(2));
     _stockQuantityController = TextEditingController(
       text: widget.product.stockQuantity?.toString() ?? '',
     );
@@ -70,15 +74,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
       return;
     }
 
-    // Validate pricing
     final mrp = double.tryParse(_mrpController.text);
     final sellingPrice = double.tryParse(_sellingPriceController.text);
-    
+
     if (mrp != null && sellingPrice != null && sellingPrice > mrp) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Selling price cannot be greater than MRP'),
-          backgroundColor: Colors.red,
+          backgroundColor: AppColors.error,
         ),
       );
       return;
@@ -113,19 +116,23 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Product updated successfully!'),
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            content: const Text('Product updated successfully!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
-        Navigator.pop(context, true); // Return true to indicate success
+        Navigator.pop(context, true);
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Error updating product: $e'),
-            backgroundColor: Colors.red,
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -139,16 +146,38 @@ class _EditProductScreenState extends State<EditProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Edit Product'),
+        title: const Text(
+          'Edit Product',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: AppColors.surface,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
+        ),
         actions: [
-          TextButton.icon(
-            onPressed: _isLoading ? null : _updateProduct,
-            icon: const Icon(Icons.save, color: Colors.white),
-            label: const Text(
-              'SAVE',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: TextButton.icon(
+              onPressed: _isLoading ? null : _updateProduct,
+              icon: const Icon(Icons.save_rounded,
+                  color: AppColors.accent, size: 18),
+              label: const Text(
+                'Save',
+                style: TextStyle(
+                  color: AppColors.accent,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 15,
+                ),
+              ),
             ),
           ),
         ],
@@ -160,56 +189,46 @@ class _EditProductScreenState extends State<EditProductScreen> {
           children: [
             // Non-editable info card
             _buildInfoCard(),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            _buildSection(
+            _buildSectionCard(
               title: 'Basic Details',
-              icon: Icons.edit,
+              icon: Icons.edit_rounded,
               children: [
-                TextFormField(
+                _buildField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Product Name *',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Product Name',
+                  required: true,
                   validator: (value) =>
                       value?.isEmpty ?? true ? 'Product name is required' : null,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _brandNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Brand Name',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Brand Name',
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Description',
                   maxLines: 3,
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            _buildSection(
+            _buildSectionCard(
               title: 'Pricing',
-              icon: Icons.currency_rupee,
+              icon: Icons.currency_rupee_rounded,
               children: [
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
+                      child: _buildField(
                         controller: _mrpController,
-                        decoration: const InputDecoration(
-                          labelText: 'MRP *',
-                          prefixText: '₹ ',
-                          border: OutlineInputBorder(),
-                        ),
+                        label: 'MRP',
+                        prefixText: '₹ ',
+                        required: true,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
@@ -222,13 +241,11 @@ class _EditProductScreenState extends State<EditProductScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: TextFormField(
+                      child: _buildField(
                         controller: _sellingPriceController,
-                        decoration: const InputDecoration(
-                          labelText: 'Selling Price *',
-                          prefixText: '₹ ',
-                          border: OutlineInputBorder(),
-                        ),
+                        label: 'Selling Price',
+                        prefixText: '₹ ',
+                        required: true,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
@@ -246,66 +263,58 @@ class _EditProductScreenState extends State<EditProductScreen> {
                 _buildPriceCalculator(),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            _buildSection(
+            _buildSectionCard(
               title: 'Inventory Management',
-              icon: Icons.inventory,
+              icon: Icons.inventory_rounded,
               children: [
-                TextFormField(
+                _buildField(
                   controller: _stockQuantityController,
-                  decoration: InputDecoration(
-                    labelText: 'Current Stock Quantity',
-                    hintText: 'Leave empty for unlimited',
-                    border: const OutlineInputBorder(),
-                    suffixText: widget.product.baseUnit.name.toUpperCase(),
-                  ),
+                  label: 'Current Stock Quantity',
+                  hint: 'Leave empty for unlimited',
+                  suffixText: widget.product.baseUnit.name.toUpperCase(),
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _maxQuantityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Max Quantity Per Cart',
-                    hintText: 'Leave empty for unlimited',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Max Quantity Per Cart',
+                  hint: 'Leave empty for unlimited',
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 16),
 
-            _buildSection(
+            _buildSectionCard(
               title: 'Product Settings',
-              icon: Icons.settings,
+              icon: Icons.settings_rounded,
               children: [
-                DropdownButtonFormField<ProductStatus>(
-                  initialValue: _status,
-                  decoration: const InputDecoration(
-                    labelText: 'Product Status',
-                    border: OutlineInputBorder(),
-                  ),
+                _buildDropdown<ProductStatus>(
+                  label: 'Product Status',
+                  value: _status,
                   items: ProductStatus.values
                       .map((status) => DropdownMenuItem(
                             value: status,
                             child: Row(
                               children: [
-                                Icon(
-                                  status == ProductStatus.active
-                                      ? Icons.check_circle
-                                      : Icons.cancel,
-                                  color: status == ProductStatus.active
-                                      ? Colors.green
-                                      : Colors.red,
-                                  size: 20,
+                                Container(
+                                  width: 8,
+                                  height: 8,
+                                  decoration: BoxDecoration(
+                                    color: status == ProductStatus.active
+                                        ? AppColors.success
+                                        : AppColors.error,
+                                    shape: BoxShape.circle,
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Text(status.name.toUpperCase()),
                               ],
                             ),
@@ -313,47 +322,58 @@ class _EditProductScreenState extends State<EditProductScreen> {
                       .toList(),
                   onChanged: (value) => setState(() => _status = value!),
                 ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('Age Restricted'),
-                  subtitle: const Text('Requires age verification for purchase'),
+                const SizedBox(height: 4),
+                _buildToggleRow(
+                  label: 'Age Restricted',
+                  subtitle: 'Requires age verification for purchase',
                   value: _isAgeRestricted,
                   onChanged: (value) =>
                       setState(() => _isAgeRestricted = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
-                SwitchListTile(
-                  title: const Text('Scan Allowed'),
-                  subtitle: const Text('Product can be scanned by customers'),
+                _buildToggleRow(
+                  label: 'Scan Allowed',
+                  subtitle: 'Product can be scanned by customers',
                   value: _scanAllowed,
                   onChanged: (value) => setState(() => _scanAllowed = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
               ],
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 24),
 
-            ElevatedButton(
-              onPressed: _isLoading ? null : _updateProduct,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFF10B981),
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+            // Save button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _updateProduct,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.border,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Save Changes',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    )
-                  : const Text(
-                      'Update Product',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         ),
       ),
@@ -362,30 +382,35 @@ class _EditProductScreenState extends State<EditProductScreen> {
 
   Widget _buildInfoCard() {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFFF8F9FA),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              const Icon(Icons.info_outline, size: 20, color: Color(0xFF64748B)),
-              const SizedBox(width: 8),
-              Text(
+              const Icon(Icons.info_outline_rounded,
+                  size: 16, color: AppColors.textSecondary),
+              const SizedBox(width: 6),
+              const Text(
                 'Product Information',
                 style: TextStyle(
-                  fontSize: 14,
+                  fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Colors.grey[700],
+                  color: AppColors.textSecondary,
+                  letterSpacing: 0.2,
                 ),
               ),
             ],
           ),
-          const Divider(height: 24),
+          const SizedBox(height: 12),
+          const Divider(color: AppColors.border, height: 1),
+          const SizedBox(height: 12),
           _buildInfoRow('SKU', widget.product.sku),
           _buildInfoRow('Barcode', widget.product.barcode),
           _buildInfoRow('Category', widget.product.category),
@@ -393,7 +418,10 @@ class _EditProductScreenState extends State<EditProductScreen> {
             'Unit',
             '${widget.product.baseQuantity} ${widget.product.baseUnit.name.toUpperCase()}',
           ),
-          _buildInfoRow('Tax', '${widget.product.taxPercentage}% ${widget.product.isTaxInclusive ? "(Inclusive)" : "(Exclusive)"}'),
+          _buildInfoRow(
+            'Tax',
+            '${widget.product.taxPercentage}% ${widget.product.isTaxInclusive ? "(Inclusive)" : "(Exclusive)"}',
+          ),
         ],
       ),
     );
@@ -406,12 +434,12 @@ class _EditProductScreenState extends State<EditProductScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 100,
+            width: 90,
             child: Text(
               label,
               style: const TextStyle(
                 fontSize: 13,
-                color: Color(0xFF64748B),
+                color: AppColors.textSecondary,
               ),
             ),
           ),
@@ -420,8 +448,8 @@ class _EditProductScreenState extends State<EditProductScreen> {
               value,
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF1A1A1A),
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
@@ -436,10 +464,14 @@ class _EditProductScreenState extends State<EditProductScreen> {
     final discount = mrp > 0 ? ((mrp - selling) / mrp * 100) : 0;
 
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFFF0FDF4),
-        borderRadius: BorderRadius.circular(8),
+        color: AppColors.accentSurface,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(
+          color: AppColors.accent.withValues(alpha: 0.2),
+          width: 1,
+        ),
       ),
       child: Column(
         children: [
@@ -447,33 +479,33 @@ class _EditProductScreenState extends State<EditProductScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Discount:',
-                style: TextStyle(fontSize: 13, color: Color(0xFF059669)),
+                'Discount',
+                style: TextStyle(fontSize: 13, color: AppColors.accent),
               ),
               Text(
                 '${discount.toStringAsFixed(1)}%',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF059669),
+                  color: AppColors.accent,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 6),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
-                'Customer Pays:',
-                style: TextStyle(fontSize: 13, color: Color(0xFF059669)),
+                'Customer Pays',
+                style: TextStyle(fontSize: 13, color: AppColors.accent),
               ),
               Text(
                 '₹${widget.product.finalPrice.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w600,
-                  color: Color(0xFF059669),
+                  color: AppColors.accent,
                 ),
               ),
             ],
@@ -483,31 +515,202 @@ class _EditProductScreenState extends State<EditProductScreen> {
     );
   }
 
-  Widget _buildSection({
+  Widget _buildSectionCard({
     required String title,
     required IconData icon,
     required List<Widget> children,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 20, color: const Color(0xFF10B981)),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.accentSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 17, color: AppColors.accent),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    String? prefixText,
+    String? suffixText,
+    bool required = false,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      style: const TextStyle(
+        fontSize: 15,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        labelText: label + (required ? ' *' : ''),
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w400,
         ),
-        const SizedBox(height: 16),
-        ...children,
-      ],
+        hintText: hint,
+        hintStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textTertiary,
+        ),
+        prefixText: prefixText,
+        suffixText: suffixText,
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required String label,
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return DropdownButtonFormField<T>(
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w400,
+        ),
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+      ),
+      dropdownColor: AppColors.surface,
+      style: const TextStyle(
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      items: items,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildToggleRow({
+    required String label,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.accent,
+            activeTrackColor: AppColors.accentSurface,
+            inactiveThumbColor: AppColors.textTertiary,
+            inactiveTrackColor: AppColors.border,
+          ),
+        ],
+      ),
     );
   }
 }
