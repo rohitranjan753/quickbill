@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
@@ -45,7 +46,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
   List<ReceiptModel> _filterReceipts(List<ReceiptModel> receipts) {
     var filtered = receipts;
 
-    // Apply date filter
     final now = DateTime.now();
     switch (_dateFilter) {
       case SalesFilter.today:
@@ -90,19 +90,16 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         break;
     }
 
-    // Apply payment filter
     if (_paymentFilter != PaymentFilter.all) {
       filtered = filtered
           .where((r) => r.paymentMethod.toLowerCase() == _paymentFilter.name)
           .toList();
     }
 
-    // Apply verified filter
     if (_verifiedOnly) {
       filtered = filtered.where((r) => r.verified).toList();
     }
 
-    // Apply search filter
     if (_searchQuery.isNotEmpty) {
       filtered = filtered.where((r) {
         final query = _searchQuery.toLowerCase();
@@ -119,6 +116,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
@@ -137,30 +135,36 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                 children: [
                   const Text(
                     'Filter Sales',
-                    style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close, color: AppColors.textSecondary),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ],
               ),
               const SizedBox(height: 24),
 
-              // Date Filter
               const Text(
                 'Date Range',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: SalesFilter.values.map((filter) {
-                  return FilterChip(
-                    label: Text(_getFilterLabel(filter)),
-                    selected: _dateFilter == filter,
-                    onSelected: (selected) {
+                  final isSelected = _dateFilter == filter;
+                  return GestureDetector(
+                    onTap: () {
                       setState(() {
                         _dateFilter = filter;
                         if (filter == SalesFilter.custom) {
@@ -169,52 +173,116 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                       });
                       Navigator.pop(context);
                     },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.accent : AppColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? AppColors.accent : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        _getFilterLabel(filter),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
                   );
                 }).toList(),
               ),
 
               const SizedBox(height: 24),
 
-              // Payment Method Filter
               const Text(
                 'Payment Method',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.textPrimary,
+                ),
               ),
               const SizedBox(height: 12),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: PaymentFilter.values.map((filter) {
-                  return FilterChip(
-                    label: Text(filter.name.toUpperCase()),
-                    selected: _paymentFilter == filter,
-                    onSelected: (selected) {
+                  final isSelected = _paymentFilter == filter;
+                  return GestureDetector(
+                    onTap: () {
                       setState(() {
-                        _paymentFilter = selected ? filter : PaymentFilter.all;
+                        _paymentFilter = isSelected ? PaymentFilter.all : filter;
                       });
                       Navigator.pop(context);
                     },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 14,
+                        vertical: 8,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? AppColors.accent : AppColors.surfaceElevated,
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: isSelected ? AppColors.accent : AppColors.border,
+                        ),
+                      ),
+                      child: Text(
+                        filter.name.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: isSelected ? Colors.white : AppColors.textPrimary,
+                        ),
+                      ),
+                    ),
                   );
                 }).toList(),
               ),
 
               const SizedBox(height: 24),
 
-              // Verified Filter
-              SwitchListTile(
-                title: const Text('Verified Sales Only'),
-                subtitle: const Text('Show only verified transactions'),
-                value: _verifiedOnly,
-                onChanged: (value) {
-                  setState(() => _verifiedOnly = value);
-                  Navigator.pop(context);
-                },
-                contentPadding: EdgeInsets.zero,
+              Container(
+                decoration: BoxDecoration(
+                  color: AppColors.surfaceElevated,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: AppColors.border),
+                ),
+                child: SwitchListTile(
+                  title: const Text(
+                    'Verified Sales Only',
+                    style: TextStyle(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w500,
+                      fontSize: 14,
+                    ),
+                  ),
+                  subtitle: const Text(
+                    'Show only verified transactions',
+                    style: TextStyle(
+                      color: AppColors.textSecondary,
+                      fontSize: 12,
+                    ),
+                  ),
+                  value: _verifiedOnly,
+                  activeThumbColor: AppColors.accent,
+                  onChanged: (value) {
+                    setState(() => _verifiedOnly = value);
+                    Navigator.pop(context);
+                  },
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                ),
               ),
 
               const SizedBox(height: 24),
 
-              // Reset Filters
               OutlinedButton.icon(
                 onPressed: () {
                   setState(() {
@@ -226,10 +294,15 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   });
                   Navigator.pop(context);
                 },
-                icon: const Icon(Icons.refresh),
+                icon: const Icon(Icons.refresh, size: 18),
                 label: const Text('Reset All Filters'),
                 style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  foregroundColor: AppColors.textPrimary,
+                  side: const BorderSide(color: AppColors.border),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
                 ),
               ),
             ],
@@ -264,6 +337,16 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       initialDateRange: _customStartDate != null && _customEndDate != null
           ? DateTimeRange(start: _customStartDate!, end: _customEndDate!)
           : null,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.light(
+            primary: AppColors.accent,
+            onPrimary: Colors.white,
+            surface: AppColors.surface,
+          ),
+        ),
+        child: child!,
+      ),
     );
 
     if (picked != null) {
@@ -327,26 +410,66 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Export Sales Data'),
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Text(
+          'Export Sales Data',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             ListTile(
-              leading: const Icon(Icons.table_chart, color: Color(0xFF10B981)),
-              title: const Text('Export as CSV'),
-              subtitle: const Text('Excel-compatible spreadsheet'),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.successSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.table_chart, color: AppColors.success, size: 20),
+              ),
+              title: const Text(
+                'Export as CSV',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: const Text(
+                'Excel-compatible spreadsheet',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsCSV(receipts);
               },
             ),
             ListTile(
-              leading: const Icon(
-                Icons.picture_as_pdf,
-                color: Color(0xFFEF4444),
+              leading: Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: AppColors.errorSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: const Icon(Icons.picture_as_pdf, color: AppColors.error, size: 20),
               ),
-              title: const Text('Export as PDF'),
-              subtitle: const Text('Printable report'),
+              title: const Text(
+                'Export as PDF',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              subtitle: const Text(
+                'Printable report',
+                style: TextStyle(color: AppColors.textSecondary, fontSize: 12),
+              ),
               onTap: () {
                 Navigator.pop(context);
                 _exportAsPDF(receipts);
@@ -357,6 +480,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
+            style: TextButton.styleFrom(foregroundColor: AppColors.textSecondary),
             child: const Text('Cancel'),
           ),
         ],
@@ -371,7 +495,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       final excel = excel_lib.Excel.createExcel();
       final sheet = excel['Sales Report'];
 
-      // Add headers
       sheet.appendRow([
         excel_lib.TextCellValue('Date'),
         excel_lib.TextCellValue('Receipt ID'),
@@ -382,7 +505,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         excel_lib.TextCellValue('Product Names'),
       ]);
 
-      // Add data rows
       for (final receipt in receipts) {
         final productNames = receipt.items
             .map((item) => '${item.product.name} (${item.quantity}x)')
@@ -401,7 +523,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         ]);
       }
 
-      // Save file
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(DateTime.now());
       final filePath = '${directory.path}/sales_report_$timestamp.xlsx';
@@ -411,7 +532,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         final file = File(filePath);
         await file.writeAsBytes(fileBytes);
 
-        // Share the file
         await Share.shareXFiles(
           [XFile(filePath)],
           subject: 'Sales Report - $timestamp',
@@ -422,7 +542,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('CSV exported successfully'),
-              backgroundColor: Color(0xFF10B981),
+              backgroundColor: AppColors.success,
             ),
           );
         }
@@ -449,7 +569,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       final dateFormat = DateFormat('MMM dd, yyyy HH:mm');
       final now = DateTime.now();
 
-      // Split receipts into chunks for pagination
       const itemsPerPage = 20;
       final totalPages = (receipts.length / itemsPerPage).ceil();
 
@@ -464,7 +583,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
             build: (context) => pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                // Header
                 pw.Row(
                   mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                   children: [
@@ -493,7 +611,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                 ),
                 pw.SizedBox(height: 20),
 
-                // Summary (only on first page)
                 if (pageIndex == 0) ...[
                   pw.Container(
                     padding: const pw.EdgeInsets.all(12),
@@ -550,7 +667,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   pw.SizedBox(height: 20),
                 ],
 
-                // Table
                 pw.Table(
                   border: pw.TableBorder.all(color: PdfColors.grey300),
                   columnWidths: {
@@ -561,7 +677,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                     4: const pw.FlexColumnWidth(1),
                   },
                   children: [
-                    // Header row
                     pw.TableRow(
                       decoration: const pw.BoxDecoration(
                         color: PdfColors.grey200,
@@ -574,7 +689,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                         _buildTableHeader('Items'),
                       ],
                     ),
-                    // Data rows
                     ...pageReceipts.map((receipt) {
                       return pw.TableRow(
                         children: [
@@ -598,7 +712,6 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         );
       }
 
-      // Save and share
       final directory = await getApplicationDocumentsDirectory();
       final timestamp = DateFormat('yyyyMMdd_HHmmss').format(now);
       final filePath =
@@ -618,7 +731,7 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('PDF exported successfully'),
-            backgroundColor: Color(0xFF10B981),
+            backgroundColor: AppColors.success,
           ),
         );
       }
@@ -671,65 +784,42 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: Text('Not authenticated')),
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: Text(
+                'Not authenticated',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
           );
         }
 
         final user = authState.user;
         if (user.storeId == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Sales History')),
+            backgroundColor: AppColors.background,
+            appBar: _buildAppBar(null, null),
             body: const Center(
-              child: Text('No store associated with this account'),
+              child: Text(
+                'No store associated with this account',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
           );
         }
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
-          appBar: AppBar(
-            title: const Text('Sales History'),
-            elevation: 0,
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.filter_list),
-                tooltip: 'Filters',
-                onPressed: _showFilterDialog,
-              ),
-              StreamBuilder<List<ReceiptModel>>(
-                stream: _firestoreService.getStoreSales(user.storeId!),
-                builder: (context, snapshot) {
-                  return IconButton(
-                    icon: _isExporting
-                        ? const SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Colors.white,
-                              ),
-                            ),
-                          )
-                        : const Icon(Icons.download),
-                    tooltip: 'Export',
-                    onPressed: _isExporting
-                        ? null
-                        : () {
-                            final receipts = snapshot.data ?? [];
-                            final filteredReceipts = _filterReceipts(receipts);
-                            _showExportDialog(filteredReceipts);
-                          },
-                  );
-                },
-              ),
-            ],
-          ),
+          backgroundColor: AppColors.background,
+          appBar: _buildAppBar(user, null),
           body: StreamBuilder<List<ReceiptModel>>(
             stream: _firestoreService.getStoreSales(user.storeId!),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
@@ -737,9 +827,23 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: AppColors.errorSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.error_outline,
+                          size: 40,
+                          color: AppColors.error,
+                        ),
+                      ),
                       const SizedBox(height: 16),
-                      Text('Error: ${snapshot.error}'),
+                      Text(
+                        'Error: ${snapshot.error}',
+                        style: const TextStyle(color: AppColors.textSecondary),
+                      ),
                     ],
                   ),
                 );
@@ -750,34 +854,10 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
               final stats = _calculateStats(filteredReceipts);
 
               if (allReceipts.isEmpty) {
-                return Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.receipt_long_outlined,
-                        size: 120,
-                        color: Colors.grey[300],
-                      ),
-                      const SizedBox(height: 24),
-                      Text(
-                        'No Sales Yet',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        'Sales transactions will appear here',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Colors.grey[500],
-                        ),
-                      ),
-                    ],
-                  ),
+                return _buildEmptyState(
+                  icon: Icons.receipt_long_outlined,
+                  title: 'No Sales Yet',
+                  subtitle: 'Sales transactions will appear here',
                 );
               }
 
@@ -785,16 +865,32 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                 children: [
                   // Search Bar
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.white,
+                    color: AppColors.surface,
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
                     child: TextField(
                       controller: _searchController,
+                      style: const TextStyle(
+                        color: AppColors.textPrimary,
+                        fontSize: 14,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Search by product, amount, receipt ID...',
-                        prefixIcon: const Icon(Icons.search),
+                        hintStyle: const TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 14,
+                        ),
+                        prefixIcon: const Icon(
+                          Icons.search_rounded,
+                          color: AppColors.textTertiary,
+                          size: 20,
+                        ),
                         suffixIcon: _searchQuery.isNotEmpty
                             ? IconButton(
-                                icon: const Icon(Icons.clear),
+                                icon: const Icon(
+                                  Icons.clear_rounded,
+                                  color: AppColors.textTertiary,
+                                  size: 18,
+                                ),
                                 onPressed: () {
                                   _searchController.clear();
                                   setState(() => _searchQuery = '');
@@ -802,10 +898,23 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                               )
                             : null,
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.border),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
                         ),
                         filled: true,
-                        fillColor: const Color(0xFFF8F9FA),
+                        fillColor: AppColors.surfaceElevated,
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                       ),
                       onChanged: (value) {
                         setState(() => _searchQuery = value);
@@ -813,29 +922,30 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                     ),
                   ),
 
-                  // Stats Cards
+                  // Stats Summary — white card + border
                   Container(
-                    padding: const EdgeInsets.all(16),
-                    color: Colors.white,
+                    color: AppColors.surface,
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     child: Column(
                       children: [
                         Row(
                           children: [
                             Expanded(
                               child: _buildStatCard(
-                                icon: Icons.currency_rupee,
+                                icon: Icons.currency_rupee_rounded,
                                 label: 'Total Sales',
-                                value: '₹${stats['totalSales'].toStringAsFixed(2)}',
-                                color: const Color(0xFF10B981),
+                                value:
+                                    '₹${stats['totalSales'].toStringAsFixed(2)}',
+                                stripColor: AppColors.accent,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildStatCard(
-                                icon: Icons.receipt_long,
+                                icon: Icons.receipt_long_rounded,
                                 label: 'Transactions',
                                 value: '${stats['totalTransactions']}',
-                                color: const Color(0xFF3B82F6),
+                                stripColor: AppColors.info,
                               ),
                             ),
                           ],
@@ -845,19 +955,20 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                           children: [
                             Expanded(
                               child: _buildStatCard(
-                                icon: Icons.trending_up,
+                                icon: Icons.trending_up_rounded,
                                 label: 'Avg Transaction',
-                                value: '₹${stats['averageTransaction'].toStringAsFixed(2)}',
-                                color: const Color(0xFF8B5CF6),
+                                value:
+                                    '₹${stats['averageTransaction'].toStringAsFixed(2)}',
+                                stripColor: AppColors.success,
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildStatCard(
-                                icon: Icons.shopping_bag,
+                                icon: Icons.shopping_bag_outlined,
                                 label: 'Items Sold',
                                 value: '${stats['totalItems']}',
-                                color: const Color(0xFFF59E0B),
+                                stripColor: AppColors.warning,
                               ),
                             ),
                           ],
@@ -869,18 +980,12 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   // Payment Breakdown
                   if (filteredReceipts.isNotEmpty)
                     Container(
-                      margin: const EdgeInsets.all(16),
+                      margin: const EdgeInsets.fromLTRB(16, 0, 16, 0),
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.04),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
+                        color: AppColors.surface,
+                        borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -888,14 +993,27 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                           const Text(
                             'Payment Method Breakdown',
                             style: TextStyle(
-                              fontSize: 16,
+                              fontSize: 14,
                               fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                             ),
                           ),
-                          const SizedBox(height: 16),
-                          _buildPaymentRow('Cash', stats['cashSales'], Icons.money),
-                          _buildPaymentRow('Card', stats['cardSales'], Icons.credit_card),
-                          _buildPaymentRow('UPI', stats['upiSales'], Icons.qr_code_scanner),
+                          const SizedBox(height: 14),
+                          _buildPaymentRow(
+                            'Cash',
+                            stats['cashSales'],
+                            Icons.money_rounded,
+                          ),
+                          _buildPaymentRow(
+                            'Card',
+                            stats['cardSales'],
+                            Icons.credit_card_rounded,
+                          ),
+                          _buildPaymentRow(
+                            'UPI',
+                            stats['upiSales'],
+                            Icons.qr_code_scanner_rounded,
+                          ),
                         ],
                       ),
                     ),
@@ -905,37 +1023,52 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                       _paymentFilter != PaymentFilter.all ||
                       _verifiedOnly)
                     Container(
+                      margin: const EdgeInsets.fromLTRB(16, 12, 16, 0),
                       padding: const EdgeInsets.symmetric(
-                        horizontal: 16,
-                        vertical: 8,
+                        horizontal: 14,
+                        vertical: 10,
                       ),
-                      color: const Color(0xFFFEF3C7),
+                      decoration: BoxDecoration(
+                        color: AppColors.accentSurface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: AppColors.accent.withValues(alpha: 0.3),
+                        ),
+                      ),
                       child: Row(
                         children: [
                           const Icon(
-                            Icons.filter_list,
+                            Icons.filter_list_rounded,
                             size: 16,
-                            color: Color(0xFFF59E0B),
+                            color: AppColors.accent,
                           ),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'Filters active: ${filteredReceipts.length} of ${allReceipts.length} sales',
+                              'Filters active · ${filteredReceipts.length} of ${allReceipts.length} sales',
                               style: const TextStyle(
                                 fontSize: 13,
-                                color: Color(0xFF92400E),
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w500,
                               ),
                             ),
                           ),
-                          TextButton(
-                            onPressed: () {
+                          GestureDetector(
+                            onTap: () {
                               setState(() {
                                 _dateFilter = SalesFilter.all;
                                 _paymentFilter = PaymentFilter.all;
                                 _verifiedOnly = false;
                               });
                             },
-                            child: const Text('Clear', style: TextStyle(fontSize: 13)),
+                            child: const Text(
+                              'Clear',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: AppColors.accent,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -944,33 +1077,10 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
                   // Sales List
                   Expanded(
                     child: filteredReceipts.isEmpty
-                        ? Center(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.search_off,
-                                  size: 64,
-                                  color: Colors.grey[400],
-                                ),
-                                const SizedBox(height: 16),
-                                Text(
-                                  'No sales found',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Try adjusting your filters',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[500],
-                                  ),
-                                ),
-                              ],
-                            ),
+                        ? _buildEmptyState(
+                            icon: Icons.search_off_rounded,
+                            title: 'No sales found',
+                            subtitle: 'Try adjusting your filters',
                           )
                         : ListView.builder(
                             padding: const EdgeInsets.all(16),
@@ -990,43 +1100,154 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
     );
   }
 
+  PreferredSizeWidget _buildAppBar(dynamic user, dynamic snapshot) {
+    return AppBar(
+      backgroundColor: AppColors.surface,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      title: const Text(
+        'Sales History',
+        style: TextStyle(
+          color: AppColors.textPrimary,
+          fontWeight: FontWeight.w700,
+          fontSize: 17,
+        ),
+      ),
+      iconTheme: const IconThemeData(color: AppColors.textPrimary),
+      bottom: PreferredSize(
+        preferredSize: const Size.fromHeight(1),
+        child: Container(height: 1, color: AppColors.border),
+      ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.tune_rounded, color: AppColors.textPrimary),
+          tooltip: 'Filters',
+          onPressed: _showFilterDialog,
+        ),
+        if (user != null && user.storeId != null)
+          StreamBuilder<List<ReceiptModel>>(
+            stream: _firestoreService.getStoreSales(user.storeId!),
+            builder: (context, snapshot) {
+              return IconButton(
+                icon: _isExporting
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            AppColors.textPrimary,
+                          ),
+                        ),
+                      )
+                    : const Icon(
+                        Icons.download_rounded,
+                        color: AppColors.textPrimary,
+                      ),
+                tooltip: 'Export',
+                onPressed: _isExporting
+                    ? null
+                    : () {
+                        final receipts = snapshot.data ?? [];
+                        final filteredReceipts = _filterReceipts(receipts);
+                        _showExportDialog(filteredReceipts);
+                      },
+              );
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _buildEmptyState({
+    required IconData icon,
+    required String title,
+    required String subtitle,
+  }) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppColors.surfaceElevated,
+              shape: BoxShape.circle,
+              border: Border.all(color: AppColors.border),
+            ),
+            child: Icon(icon, size: 48, color: AppColors.textTertiary),
+          ),
+          const SizedBox(height: 20),
+          Text(
+            title,
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            subtitle,
+            style: const TextStyle(
+              fontSize: 14,
+              color: AppColors.textSecondary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildStatCard({
     required IconData icon,
     required String label,
     required String value,
-    required Color color,
+    required Color stripColor,
   }) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.border),
       ),
-      child: Column(
+      child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 24),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: color,
+          // Colored icon badge
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: stripColor.withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(8),
             ),
+            child: Icon(icon, color: stripColor, size: 18),
           ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+          const SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.textPrimary,
+                    letterSpacing: -0.3,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppColors.textSecondary,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -1042,29 +1263,31 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(7),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1F5F9),
+              color: AppColors.surfaceElevated,
               borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Icon(icon, size: 20, color: const Color(0xFF64748B)),
+            child: Icon(icon, size: 16, color: AppColors.textSecondary),
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               method,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 fontWeight: FontWeight.w500,
+                color: AppColors.textPrimary,
               ),
             ),
           ),
           Text(
             '₹${amount.toStringAsFixed(2)}',
             style: const TextStyle(
-              fontSize: 16,
+              fontSize: 15,
               fontWeight: FontWeight.w700,
-              color: Color(0xFF10B981),
+              color: AppColors.textPrimary,
             ),
           ),
         ],
@@ -1074,25 +1297,20 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
 
   Widget _buildReceiptCard(ReceiptModel receipt) {
     final dateFormat = DateFormat('MMM dd, yyyy • hh:mm a');
-    
-    Color paymentColor;
+
     IconData paymentIcon;
     switch (receipt.paymentMethod.toLowerCase()) {
       case 'cash':
-        paymentColor = const Color(0xFF10B981);
-        paymentIcon = Icons.money;
+        paymentIcon = Icons.money_rounded;
         break;
       case 'card':
-        paymentColor = const Color(0xFF3B82F6);
-        paymentIcon = Icons.credit_card;
+        paymentIcon = Icons.credit_card_rounded;
         break;
       case 'upi':
-        paymentColor = const Color(0xFF8B5CF6);
-        paymentIcon = Icons.qr_code_scanner;
+        paymentIcon = Icons.qr_code_scanner_rounded;
         break;
       default:
-        paymentColor = const Color(0xFF64748B);
-        paymentIcon = Icons.payment;
+        paymentIcon = Icons.payment_rounded;
     }
 
     return GestureDetector(
@@ -1106,138 +1324,124 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
       },
       child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.surface,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: receipt.verified
-                ? const Color(0xFF10B981).withValues(alpha: 0.3)
-                : const Color(0xFFE2E8F0),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
+          border: Border.all(color: AppColors.border),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        paymentColor.withValues(alpha: 0.2),
-                        paymentColor.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(paymentIcon, color: paymentColor, size: 24),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        '₹${receipt.totalAmount.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w800,
-                          color: Color(0xFF0F172A),
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        dateFormat.format(receipt.purchaseDate),
-                        style: TextStyle(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  // Receipt icon in accent surface
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 6,
-                    ),
+                    padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                    color: receipt.verified
-                        ? Color(0xFFECFDF5)
-                        : Color(0xFFFEF3F2),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                      color: receipt.verified
-                          ? Color(0xFF10B981).withValues(alpha: 0.3)
-                          : Color(0xFFB91C1C),
-                      ),
+                      color: AppColors.accentSurface,
+                      borderRadius: BorderRadius.circular(12),
                     ),
-                  child: Row(
-                      mainAxisSize: MainAxisSize.min,
+                    child: const Icon(
+                      Icons.receipt_long_rounded,
+                      color: AppColors.accent,
+                      size: 22,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                      receipt.verified
-                          ? Icon(
-                          Icons.verified,
-                          size: 14,
-                          color: Color(0xFF10B981),
-                            )
-                          : Icon(
-                              Icons.hourglass_top,
-                              size: 14,
-                              color: Color(0xFFB91C1C),
-                        ),
-                        SizedBox(width: 4),
+                        // Amount — near-black bold
                         Text(
-                        receipt.verified ? 'VERIFIED' : 'PENDING',
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                          color: receipt.verified
-                              ? Color(0xFF047857)
-                              : Color(0xFFB91C1C),
-                            letterSpacing: 0.5,
+                          '₹${receipt.totalAmount.toStringAsFixed(2)}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.textPrimary,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          dateFormat.format(receipt.purchaseDate),
+                          style: const TextStyle(
+                            fontSize: 12,
+                            color: AppColors.textSecondary,
                           ),
                         ),
                       ],
                     ),
                   ),
-              ],
+                  // Verified badge
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: receipt.verified
+                          ? AppColors.successSurface
+                          : AppColors.errorSurface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: receipt.verified
+                            ? AppColors.success.withValues(alpha: 0.3)
+                            : AppColors.error.withValues(alpha: 0.3),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          receipt.verified
+                              ? Icons.verified_rounded
+                              : Icons.hourglass_top_rounded,
+                          size: 12,
+                          color: receipt.verified ? AppColors.success : AppColors.error,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          receipt.verified ? 'VERIFIED' : 'PENDING',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            color: receipt.verified
+                                ? AppColors.success
+                                : AppColors.error,
+                            letterSpacing: 0.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
-            Container(
-              height: 1,
-              color: Colors.grey[200],
-            ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                _buildInfoChip(
-                  Icons.shopping_bag,
-                  '${receipt.items.length} items',
-                  const Color(0xFF64748B),
-                ),
-                const SizedBox(width: 12),
-                _buildInfoChip(
-                  paymentIcon,
-                  receipt.paymentMethod.toUpperCase(),
-                  paymentColor,
-                ),
-                const Spacer(),
-                Icon(
-                  Icons.arrow_forward_ios,
-                  size: 14,
-                  color: Colors.grey[400],
-                ),
-              ],
+            Container(height: 1, color: AppColors.border),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              child: Row(
+                children: [
+                  _buildInfoChip(
+                    Icons.shopping_bag_outlined,
+                    '${receipt.items.length} items',
+                  ),
+                  const SizedBox(width: 8),
+                  _buildInfoChip(
+                    paymentIcon,
+                    receipt.paymentMethod.toUpperCase(),
+                  ),
+                  const Spacer(),
+                  const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 12,
+                    color: AppColors.textTertiary,
+                  ),
+                ],
+              ),
             ),
           ],
         ),
@@ -1245,24 +1449,25 @@ class _SalesHistoryScreenState extends State<SalesHistoryScreen> {
     );
   }
 
-  Widget _buildInfoChip(IconData icon, String label, Color color) {
+  Widget _buildInfoChip(IconData icon, String label) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AppColors.surfaceElevated,
         borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
+          Icon(icon, size: 13, color: AppColors.textSecondary),
+          const SizedBox(width: 5),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: color,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w500,
+              color: AppColors.textSecondary,
             ),
           ),
         ],

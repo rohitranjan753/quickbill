@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
@@ -27,84 +28,144 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
       builder: (context) => Padding(
         padding: EdgeInsets.only(
           bottom: MediaQuery.of(context).viewInsets.bottom,
-          left: 16,
-          right: 16,
-          top: 16,
+          left: 20,
+          right: 20,
+          top: 20,
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            // Handle
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
             Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
+                  width: 40,
+                  height: 40,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(8),
+                    color: AppColors.accentSurface,
+                    borderRadius: BorderRadius.circular(10),
                   ),
                   child: const Icon(
-                    Icons.person_add,
-                    color: Color(0xFF10B981),
+                    Icons.person_add_rounded,
+                    color: AppColors.accent,
+                    size: 20,
                   ),
                 ),
                 const SizedBox(width: 12),
                 const Text(
                   'Add User to Store',
                   style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
                 const Spacer(),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close),
+                  icon: const Icon(Icons.close_rounded,
+                      color: AppColors.textSecondary, size: 20),
                 ),
               ],
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 20),
             TextField(
               controller: _emailController,
+              style: const TextStyle(
+                fontSize: 15,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 labelText: 'Gmail ID',
-                hintText: 'user@gmail.com',
-                prefixIcon: const Icon(Icons.email),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                labelStyle: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
                 ),
+                hintText: 'user@gmail.com',
+                hintStyle: const TextStyle(color: AppColors.textTertiary),
+                prefixIcon: const Icon(Icons.email_outlined,
+                    color: AppColors.textTertiary, size: 20),
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: AppColors.background,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border, width: 1),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                ),
               ),
               keyboardType: TextInputType.emailAddress,
               autofocus: true,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 14),
             DropdownButtonFormField<UserRole>(
-              initialValue: _selectedRole,
+              value: _selectedRole,
+              style: const TextStyle(
+                fontSize: 14,
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w500,
+              ),
               decoration: InputDecoration(
                 labelText: 'Role',
-                prefixIcon: const Icon(Icons.badge),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
+                labelStyle: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
                 ),
+                prefixIcon: const Icon(Icons.badge_outlined,
+                    color: AppColors.textTertiary, size: 20),
                 filled: true,
-                fillColor: Colors.grey[100],
+                fillColor: AppColors.background,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border, width: 1),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.border, width: 1),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+                ),
               ),
+              dropdownColor: AppColors.surface,
               items: const [
                 DropdownMenuItem(
                   value: UserRole.storeAdmin,
                   child: Row(
                     children: [
-                      Icon(Icons.admin_panel_settings, 
-                           size: 20, 
-                           color: Color(0xFF10B981)),
+                      Icon(Icons.admin_panel_settings_rounded,
+                          size: 18, color: AppColors.accent),
                       SizedBox(width: 8),
                       Text('Store Admin'),
                     ],
@@ -114,9 +175,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   value: UserRole.guard,
                   child: Row(
                     children: [
-                      Icon(Icons.security, 
-                           size: 20, 
-                           color: Color(0xFF3B82F6)),
+                      Icon(Icons.security_rounded, size: 18, color: Color(0xFF6B6B7A)),
                       SizedBox(width: 8),
                       Text('Guard'),
                     ],
@@ -131,21 +190,30 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                 }
               },
             ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () => _addUser(storeId),
-              icon: const Icon(Icons.person_add),
-              label: const Text('Add User'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+            const SizedBox(height: 20),
+            SizedBox(
+              height: 50,
+              child: ElevatedButton.icon(
+                onPressed: () => _addUser(storeId),
+                icon: const Icon(Icons.person_add_rounded, size: 18),
+                label: const Text(
+                  'Add User',
+                  style: TextStyle(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-                backgroundColor: const Color(0xFF10B981),
-                foregroundColor: Colors.white,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -154,7 +222,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
   Future<void> _addUser(String storeId) async {
     final email = _emailController.text.trim();
-    
+
     if (email.isEmpty || !email.contains('@')) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Please enter a valid email')),
@@ -172,18 +240,25 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       if (mounted) {
         Navigator.pop(context);
         _emailController.clear();
-        _selectedRole = UserRole.guard; // Reset to default
+        _selectedRole = UserRole.guard;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('User $email added successfully'),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding user: $e')),
+          SnackBar(
+            content: Text('Error adding user: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     }
@@ -192,47 +267,94 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   void _showEditUserDialog(UserModel user) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Edit User'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            ListTile(
-              title: const Text('Email'),
-              subtitle: Text(user.email),
-            ),
-            const SizedBox(height: 8),
-            DropdownButtonFormField<UserRole>(
-              initialValue: user.role,
-              decoration: const InputDecoration(
-                labelText: 'Role',
-                prefixIcon: Icon(Icons.badge),
-              ),
-              items: const [
-                DropdownMenuItem(
-                  value: UserRole.storeAdmin,
-                  child: Text('Store Admin'),
-                ),
-                DropdownMenuItem(
-                  value: UserRole.guard,
-                  child: Text('Guard'),
-                ),
-              ],
-              onChanged: (value) {
-                if (value != null) {
-                  _updateUserRole(user.uid, value);
-                  Navigator.pop(context);
-                }
-              },
-            ),
-          ],
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Change Role',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                user.email,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: AppColors.textSecondary,
+                ),
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<UserRole>(
+                value: user.role,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textPrimary,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Role',
+                  labelStyle: const TextStyle(
+                    fontSize: 14,
+                    color: AppColors.textSecondary,
+                  ),
+                  filled: true,
+                  fillColor: AppColors.background,
+                  contentPadding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.border, width: 1),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: const BorderSide(color: AppColors.border, width: 1),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide:
+                        const BorderSide(color: AppColors.accent, width: 1.5),
+                  ),
+                ),
+                dropdownColor: AppColors.surface,
+                items: const [
+                  DropdownMenuItem(
+                    value: UserRole.storeAdmin,
+                    child: Text('Store Admin'),
+                  ),
+                  DropdownMenuItem(
+                    value: UserRole.guard,
+                    child: Text('Guard'),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    _updateUserRole(user.uid, value);
+                    Navigator.pop(context);
+                  }
+                },
+              ),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(
+                  'Cancel',
+                  style: TextStyle(color: AppColors.textSecondary),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -242,9 +364,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       await _firestoreService.updateStoreUserRole(userId, role);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User role updated'),
-            backgroundColor: Colors.green,
+          SnackBar(
+            content: const Text('User role updated'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -266,7 +392,11 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
             content: Text(
               user.isActive ? 'User deactivated' : 'User activated',
             ),
-            backgroundColor: Colors.green,
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -282,20 +412,87 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
   Future<void> _removeUser(UserModel user) async {
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Remove User'),
-        content: Text('Are you sure you want to remove ${user.email}?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 60,
+                height: 60,
+                decoration: BoxDecoration(
+                  color: AppColors.errorSurface,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.delete_outline_rounded,
+                    color: AppColors.error, size: 28),
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Remove User',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Are you sure you want to remove ${user.email}?',
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: AppColors.textSecondary,
+                        side: const BorderSide(color: AppColors.border, width: 1),
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.error,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: const Text(
+                        'Remove',
+                        style: TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, true),
-            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text('Remove'),
-          ),
-        ],
+        ),
       ),
     );
 
@@ -304,9 +501,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         await _firestoreService.removeUserFromStore(user.uid);
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('User removed'),
-              backgroundColor: Colors.green,
+            SnackBar(
+              content: const Text('User removed'),
+              backgroundColor: AppColors.success,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }
@@ -326,7 +527,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            backgroundColor: AppColors.background,
+            body: Center(
+              child: CircularProgressIndicator(
+                color: AppColors.accent,
+                strokeWidth: 2.5,
+              ),
+            ),
           );
         }
 
@@ -335,33 +542,74 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
 
         if (storeId == null) {
           return Scaffold(
-            appBar: AppBar(title: const Text('User Management')),
+            backgroundColor: AppColors.background,
+            appBar: AppBar(
+              title: const Text(
+                'Team',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w700,
+                  fontSize: 18,
+                ),
+              ),
+              backgroundColor: AppColors.surface,
+              elevation: 0,
+              iconTheme: const IconThemeData(color: AppColors.textPrimary),
+            ),
             body: const Center(
-              child: Text('No store associated with your account'),
+              child: Text(
+                'No store associated with your account',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
             ),
           );
         }
 
         return Scaffold(
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('User Management'),
+            title: const Text(
+              'Team',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+            backgroundColor: AppColors.surface,
             elevation: 0,
+            iconTheme: const IconThemeData(color: AppColors.textPrimary),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Container(height: 1, color: AppColors.border),
+            ),
           ),
-          floatingActionButton: FloatingActionButton.extended(
+          floatingActionButton: FloatingActionButton(
             onPressed: () => _showAddUserBottomSheet(storeId),
-            icon: const Icon(Icons.person_add),
-            label: const Text('Add User'),
-            backgroundColor: const Color(0xFF10B981),
+            backgroundColor: AppColors.accent,
+            foregroundColor: Colors.white,
+            elevation: 2,
+            child: const Icon(Icons.person_add_rounded),
           ),
           body: StreamBuilder<List<UserModel>>(
             stream: _firestoreService.getStoreUsers(storeId),
             builder: (context, snapshot) {
               if (snapshot.connectionState == ConnectionState.waiting) {
-                return const Center(child: CircularProgressIndicator());
+                return const Center(
+                  child: CircularProgressIndicator(
+                    color: AppColors.accent,
+                    strokeWidth: 2.5,
+                  ),
+                );
               }
 
               if (snapshot.hasError) {
-                return Center(child: Text('Error: ${snapshot.error}'));
+                return Center(
+                  child: Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
+                );
               }
 
               final users = snapshot.data ?? [];
@@ -371,25 +619,34 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(
-                        Icons.people_outline,
-                        size: 80,
-                        color: Colors.grey[400],
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: AppColors.accentSurface,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.people_outline_rounded,
+                          size: 40,
+                          color: AppColors.accent,
+                        ),
                       ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'No users yet',
+                      const SizedBox(height: 20),
+                      const Text(
+                        'No team members yet',
                         style: TextStyle(
                           fontSize: 18,
-                          color: Colors.grey[600],
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 8),
-                      Text(
+                      const Text(
                         'Add users to manage your store',
                         style: TextStyle(
                           fontSize: 14,
-                          color: Colors.grey[500],
+                          color: AppColors.textSecondary,
                         ),
                       ),
                     ],
@@ -404,30 +661,61 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                   final user = users[index];
                   final isCurrentUser = user.uid == currentUser.uid;
 
-                  return Card(
-                    margin: const EdgeInsets.only(bottom: 12),
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 10),
+                    decoration: BoxDecoration(
+                      color: AppColors.surface,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppColors.border, width: 1),
+                    ),
                     child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor: user.isActive
-                            ? const Color(0xFF10B981)
-                            : Colors.grey,
+                      contentPadding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 8,
+                      ),
+                      leading: Container(
+                        width: 44,
+                        height: 44,
+                        decoration: BoxDecoration(
+                          color: user.isActive
+                              ? AppColors.accentSurface
+                              : AppColors.surfaceElevated,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                         child: user.photoURL != null
-                            ? ClipOval(
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(12),
                                 child: Image.network(
                                   user.photoURL!,
-                                  width: 40,
-                                  height: 40,
+                                  width: 44,
+                                  height: 44,
                                   fit: BoxFit.cover,
                                   errorBuilder: (context, error, stack) =>
-                                      Text(
-                                    user.displayName[0].toUpperCase(),
-                                    style: const TextStyle(color: Colors.white),
+                                      Center(
+                                    child: Text(
+                                      user.displayName[0].toUpperCase(),
+                                      style: TextStyle(
+                                        color: user.isActive
+                                            ? AppColors.accent
+                                            : AppColors.textTertiary,
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 16,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               )
-                            : Text(
-                                user.displayName[0].toUpperCase(),
-                                style: const TextStyle(color: Colors.white),
+                            : Center(
+                                child: Text(
+                                  user.displayName[0].toUpperCase(),
+                                  style: TextStyle(
+                                    color: user.isActive
+                                        ? AppColors.accent
+                                        : AppColors.textTertiary,
+                                    fontWeight: FontWeight.w700,
+                                    fontSize: 16,
+                                  ),
+                                ),
                               ),
                       ),
                       title: Row(
@@ -437,7 +725,10 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               user.displayName,
                               style: TextStyle(
                                 fontWeight: FontWeight.w600,
-                                color: user.isActive ? null : Colors.grey,
+                                fontSize: 15,
+                                color: user.isActive
+                                    ? AppColors.textPrimary
+                                    : AppColors.textTertiary,
                               ),
                             ),
                           ),
@@ -445,37 +736,37 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
-                                vertical: 4,
+                                vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.orange[100],
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.warningSurface,
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
                                 'Pending',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.orange,
+                                  color: AppColors.warning,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ),
                           if (isCurrentUser)
                             Container(
-                              margin: const EdgeInsets.only(left: 8),
+                              margin: const EdgeInsets.only(left: 6),
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 8,
-                                vertical: 4,
+                                vertical: 3,
                               ),
                               decoration: BoxDecoration(
-                                color: Colors.blue[100],
-                                borderRadius: BorderRadius.circular(12),
+                                color: AppColors.accentSurface,
+                                borderRadius: BorderRadius.circular(6),
                               ),
                               child: const Text(
                                 'You',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  color: Colors.blue,
+                                  color: AppColors.accent,
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
@@ -485,19 +776,27 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(user.email),
-                          const SizedBox(height: 4),
+                          const SizedBox(height: 3),
                           Text(
-                            _getRoleDisplayName(user.role),
-                            style: TextStyle(
-                              color: _getRoleColor(user.role),
-                              fontWeight: FontWeight.w500,
+                            user.email,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: AppColors.textSecondary,
                             ),
                           ),
+                          const SizedBox(height: 6),
+                          _buildRoleBadge(user.role),
                         ],
                       ),
                       trailing: PopupMenuButton<String>(
                         enabled: !isCurrentUser,
+                        icon: const Icon(Icons.more_horiz_rounded,
+                            color: AppColors.textTertiary),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          side: const BorderSide(color: AppColors.border, width: 1),
+                        ),
+                        color: AppColors.surface,
                         onSelected: (value) {
                           if (value == 'edit') {
                             _showEditUserDialog(user);
@@ -512,9 +811,13 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             value: 'edit',
                             child: Row(
                               children: [
-                                Icon(Icons.edit, size: 20),
-                                SizedBox(width: 8),
-                                Text('Change Role'),
+                                Icon(Icons.edit_rounded,
+                                    size: 18, color: AppColors.textSecondary),
+                                SizedBox(width: 10),
+                                Text(
+                                  'Change Role',
+                                  style: TextStyle(color: AppColors.textPrimary),
+                                ),
                               ],
                             ),
                           ),
@@ -524,13 +827,15 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                               children: [
                                 Icon(
                                   user.isActive
-                                      ? Icons.block
-                                      : Icons.check_circle,
-                                  size: 20,
+                                      ? Icons.block_rounded
+                                      : Icons.check_circle_outline_rounded,
+                                  size: 18,
+                                  color: AppColors.textSecondary,
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 10),
                                 Text(
                                   user.isActive ? 'Deactivate' : 'Activate',
+                                  style: const TextStyle(color: AppColors.textPrimary),
                                 ),
                               ],
                             ),
@@ -539,11 +844,12 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                             value: 'remove',
                             child: Row(
                               children: [
-                                Icon(Icons.delete, size: 20, color: Colors.red),
-                                SizedBox(width: 8),
+                                Icon(Icons.delete_outline_rounded,
+                                    size: 18, color: AppColors.error),
+                                SizedBox(width: 10),
                                 Text(
                                   'Remove',
-                                  style: TextStyle(color: Colors.red),
+                                  style: TextStyle(color: AppColors.error),
                                 ),
                               ],
                             ),
@@ -561,25 +867,43 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     );
   }
 
-  String _getRoleDisplayName(UserRole role) {
-    switch (role) {
-      case UserRole.storeAdmin:
-        return 'Store Admin';
-      case UserRole.guard:
-        return 'Guard';
-      case UserRole.customer:
-        return 'Customer';
-    }
-  }
+  Widget _buildRoleBadge(UserRole role) {
+    Color bg;
+    Color textColor;
+    String label;
 
-  Color _getRoleColor(UserRole role) {
     switch (role) {
       case UserRole.storeAdmin:
-        return const Color(0xFF10B981);
+        bg = AppColors.accentSurface;
+        textColor = AppColors.accent;
+        label = 'Store Admin';
+        break;
       case UserRole.guard:
-        return const Color(0xFF3B82F6);
+        bg = AppColors.surfaceElevated;
+        textColor = AppColors.textSecondary;
+        label = 'Guard';
+        break;
       case UserRole.customer:
-        return Colors.grey;
+        bg = AppColors.surfaceElevated;
+        textColor = AppColors.textTertiary;
+        label = 'Customer';
+        break;
     }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w600,
+          color: textColor,
+        ),
+      ),
+    );
   }
 }

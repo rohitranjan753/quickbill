@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -127,9 +128,13 @@ class _AddProductScreenState extends State<AddProductScreen> {
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Product added successfully!'),
-            backgroundColor: Color(0xFF10B981),
+          SnackBar(
+            content: const Text('Product added successfully!'),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
         Navigator.pop(context);
@@ -137,7 +142,10 @@ class _AddProductScreenState extends State<AddProductScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error adding product: $e')),
+          SnackBar(
+            content: Text('Error adding product: $e'),
+            backgroundColor: AppColors.error,
+          ),
         );
       }
     } finally {
@@ -150,41 +158,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Add Product'),
+        title: const Text(
+          'Add Product',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
+        backgroundColor: AppColors.surface,
         elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
+        ),
       ),
       body: Form(
         key: _formKey,
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            _buildSection(
+            _buildSectionCard(
               title: 'Basic Information',
-              icon: Icons.info_outline,
+              icon: Icons.info_outline_rounded,
               children: [
-                TextFormField(
+                _buildField(
                   controller: _skuController,
-                  decoration: const InputDecoration(
-                    labelText: 'SKU *',
-                    hintText: 'e.g., PROD-001',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'SKU',
+                  hint: 'e.g., PROD-001',
+                  required: true,
                   validator: (value) =>
                       value?.isEmpty ?? true ? 'SKU is required' : null,
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: 14),
                 Row(
                   children: [
                     Expanded(
                       flex: 2,
-                      child: TextFormField(
+                      child: _buildField(
                         controller: _barcodeController,
-                        decoration: const InputDecoration(
-                          labelText: 'Barcode *',
-                          hintText: 'e.g., 1234567890123',
-                          border: OutlineInputBorder(),
-                        ),
+                        label: 'Barcode',
+                        hint: 'e.g., 1234567890123',
+                        required: true,
                         validator: (value) => value?.isEmpty ?? true
                             ? 'Barcode is required'
                             : null,
@@ -192,12 +210,9 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: DropdownButtonFormField<BarcodeType>(
-                        initialValue: _barcodeType,
-                        decoration: const InputDecoration(
-                          labelText: 'Type',
-                          border: OutlineInputBorder(),
-                        ),
+                      child: _buildDropdown<BarcodeType>(
+                        label: 'Type',
+                        value: _barcodeType,
                         items: BarcodeType.values
                             .map((type) => DropdownMenuItem(
                                   value: type,
@@ -210,64 +225,51 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _nameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Product Name *',
-                    hintText: 'e.g., Organic Milk',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Product Name',
+                  hint: 'e.g., Organic Milk',
+                  required: true,
                   validator: (value) => value?.isEmpty ?? true
                       ? 'Product name is required'
                       : null,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _brandNameController,
-                  decoration: const InputDecoration(
-                    labelText: 'Brand Name',
-                    hintText: 'e.g., Amul',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Brand Name',
+                  hint: 'e.g., Amul',
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _categoryController,
-                  decoration: const InputDecoration(
-                    labelText: 'Category *',
-                    hintText: 'e.g., Dairy',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Category',
+                  hint: 'e.g., Dairy',
+                  required: true,
                   validator: (value) =>
                       value?.isEmpty ?? true ? 'Category is required' : null,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _descriptionController,
-                  decoration: const InputDecoration(
-                    labelText: 'Description',
-                    hintText: 'Product description',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Description',
+                  hint: 'Product description',
                   maxLines: 3,
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
+            const SizedBox(height: 16),
+            _buildSectionCard(
               title: 'Unit & Quantity',
-              icon: Icons.scale,
+              icon: Icons.scale_rounded,
               children: [
                 Row(
                   children: [
                     Expanded(
-                      child: DropdownButtonFormField<UnitType>(
-                        initialValue: _unitType,
-                        decoration: const InputDecoration(
-                          labelText: 'Unit Type',
-                          border: OutlineInputBorder(),
-                        ),
+                      child: _buildDropdown<UnitType>(
+                        label: 'Unit Type',
+                        value: _unitType,
                         items: UnitType.values
                             .map((type) => DropdownMenuItem(
                                   value: type,
@@ -277,7 +279,6 @@ class _AddProductScreenState extends State<AddProductScreen> {
                         onChanged: (value) {
                           setState(() {
                             _unitType = value!;
-                            // Auto-update base unit
                             if (_unitType == UnitType.weight) {
                               _baseUnit = BaseUnit.g;
                             } else {
@@ -289,31 +290,27 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: DropdownButtonFormField<BaseUnit>(
-                        initialValue: _baseUnit,
-                        decoration: const InputDecoration(
-                          labelText: 'Base Unit',
-                          border: OutlineInputBorder(),
-                        ),
+                      child: _buildDropdown<BaseUnit>(
+                        label: 'Base Unit',
+                        value: _baseUnit,
                         items: BaseUnit.values
                             .map((unit) => DropdownMenuItem(
                                   value: unit,
                                   child: Text(unit.name.toUpperCase()),
                                 ))
                             .toList(),
-                        onChanged: (value) => setState(() => _baseUnit = value!),
+                        onChanged: (value) =>
+                            setState(() => _baseUnit = value!),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _baseQuantityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Base Quantity *',
-                    hintText: 'e.g., 500',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Base Quantity',
+                  hint: 'e.g., 500',
+                  required: true,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
@@ -322,31 +319,28 @@ class _AddProductScreenState extends State<AddProductScreen> {
                   validator: (value) =>
                       value?.isEmpty ?? true ? 'Base quantity is required' : null,
                 ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('Is Weighted Product'),
-                  subtitle: const Text('Product sold by weight'),
+                const SizedBox(height: 4),
+                _buildToggleRow(
+                  label: 'Weighted Product',
+                  subtitle: 'Product sold by weight',
                   value: _isWeighted,
                   onChanged: (value) => setState(() => _isWeighted = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
+            const SizedBox(height: 16),
+            _buildSectionCard(
               title: 'Pricing & Tax',
-              icon: Icons.attach_money,
+              icon: Icons.currency_rupee_rounded,
               children: [
                 Row(
                   children: [
                     Expanded(
-                      child: TextFormField(
+                      child: _buildField(
                         controller: _mrpController,
-                        decoration: const InputDecoration(
-                          labelText: 'MRP *',
-                          prefixText: '₹ ',
-                          border: OutlineInputBorder(),
-                        ),
+                        label: 'MRP',
+                        prefixText: '₹ ',
+                        required: true,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
@@ -359,13 +353,11 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: TextFormField(
+                      child: _buildField(
                         controller: _sellingPriceController,
-                        decoration: const InputDecoration(
-                          labelText: 'Selling Price *',
-                          prefixText: '₹ ',
-                          border: OutlineInputBorder(),
-                        ),
+                        label: 'Selling Price',
+                        prefixText: '₹ ',
+                        required: true,
                         keyboardType:
                             const TextInputType.numberWithOptions(decimal: true),
                         inputFormatters: [
@@ -379,66 +371,54 @@ class _AddProductScreenState extends State<AddProductScreen> {
                     ),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _taxPercentageController,
-                  decoration: const InputDecoration(
-                    labelText: 'Tax Percentage',
-                    suffixText: '%',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Tax Percentage',
+                  suffixText: '%',
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                    FilteringTextInputFormatter.allow(
+                        RegExp(r'^\d*\.?\d{0,2}')),
                   ],
                 ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('Tax Inclusive'),
-                  subtitle: const Text('Tax is included in selling price'),
+                const SizedBox(height: 4),
+                _buildToggleRow(
+                  label: 'Tax Inclusive',
+                  subtitle: 'Tax is included in selling price',
                   value: _isTaxInclusive,
                   onChanged: (value) => setState(() => _isTaxInclusive = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
               ],
             ),
-            const SizedBox(height: 24),
-            _buildSection(
+            const SizedBox(height: 16),
+            _buildSectionCard(
               title: 'Inventory & Settings',
-              icon: Icons.inventory_2,
+              icon: Icons.inventory_2_rounded,
               children: [
-                TextFormField(
+                _buildField(
                   controller: _stockQuantityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Stock Quantity',
-                    hintText: 'Leave empty for unlimited',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Stock Quantity',
+                  hint: 'Leave empty for unlimited',
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*')),
                   ],
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: 14),
+                _buildField(
                   controller: _maxQuantityController,
-                  decoration: const InputDecoration(
-                    labelText: 'Max Quantity Per Cart',
-                    hintText: 'Leave empty for unlimited',
-                    border: OutlineInputBorder(),
-                  ),
+                  label: 'Max Quantity Per Cart',
+                  hint: 'Leave empty for unlimited',
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                 ),
-                const SizedBox(height: 16),
-                DropdownButtonFormField<ProductStatus>(
-                  initialValue: _status,
-                  decoration: const InputDecoration(
-                    labelText: 'Status',
-                    border: OutlineInputBorder(),
-                  ),
+                const SizedBox(height: 14),
+                _buildDropdown<ProductStatus>(
+                  label: 'Status',
+                  value: _status,
                   items: ProductStatus.values
                       .map((status) => DropdownMenuItem(
                             value: status,
@@ -447,78 +427,260 @@ class _AddProductScreenState extends State<AddProductScreen> {
                       .toList(),
                   onChanged: (value) => setState(() => _status = value!),
                 ),
-                const SizedBox(height: 16),
-                SwitchListTile(
-                  title: const Text('Age Restricted'),
-                  subtitle: const Text('Requires age verification'),
+                const SizedBox(height: 4),
+                _buildToggleRow(
+                  label: 'Age Restricted',
+                  subtitle: 'Requires age verification',
                   value: _isAgeRestricted,
                   onChanged: (value) =>
                       setState(() => _isAgeRestricted = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
-                SwitchListTile(
-                  title: const Text('Scan Allowed'),
-                  subtitle: const Text('Product can be scanned by customers'),
+                _buildToggleRow(
+                  label: 'Scan Allowed',
+                  subtitle: 'Product can be scanned by customers',
                   value: _scanAllowed,
                   onChanged: (value) => setState(() => _scanAllowed = value),
-                  contentPadding: EdgeInsets.zero,
                 ),
               ],
             ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _saveProduct,
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                backgroundColor: const Color(0xFF10B981),
-                disabledBackgroundColor: Colors.grey,
-              ),
-              child: _isLoading
-                  ? const SizedBox(
-                      height: 20,
-                      width: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
+            const SizedBox(height: 24),
+
+            // Submit button
+            SizedBox(
+              width: double.infinity,
+              height: 52,
+              child: ElevatedButton(
+                onPressed: _isLoading ? null : _saveProduct,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  disabledBackgroundColor: AppColors.border,
+                  foregroundColor: Colors.white,
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: _isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Add Product',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
-                    )
-                  : const Text(
-                      'Add Product',
-                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                    ),
+              ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildSection({
+  Widget _buildSectionCard({
     required String title,
     required IconData icon,
     required List<Widget> children,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Icon(icon, size: 20, color: const Color(0xFF10B981)),
-            const SizedBox(width: 8),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.accentSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 17, color: AppColors.accent),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
+          ...children,
+        ],
+      ),
+    );
+  }
+
+  Widget _buildField({
+    required TextEditingController controller,
+    required String label,
+    String? hint,
+    String? prefixText,
+    String? suffixText,
+    bool required = false,
+    int maxLines = 1,
+    TextInputType? keyboardType,
+    List<TextInputFormatter>? inputFormatters,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      maxLines: maxLines,
+      keyboardType: keyboardType,
+      inputFormatters: inputFormatters,
+      validator: validator,
+      style: const TextStyle(
+        fontSize: 15,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        labelText: label + (required ? ' *' : ''),
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w400,
         ),
-        const SizedBox(height: 16),
-        ...children,
-      ],
+        hintText: hint,
+        hintStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textTertiary,
+        ),
+        prefixText: prefixText,
+        suffixText: suffixText,
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDropdown<T>({
+    required String label,
+    required T value,
+    required List<DropdownMenuItem<T>> items,
+    required ValueChanged<T?> onChanged,
+  }) {
+    return DropdownButtonFormField<T>(
+      initialValue: value,
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w400,
+        ),
+        filled: true,
+        fillColor: AppColors.surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
+        ),
+      ),
+      dropdownColor: AppColors.surface,
+      style: const TextStyle(
+        fontSize: 14,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
+      items: items,
+      onChanged: onChanged,
+    );
+  }
+
+  Widget _buildToggleRow({
+    required String label,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Switch(
+            value: value,
+            onChanged: onChanged,
+            activeThumbColor: AppColors.accent,
+            activeTrackColor: AppColors.accentSurface,
+            inactiveThumbColor: AppColors.textTertiary,
+            inactiveTrackColor: AppColors.border,
+          ),
+        ],
+      ),
     );
   }
 }

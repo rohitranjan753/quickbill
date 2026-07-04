@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import '../models/receipt_model.dart';
@@ -25,11 +26,23 @@ class _GuardScannedReceiptsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text('Scanned Receipts'),
+        title: const Text(
+          'Scanned Receipts',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
         elevation: 0,
-        backgroundColor: const Color(0xFF3B82F6),
+        backgroundColor: AppColors.surface,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
+        ),
       ),
       body: StreamBuilder<List<ReceiptModel>>(
         stream: _firestoreService.getStoreSales(widget.storeId),
@@ -37,7 +50,8 @@ class _GuardScannedReceiptsScreenState
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF3B82F6)),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
+                strokeWidth: 2.5,
               ),
             );
           }
@@ -47,15 +61,23 @@ class _GuardScannedReceiptsScreenState
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Color(0xFFEF4444),
+                  Container(
+                    width: 64,
+                    height: 64,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFFEE2E2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.error_outline,
+                      size: 32,
+                      color: Color(0xFFDC2626),
+                    ),
                   ),
                   const SizedBox(height: 16),
                   Text(
                     'Error: ${snapshot.error}',
-                    style: const TextStyle(color: Color(0xFF64748B)),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -71,24 +93,25 @@ class _GuardScannedReceiptsScreenState
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    width: 88,
+                    height: 88,
                     decoration: BoxDecoration(
-                      color: const Color(0xFF3B82F6).withValues(alpha: 0.1),
+                      color: AppColors.accentSurface,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
-                      Icons.qr_code_scanner,
-                      size: 80,
-                      color: Color(0xFF3B82F6),
+                      Icons.receipt_long_rounded,
+                      size: 44,
+                      color: AppColors.accent,
                     ),
                   ),
                   const SizedBox(height: 24),
                   const Text(
                     'No Receipts Scanned Yet',
                     style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      fontSize: 19,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -96,9 +119,9 @@ class _GuardScannedReceiptsScreenState
                     'Start scanning customer receipts\nto see them here',
                     textAlign: TextAlign.center,
                     style: TextStyle(
-                      fontSize: 15,
-                      color: Color(0xFF64748B),
-                      height: 1.5,
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                      height: 1.6,
                     ),
                   ),
                 ],
@@ -111,47 +134,34 @@ class _GuardScannedReceiptsScreenState
 
           return Column(
             children: [
-              // Stats Header
+              // Stats header
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
-                  ),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(30),
-                    bottomRight: Radius.circular(30),
-                  ),
-                ),
-                child: Column(
+                color: AppColors.surface,
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
+                child: Row(
                   children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: _buildStatCard(
-                            icon: Icons.verified,
-                            label: 'Total Scanned',
-                            value: '${verifiedReceipts.length}',
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: _buildStatCard(
-                            icon: Icons.today,
-                            label: 'Today',
-                            value: '${_getTodayCount(verifiedReceipts)}',
-                            color: Colors.white,
-                          ),
-                        ),
-                      ],
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.verified_rounded,
+                        label: 'Total Scanned',
+                        value: '${verifiedReceipts.length}',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _buildStatCard(
+                        icon: Icons.today_rounded,
+                        label: 'Today',
+                        value: '${_getTodayCount(verifiedReceipts)}',
+                      ),
                     ),
                   ],
                 ),
               ),
+              Container(height: 1, color: AppColors.border),
 
-              // Receipts List
+              // Receipts list
               Expanded(
                 child: ListView.builder(
                   padding: const EdgeInsets.all(16),
@@ -161,25 +171,24 @@ class _GuardScannedReceiptsScreenState
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Date Header
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 12,
+                            horizontal: 4,
+                            vertical: 10,
                           ),
                           child: Text(
                             dateGroup['date'] as String,
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF1A1A1A),
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textSecondary,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ),
-                        // Receipts for this date
                         ...(dateGroup['receipts'] as List<ReceiptModel>)
                             .map((receipt) => _buildReceiptCard(receipt)),
-                        const SizedBox(height: 8),
+                        const SizedBox(height: 4),
                       ],
                     );
                   },
@@ -196,32 +205,41 @@ class _GuardScannedReceiptsScreenState
     required IconData icon,
     required String label,
     required String value,
-    required Color color,
   }) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.2),
+        color: AppColors.background,
         borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, color: color, size: 32),
-          const SizedBox(height: 8),
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: AppColors.accentSurface,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(icon, color: AppColors.accent, size: 20),
+          ),
+          const SizedBox(height: 12),
           Text(
             value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.bold,
-              color: color,
+            style: const TextStyle(
+              fontSize: 26,
+              fontWeight: FontWeight.w700,
+              color: AppColors.textPrimary,
             ),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: 2),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 13,
-              color: color.withValues(alpha: 0.9),
+            style: const TextStyle(
+              fontSize: 12,
+              color: AppColors.textSecondary,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -232,17 +250,11 @@ class _GuardScannedReceiptsScreenState
 
   Widget _buildReceiptCard(ReceiptModel receipt) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
@@ -253,19 +265,21 @@ class _GuardScannedReceiptsScreenState
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
+                // Icon in successSurface bg
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: AppColors.successSurface,
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.verified,
-                    color: Color(0xFF10B981),
-                    size: 28,
+                    Icons.verified_rounded,
+                    color: AppColors.success,
+                    size: 24,
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 14),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -276,17 +290,17 @@ class _GuardScannedReceiptsScreenState
                             'ID: ${receipt.id.substring(0, 8).toUpperCase()}',
                             style: const TextStyle(
                               fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.w700,
                               fontFamily: 'monospace',
-                              color: Color(0xFF1A1A1A),
+                              color: AppColors.textPrimary,
                             ),
                           ),
                           const Spacer(),
                           Text(
                             DateFormat('h:mm a').format(receipt.purchaseDate),
                             style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF64748B),
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -298,28 +312,49 @@ class _GuardScannedReceiptsScreenState
                           Container(
                             padding: const EdgeInsets.symmetric(
                               horizontal: 8,
-                              vertical: 4,
+                              vertical: 3,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFF1F5F9),
+                              color: AppColors.surfaceElevated,
                               borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.border, width: 1),
                             ),
                             child: Text(
                               '${receipt.items.length} items',
                               style: const TextStyle(
-                                fontSize: 12,
+                                fontSize: 11,
                                 fontWeight: FontWeight.w600,
-                                color: Color(0xFF64748B),
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
+                          // Verified badge
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.successSurface,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Text(
+                              'Verified',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.success,
+                              ),
+                            ),
+                          ),
+                          const Spacer(),
                           Text(
                             '₹${receipt.totalAmount.toStringAsFixed(2)}',
                             style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: Color(0xFF10B981),
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -327,9 +362,11 @@ class _GuardScannedReceiptsScreenState
                     ],
                   ),
                 ),
+                const SizedBox(width: 8),
                 const Icon(
-                  Icons.chevron_right,
-                  color: Color(0xFF94A3B8),
+                  Icons.chevron_right_rounded,
+                  color: AppColors.textTertiary,
+                  size: 20,
                 ),
               ],
             ),
@@ -343,8 +380,10 @@ class _GuardScannedReceiptsScreenState
     showDialog(
       context: context,
       builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -352,41 +391,52 @@ class _GuardScannedReceiptsScreenState
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Success icon
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                    color: AppColors.successSurface,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.success.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
                   ),
                   child: const Icon(
-                    Icons.verified,
-                    size: 48,
-                    color: Color(0xFF10B981),
+                    Icons.verified_rounded,
+                    size: 32,
+                    color: AppColors.success,
                   ),
                 ),
                 const SizedBox(height: 16),
                 const Text(
                   'Receipt Details',
                   style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   DateFormat('MMM dd, yyyy • hh:mm a')
                       .format(receipt.purchaseDate),
                   style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
                   ),
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 20),
+
+                // Details card
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: AppColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border, width: 1),
                   ),
                   child: Column(
                     children: [
@@ -394,33 +444,36 @@ class _GuardScannedReceiptsScreenState
                         'Receipt ID',
                         receipt.id.substring(0, 12).toUpperCase(),
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildDetailRow('Items', '${receipt.items.length}'),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildDetailRow(
                         'Total Amount',
                         '₹${receipt.totalAmount.toStringAsFixed(2)}',
                         isHighlighted: true,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildDetailRow('Payment', receipt.paymentMethod),
-                      const SizedBox(height: 12),
-                      _buildDetailRow('Status', 'Verified ✓',
-                          isHighlighted: true),
+                      const SizedBox(height: 10),
+                      _buildDetailRow('Status', 'Verified',
+                          isVerified: true),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 16),
+
+                // Items section
                 const Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    'Items:',
+                    'Items',
                     style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF1A1A1A),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.3,
                     ),
                   ),
                 ),
@@ -435,22 +488,27 @@ class _GuardScannedReceiptsScreenState
                               vertical: 4,
                             ),
                             decoration: BoxDecoration(
-                              color: const Color(0xFFE2E8F0),
+                              color: AppColors.surfaceElevated,
                               borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.border, width: 1),
                             ),
                             child: Text(
                               '${item.quantity}×',
                               style: const TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
                               ),
                             ),
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(width: 10),
                           Expanded(
                             child: Text(
                               item.product.name,
-                              style: const TextStyle(fontSize: 14),
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
                             ),
                           ),
                           Text(
@@ -458,6 +516,7 @@ class _GuardScannedReceiptsScreenState
                             style: const TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
                             ),
                           ),
                         ],
@@ -469,8 +528,10 @@ class _GuardScannedReceiptsScreenState
                   child: ElevatedButton(
                     onPressed: () => Navigator.pop(context),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
@@ -478,8 +539,8 @@ class _GuardScannedReceiptsScreenState
                     child: const Text(
                       'Close',
                       style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -493,7 +554,7 @@ class _GuardScannedReceiptsScreenState
   }
 
   Widget _buildDetailRow(String label, String value,
-      {bool isHighlighted = false}) {
+      {bool isHighlighted = false, bool isVerified = false}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -501,19 +562,34 @@ class _GuardScannedReceiptsScreenState
           label,
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: isHighlighted ? 16 : 14,
-            fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
-            color: isHighlighted
-                ? const Color(0xFF10B981)
-                : const Color(0xFF1A1A1A),
+        if (isVerified)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+            decoration: BoxDecoration(
+              color: AppColors.successSurface,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: const Text(
+              'Verified',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: AppColors.success,
+              ),
+            ),
+          )
+        else
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: isHighlighted ? 16 : 14,
+              fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
+              color: isHighlighted ? AppColors.accent : AppColors.textPrimary,
+            ),
           ),
-        ),
       ],
     );
   }

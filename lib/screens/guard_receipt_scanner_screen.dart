@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -40,24 +41,20 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
     setState(() => _isProcessing = true);
 
     try {
-      // Get receipt from Firestore
       final receipt = await _firestoreService.getReceipt(qrCode);
 
       if (!mounted) return;
 
       if (receipt != null) {
-        // Check if receipt belongs to this store
         if (receipt.storeId != widget.storeId) {
-          _showErrorDialog('Invalid Receipt', 
-            'This receipt is from a different store.');
+          _showErrorDialog('Invalid Receipt',
+              'This receipt is from a different store.');
           return;
         }
-
-        // Show receipt details for verification
         await _showReceiptVerificationDialog(receipt);
       } else {
         _showErrorDialog('Receipt Not Found',
-          'This QR code is not a valid receipt.');
+            'This QR code is not a valid receipt.');
       }
     } catch (e) {
       if (!mounted) return;
@@ -74,34 +71,87 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
     HapticFeedback.heavyImpact();
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Row(
-          children: [
-            const Icon(Icons.error_outline, color: Color(0xFFEF4444)),
-            const SizedBox(width: 12),
-            Text(title),
-          ],
+      builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
-        content: Text(message),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 72,
+                height: 72,
+                decoration: BoxDecoration(
+                  color: AppColors.errorSurface,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppColors.error.withValues(alpha: 0.3), width: 1),
+                ),
+                child: const Icon(Icons.close_rounded, color: AppColors.error, size: 36),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.5,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.primary,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Text(
+                    'OK',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
 
   Future<void> _showReceiptVerificationDialog(ReceiptModel receipt) async {
     HapticFeedback.mediumImpact();
-    
+
     final result = await showDialog<bool>(
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
+        backgroundColor: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.border, width: 1),
         ),
         child: SingleChildScrollView(
           child: Padding(
@@ -109,124 +159,155 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                // Status icon
                 Container(
-                  padding: const EdgeInsets.all(16),
+                  width: 72,
+                  height: 72,
                   decoration: BoxDecoration(
-                    color: receipt.verified
-                        ? const Color(0xFF10B981).withValues(alpha: 0.1)
-                        : const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                    color: receipt.verified ? AppColors.successSurface : AppColors.accentSurface,
                     shape: BoxShape.circle,
+                    border: Border.all(
+                      color: receipt.verified
+                          ? AppColors.success.withValues(alpha: 0.3)
+                          : AppColors.accent.withValues(alpha: 0.3),
+                      width: 1,
+                    ),
                   ),
                   child: Icon(
-                    receipt.verified ? Icons.verified : Icons.receipt_long,
-                    size: 48,
-                    color: receipt.verified
-                        ? const Color(0xFF10B981)
-                        : const Color(0xFFF59E0B),
+                    receipt.verified ? Icons.verified_rounded : Icons.receipt_long_rounded,
+                    size: 36,
+                    color: receipt.verified ? AppColors.success : AppColors.accent,
                   ),
                 ),
                 const SizedBox(height: 16),
                 Text(
                   receipt.verified ? 'Already Verified' : 'Verify Receipt',
                   style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.textPrimary,
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 6),
                 Text(
                   DateFormat('MMM dd, yyyy • hh:mm a').format(receipt.purchaseDate),
                   style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
+                    fontSize: 13,
+                    color: AppColors.textSecondary,
                   ),
                 ),
                 const SizedBox(height: 24),
+
+                // Details card
                 Container(
+                  width: double.infinity,
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: const Color(0xFFF8FAFC),
+                    color: AppColors.surfaceElevated,
                     borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppColors.border, width: 1),
                   ),
                   child: Column(
                     children: [
-                      _buildDetailRow('Receipt ID', receipt.id.substring(0, 12).toUpperCase()),
-                      const SizedBox(height: 12),
+                      _buildDetailRow('Receipt ID',
+                          receipt.id.substring(0, 12).toUpperCase()),
+                      const SizedBox(height: 10),
                       _buildDetailRow('Items', '${receipt.items.length}'),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildDetailRow(
                         'Total Amount',
                         '₹${receipt.totalAmount.toStringAsFixed(2)}',
                         isHighlighted: true,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: 10),
                       _buildDetailRow('Payment', receipt.paymentMethod),
                     ],
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Divider(),
-                const SizedBox(height: 8),
-                const Text(
-                  'Items Purchased:',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Color(0xFF1A1A1A),
+
+                // Divider
+                const Divider(color: AppColors.border, height: 1),
+                const SizedBox(height: 16),
+
+                // Items
+                const Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Items Purchased',
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textSecondary,
+                      letterSpacing: 0.3,
+                    ),
                   ),
                 ),
                 const SizedBox(height: 12),
                 ...receipt.items.map((item) => Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFE2E8F0),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '${item.quantity}×',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
+                      padding: const EdgeInsets.only(bottom: 8),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceElevated,
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(color: AppColors.border, width: 1),
+                            ),
+                            child: Text(
+                              '${item.quantity}×',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.textSecondary,
+                              ),
+                            ),
                           ),
-                        ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              item.product.name,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: AppColors.textPrimary,
+                              ),
+                            ),
+                          ),
+                          Text(
+                            '₹${item.totalPrice.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.textPrimary,
+                            ),
+                          ),
+                        ],
                       ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          item.product.name,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ),
-                      Text(
-                        '₹${item.totalPrice.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                )),
+                    )),
                 const SizedBox(height: 24),
+
+                // Action buttons
                 Row(
                   children: [
                     Expanded(
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(context, false),
                         style: OutlinedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          foregroundColor: AppColors.textSecondary,
+                          side: const BorderSide(color: AppColors.border, width: 1),
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
-                        child: const Text('Reject'),
+                        child: const Text(
+                          'Reject',
+                          style: TextStyle(fontWeight: FontWeight.w600),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -236,15 +317,18 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
                             ? null
                             : () => Navigator.pop(context, true),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          backgroundColor: AppColors.primary,
+                          disabledBackgroundColor: AppColors.border,
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                         ),
                         child: Text(
-                          receipt.verified ? 'Already Verified' : 'Verify & Allow',
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          receipt.verified ? 'Verified' : 'Verify & Allow',
+                          style: const TextStyle(fontWeight: FontWeight.w600),
                         ),
                       ),
                     ),
@@ -258,22 +342,24 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
     );
 
     if (result == true && !receipt.verified) {
-      // Mark receipt as verified
       try {
         await _firestoreService.verifyReceipt(receipt.id);
         if (mounted) {
           HapticFeedback.heavyImpact();
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Row(
+            SnackBar(
+              content: const Row(
                 children: [
                   Icon(Icons.check_circle, color: Colors.white),
                   SizedBox(width: 12),
                   Text('Receipt verified successfully'),
                 ],
               ),
-              backgroundColor: Color(0xFF10B981),
+              backgroundColor: AppColors.success,
               behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
             ),
           );
         }
@@ -282,7 +368,7 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text('Error verifying receipt: ${e.toString()}'),
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: AppColors.error,
             ),
           );
         }
@@ -298,15 +384,15 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
           label,
           style: const TextStyle(
             fontSize: 14,
-            color: Color(0xFF64748B),
+            color: AppColors.textSecondary,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: isHighlighted ? 18 : 14,
-            fontWeight: isHighlighted ? FontWeight.bold : FontWeight.w600,
-            color: isHighlighted ? const Color(0xFF10B981) : const Color(0xFF1A1A1A),
+            fontSize: isHighlighted ? 17 : 14,
+            fontWeight: isHighlighted ? FontWeight.w700 : FontWeight.w600,
+            color: isHighlighted ? AppColors.accent : AppColors.textPrimary,
           ),
         ),
       ],
@@ -318,12 +404,22 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Scan Receipt QR Code'),
+        title: const Text(
+          'Scan Receipt QR Code',
+          style: TextStyle(
+            color: AppColors.textPrimary,
+            fontWeight: FontWeight.w700,
+            fontSize: 18,
+          ),
+        ),
         backgroundColor: Colors.white,
+        elevation: 0,
+        iconTheme: const IconThemeData(color: AppColors.textPrimary),
         actions: [
           IconButton(
             icon: Icon(
               _controller.torchEnabled ? Icons.flash_on : Icons.flash_off,
+              color: AppColors.textPrimary,
             ),
             onPressed: () => _controller.toggleTorch(),
           ),
@@ -335,55 +431,66 @@ class _GuardReceiptScannerScreenState extends State<GuardReceiptScannerScreen> {
             controller: _controller,
             onDetect: _onQRCodeDetected,
           ),
+
           // Scanning overlay
           CustomPaint(
             painter: QRScannerOverlay(),
             child: const SizedBox.expand(),
           ),
-          // Instructions
+
+          // Instruction card overlay (top)
           Positioned(
-            top: 40,
-            left: 0,
-            right: 0,
+            top: 24,
+            left: 20,
+            right: 20,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               decoration: BoxDecoration(
-                color: Colors.black.withValues(alpha: 0.7),
-                borderRadius: BorderRadius.circular(12),
+                color: Colors.white.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  width: 1,
+                ),
               ),
               child: Column(
-                children: const [
-                  Icon(Icons.qr_code_scanner, color: Colors.white, size: 32),
-                  SizedBox(height: 8),
-                  Text(
+                children: [
+                  const Icon(Icons.qr_code_scanner_rounded,
+                      color: Colors.white, size: 32),
+                  const SizedBox(height: 8),
+                  const Text(
                     'Scan Customer Receipt',
                     style: TextStyle(
                       color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: 4),
+                  const SizedBox(height: 4),
                   Text(
                     'Align QR code within the frame',
                     style: TextStyle(
-                      color: Colors.white70,
-                      fontSize: 14,
+                      color: Colors.white.withValues(alpha: 0.65),
+                      fontSize: 13,
                     ),
                   ),
                 ],
               ),
             ),
           ),
+
+          // Processing overlay
           if (_isProcessing)
             Container(
-              color: Colors.black.withValues(alpha: 0.7),
+              color: Colors.black.withValues(alpha: 0.65),
               child: const Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(color: Colors.white),
+                    CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2.5,
+                    ),
                     SizedBox(height: 16),
                     Text(
                       'Verifying receipt...',
@@ -423,16 +530,16 @@ class QRScannerOverlay extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    // Draw corners
+    // Corner brackets — accent indigo
     final cornerPaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = const Color(0xFF5B5FEF)
       ..strokeWidth = 5
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round;
 
     const cornerLength = 40.0;
 
-    // Top-left corner
+    // Top-left
     canvas.drawLine(
       Offset(scanArea.left, scanArea.top + cornerLength),
       Offset(scanArea.left, scanArea.top),
@@ -444,7 +551,7 @@ class QRScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Top-right corner
+    // Top-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.top),
       Offset(scanArea.right, scanArea.top),
@@ -456,7 +563,7 @@ class QRScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Bottom-left corner
+    // Bottom-left
     canvas.drawLine(
       Offset(scanArea.left, scanArea.bottom - cornerLength),
       Offset(scanArea.left, scanArea.bottom),
@@ -468,7 +575,7 @@ class QRScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Bottom-right corner
+    // Bottom-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.bottom),
       Offset(scanArea.right, scanArea.bottom),

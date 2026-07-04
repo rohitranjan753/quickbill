@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,34 +61,31 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
       }
 
       final storeId = DateTime.now().millisecondsSinceEpoch.toString();
-      
-      // Create store
+
       final store = StoreModel(
         id: storeId,
         ownerId: authState.user.uid,
         name: _storeNameController.text.trim(),
-        description: _descriptionController.text.trim().isEmpty 
-            ? null 
+        description: _descriptionController.text.trim().isEmpty
+            ? null
             : _descriptionController.text.trim(),
         address: _addressController.text.trim(),
         city: _cityController.text.trim(),
         state: _stateController.text.trim(),
         pincode: _pincodeController.text.trim(),
         phone: _phoneController.text.trim(),
-        email: _emailController.text.trim().isEmpty 
-            ? null 
+        email: _emailController.text.trim().isEmpty
+            ? null
             : _emailController.text.trim(),
-        gstNumber: _gstNumberController.text.trim().isEmpty 
-            ? null 
+        gstNumber: _gstNumberController.text.trim().isEmpty
+            ? null
             : _gstNumberController.text.trim(),
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),
       );
 
-      // Save store to Firestore
       await _firestoreService.createStore(store);
 
-      // Update user role to storeAdmin
       await _firestoreService.updateUserRole(
         authState.user.uid,
         UserRole.storeAdmin,
@@ -97,23 +95,23 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
       if (mounted) {
         HapticFeedback.heavyImpact();
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Row(
+          SnackBar(
+            content: const Row(
               children: [
                 Icon(Icons.check_circle, color: Colors.white),
                 SizedBox(width: 12),
                 Expanded(child: Text('Store registered successfully!')),
               ],
             ),
-            backgroundColor: Color(0xFF10B981),
+            backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
 
-        // Navigate back and reload
         Navigator.pop(context);
-        
-        // Trigger auth state reload
         context.read<AuthBloc>().add(AuthCheckRequested());
       }
     } catch (e) {
@@ -128,8 +126,11 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                 Expanded(child: Text('Error: ${e.toString()}')),
               ],
             ),
-            backgroundColor: const Color(0xFFEF4444),
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }
@@ -139,21 +140,25 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
-          'Register Your Store',
+          'Register Store',
           style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            fontSize: 18,
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
         ),
       ),
       body: Form(
@@ -162,31 +167,32 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.all(16),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
+                    // Header banner
                     Container(
+                      width: double.infinity,
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF10B981), Color(0xFF059669)],
-                        ),
+                        color: AppColors.surface,
                         borderRadius: BorderRadius.circular(16),
+                        border: Border.all(color: AppColors.border, width: 1),
                       ),
                       child: Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(12),
+                            width: 52,
+                            height: 52,
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(12),
+                              color: AppColors.accentSurface,
+                              borderRadius: BorderRadius.circular(14),
                             ),
                             child: const Icon(
-                              Icons.store,
-                              color: Colors.white,
-                              size: 32,
+                              Icons.store_rounded,
+                              color: AppColors.accent,
+                              size: 28,
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -197,9 +203,9 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                                 Text(
                                   'Become a Store Admin',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.white,
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                                 SizedBox(height: 4),
@@ -207,7 +213,8 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                                   'Manage your store inventory and products',
                                   style: TextStyle(
                                     fontSize: 13,
-                                    color: Colors.white70,
+                                    color: AppColors.textSecondary,
+                                    height: 1.4,
                                   ),
                                 ),
                               ],
@@ -217,179 +224,155 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
                       ),
                     ),
 
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // Store Information Section
-                    const Text(
-                      'Store Information',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _storeNameController,
-                      label: 'Store Name',
-                      icon: Icons.store_outlined,
-                      required: true,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Store name is required';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _descriptionController,
-                      label: 'Description (Optional)',
-                      icon: Icons.description_outlined,
-                      maxLines: 3,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Contact Information
-                    const Text(
-                      'Contact Information',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _phoneController,
-                      label: 'Phone Number',
-                      icon: Icons.phone_outlined,
-                      required: true,
-                      keyboardType: TextInputType.phone,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Phone number is required';
-                        }
-                        if (value.trim().length < 10) {
-                          return 'Invalid phone number';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _emailController,
-                      label: 'Email (Optional)',
-                      icon: Icons.email_outlined,
-                      keyboardType: TextInputType.emailAddress,
-                    ),
-
-                    const SizedBox(height: 24),
-
-                    // Address Information
-                    const Text(
-                      'Address Information',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    _buildTextField(
-                      controller: _addressController,
-                      label: 'Address',
-                      icon: Icons.location_on_outlined,
-                      required: true,
-                      maxLines: 2,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Address is required';
-                        }
-                        return null;
-                      },
-                    ),
-
-                    const SizedBox(height: 16),
-
-                    Row(
+                    _buildSectionCard(
+                      title: 'Store Information',
+                      icon: Icons.store_rounded,
                       children: [
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _cityController,
-                            label: 'City',
-                            icon: Icons.location_city_outlined,
-                            required: true,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'City is required';
-                              }
-                              return null;
-                            },
-                          ),
+                        _buildTextField(
+                          controller: _storeNameController,
+                          label: 'Store Name',
+                          icon: Icons.store_outlined,
+                          required: true,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Store name is required';
+                            }
+                            return null;
+                          },
                         ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: _buildTextField(
-                            controller: _stateController,
-                            label: 'State',
-                            icon: Icons.map_outlined,
-                            required: true,
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'State is required';
-                              }
-                              return null;
-                            },
-                          ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: _descriptionController,
+                          label: 'Description (Optional)',
+                          icon: Icons.description_outlined,
+                          maxLines: 3,
                         ),
                       ],
                     ),
 
                     const SizedBox(height: 16),
 
-                    _buildTextField(
-                      controller: _pincodeController,
-                      label: 'Pincode',
-                      icon: Icons.pin_outlined,
-                      required: true,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Pincode is required';
-                        }
-                        if (value.trim().length != 6) {
-                          return 'Invalid pincode';
-                        }
-                        return null;
-                      },
+                    // Contact Information Section
+                    _buildSectionCard(
+                      title: 'Contact Information',
+                      icon: Icons.contacts_rounded,
+                      children: [
+                        _buildTextField(
+                          controller: _phoneController,
+                          label: 'Phone Number',
+                          icon: Icons.phone_outlined,
+                          required: true,
+                          keyboardType: TextInputType.phone,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Phone number is required';
+                            }
+                            if (value.trim().length < 10) {
+                              return 'Invalid phone number';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: _emailController,
+                          label: 'Email (Optional)',
+                          icon: Icons.email_outlined,
+                          keyboardType: TextInputType.emailAddress,
+                        ),
+                      ],
                     ),
 
-                    const SizedBox(height: 24),
-
-                    // Tax Information
-                    const Text(
-                      'Tax Information',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF1A1A1A),
-                      ),
-                    ),
                     const SizedBox(height: 16),
 
-                    _buildTextField(
-                      controller: _gstNumberController,
-                      label: 'GST Number (Optional)',
-                      icon: Icons.receipt_long_outlined,
+                    // Address Information Section
+                    _buildSectionCard(
+                      title: 'Address Information',
+                      icon: Icons.location_on_rounded,
+                      children: [
+                        _buildTextField(
+                          controller: _addressController,
+                          label: 'Address',
+                          icon: Icons.location_on_outlined,
+                          required: true,
+                          maxLines: 2,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Address is required';
+                            }
+                            return null;
+                          },
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _cityController,
+                                label: 'City',
+                                icon: Icons.location_city_outlined,
+                                required: true,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'City is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: _buildTextField(
+                                controller: _stateController,
+                                label: 'State',
+                                icon: Icons.map_outlined,
+                                required: true,
+                                validator: (value) {
+                                  if (value == null || value.trim().isEmpty) {
+                                    return 'State is required';
+                                  }
+                                  return null;
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 14),
+                        _buildTextField(
+                          controller: _pincodeController,
+                          label: 'Pincode',
+                          icon: Icons.pin_outlined,
+                          required: true,
+                          keyboardType: TextInputType.number,
+                          validator: (value) {
+                            if (value == null || value.trim().isEmpty) {
+                              return 'Pincode is required';
+                            }
+                            if (value.trim().length != 6) {
+                              return 'Invalid pincode';
+                            }
+                            return null;
+                          },
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+
+                    // Tax Information Section
+                    _buildSectionCard(
+                      title: 'Tax Information',
+                      icon: Icons.receipt_long_rounded,
+                      children: [
+                        _buildTextField(
+                          controller: _gstNumberController,
+                          label: 'GST Number (Optional)',
+                          icon: Icons.receipt_long_outlined,
+                        ),
+                      ],
                     ),
 
                     const SizedBox(height: 80),
@@ -398,57 +381,51 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
               ),
             ),
 
-            // Submit Button
+            // Submit Button - pinned to bottom
             Container(
               decoration: BoxDecoration(
-                color: Colors.white,
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.08),
-                    blurRadius: 16,
-                    offset: const Offset(0, -4),
-                  ),
-                ],
+                color: AppColors.surface,
+                border: const Border(
+                  top: BorderSide(color: AppColors.border, width: 1),
+                ),
               ),
               child: SafeArea(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   child: SizedBox(
                     width: double.infinity,
-                    height: 56,
-                    child: FilledButton(
+                    height: 52,
+                    child: ElevatedButton(
                       onPressed: _isSubmitting ? null : _submitForm,
-                      style: FilledButton.styleFrom(
-                        backgroundColor: const Color(0xFF10B981),
-                        disabledBackgroundColor: const Color(0xFF94A3B8),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        disabledBackgroundColor: AppColors.border,
                         foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
                         elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: _isSubmitting
                           ? const SizedBox(
-                              height: 24,
-                              width: 24,
+                              height: 22,
+                              width: 22,
                               child: CircularProgressIndicator(
                                 strokeWidth: 2.5,
-                                valueColor: AlwaysStoppedAnimation<Color>(
-                                  Colors.white,
-                                ),
+                                valueColor:
+                                    AlwaysStoppedAnimation<Color>(Colors.white),
                               ),
                             )
                           : const Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Icon(Icons.store, size: 20),
+                                Icon(Icons.store_rounded, size: 18),
                                 SizedBox(width: 8),
                                 Text(
                                   'Register Store',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w600,
-                                    letterSpacing: 0.2,
                                   ),
                                 ),
                               ],
@@ -460,6 +437,51 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionCard({
+    required String title,
+    required IconData icon,
+    required List<Widget> children,
+  }) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.border, width: 1),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: AppColors.accentSurface,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Icon(icon, size: 17, color: AppColors.accent),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          ...children,
+        ],
       ),
     );
   }
@@ -478,30 +500,42 @@ class _RegisterStoreScreenState extends State<RegisterStoreScreen> {
       maxLines: maxLines,
       keyboardType: keyboardType,
       validator: validator,
+      style: const TextStyle(
+        fontSize: 15,
+        color: AppColors.textPrimary,
+        fontWeight: FontWeight.w500,
+      ),
       decoration: InputDecoration(
         labelText: label + (required ? ' *' : ''),
-        prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+        labelStyle: const TextStyle(
+          fontSize: 14,
+          color: AppColors.textSecondary,
+          fontWeight: FontWeight.w400,
+        ),
+        prefixIcon: Icon(icon, color: AppColors.textTertiary, size: 20),
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surface,
+        contentPadding:
+            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.border, width: 1),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFF10B981), width: 2),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.accent, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+          borderRadius: BorderRadius.circular(10),
+          borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
     );

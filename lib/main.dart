@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase/supabase.dart' hide AuthState;
-import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'blocs/auth/auth_bloc.dart';
 import 'blocs/auth/auth_event.dart';
 import 'blocs/auth/auth_state.dart';
@@ -13,17 +11,13 @@ import 'services/store_api_service.dart';
 import 'screens/sign_in_screen.dart';
 import 'screens/home_screen.dart';
 import 'firebase_options.dart';
+import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
   // Initialize Firebase only if not already initialized
   try {
-    await Supabase.initialize(
-      url: 'https://uskqnzmrakiybondegdj.supabase.co',
-      anonKey:
-          'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVza3Fuem1yYWtpeWJvbmRlZ2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMwMjkyODMsImV4cCI6MjA4ODYwNTI4M30.8D9rgv7s-pKOo95v3DiCFHZCJe0NUIki4Zlme4CO3Xs',
-    );
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -69,34 +63,40 @@ class MyApp extends StatelessWidget {
           debugShowCheckedModeBanner: false,
           theme: ThemeData(
             colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF10B981),
-              primary: const Color(0xFF0F172A),
-              secondary: const Color(0xFF10B981),
-              surface: Colors.white,
+              seedColor: AppColors.accent,
+              primary: AppColors.primary,
+              secondary: AppColors.accent,
+              surface: AppColors.surface,
+              error: AppColors.error,
             ),
             useMaterial3: true,
-            scaffoldBackgroundColor: const Color(0xFFF8F9FA),
+            scaffoldBackgroundColor: AppColors.background,
+            fontFamily: null,
             appBarTheme: const AppBarTheme(
-              centerTitle: true,
+              centerTitle: false,
               elevation: 0,
-              backgroundColor: Colors.white,
-              foregroundColor: Color(0xFF1A1A1A),
+              scrolledUnderElevation: 0,
+              backgroundColor: AppColors.surface,
+              foregroundColor: AppColors.primary,
+              surfaceTintColor: Colors.transparent,
               titleTextStyle: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF1A1A1A),
+                fontSize: 18,
+                fontWeight: FontWeight.w700,
+                color: AppColors.primary,
+                letterSpacing: -0.3,
               ),
             ),
             filledButtonTheme: FilledButtonThemeData(
               style: FilledButton.styleFrom(
-                backgroundColor: const Color(0xFF0F172A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textInverse,
                 textStyle: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 elevation: 0,
                 padding: const EdgeInsets.symmetric(
@@ -107,16 +107,35 @@ class MyApp extends StatelessWidget {
             ),
             elevatedButtonTheme: ElevatedButtonThemeData(
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF0F172A),
-                foregroundColor: Colors.white,
+                backgroundColor: AppColors.primary,
+                foregroundColor: AppColors.textInverse,
                 textStyle: const TextStyle(
-                  fontSize: 16,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
+                  letterSpacing: 0.1,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                elevation: 0,
+                shadowColor: Colors.transparent,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 16,
+                ),
+              ),
+            ),
+            outlinedButtonTheme: OutlinedButtonThemeData(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: AppColors.primary,
+                side: const BorderSide(color: AppColors.border, width: 1.5),
+                textStyle: const TextStyle(
+                  fontSize: 15,
                   fontWeight: FontWeight.w600,
                 ),
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                elevation: 0,
                 padding: const EdgeInsets.symmetric(
                   horizontal: 24,
                   vertical: 16,
@@ -127,52 +146,99 @@ class MyApp extends StatelessWidget {
               elevation: 0,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
+                side: const BorderSide(color: AppColors.border),
               ),
-              color: Colors.white,
+              color: AppColors.surface,
+              surfaceTintColor: Colors.transparent,
             ),
             inputDecorationTheme: InputDecorationTheme(
               filled: true,
-              fillColor: Colors.white,
+              fillColor: AppColors.surface,
+              hintStyle: const TextStyle(
+                color: AppColors.textTertiary,
+                fontSize: 15,
+                fontWeight: FontWeight.w400,
+              ),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+                borderSide: const BorderSide(color: AppColors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
                 borderSide: const BorderSide(
-                  color: Color(0xFF0F172A),
-                  width: 2,
+                  color: AppColors.accent,
+                  width: 1.5,
                 ),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: AppColors.error),
               ),
               contentPadding: const EdgeInsets.symmetric(
                 horizontal: 16,
                 vertical: 16,
               ),
             ),
+            chipTheme: ChipThemeData(
+              backgroundColor: AppColors.surfaceElevated,
+              selectedColor: AppColors.accent,
+              labelStyle: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: AppColors.primary,
+              ),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              side: const BorderSide(color: AppColors.border),
+            ),
             snackBarTheme: SnackBarThemeData(
               behavior: SnackBarBehavior.floating,
+              backgroundColor: AppColors.primary,
+              contentTextStyle: const TextStyle(
+                color: AppColors.textInverse,
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
             dividerTheme: const DividerThemeData(
-              color: Color(0xFFE2E8F0),
+              color: AppColors.divider,
               thickness: 1,
+            ),
+            bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+              backgroundColor: AppColors.surface,
+              selectedItemColor: AppColors.accent,
+              unselectedItemColor: AppColors.textTertiary,
+              elevation: 0,
+              type: BottomNavigationBarType.fixed,
+              selectedLabelStyle: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+              unselectedLabelStyle: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
           home: BlocBuilder<AuthBloc, AuthState>(
             builder: (context, state) {
               if (state is AuthLoading || state is AuthInitial) {
                 return const Scaffold(
+                  backgroundColor: AppColors.background,
                   body: Center(
                     child: CircularProgressIndicator(
                       valueColor: AlwaysStoppedAnimation<Color>(
-                        Color(0xFF10B981),
+                        AppColors.accent,
                       ),
+                      strokeWidth: 2.5,
                     ),
                   ),
                 );

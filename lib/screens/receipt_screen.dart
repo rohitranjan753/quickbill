@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
@@ -47,12 +48,10 @@ class _ReceiptScreenState extends State<ReceiptScreen>
     double subtotal = 0.0;
     for (var item in items) {
       if (item.product.isTaxInclusive) {
-        // If tax is inclusive, subtract tax to get base price
         final basePrice =
             item.product.sellingPrice / (1 + item.product.taxPercentage / 100);
         subtotal += basePrice * item.quantity;
       } else {
-        // If tax is not inclusive, use selling price directly
         subtotal += item.product.sellingPrice * item.quantity;
       }
     }
@@ -95,10 +94,10 @@ class _ReceiptScreenState extends State<ReceiptScreen>
         if (snapshot.connectionState == ConnectionState.waiting &&
             !snapshot.hasData) {
           return const Scaffold(
-            backgroundColor: Color(0xFFF8F9FA),
+            backgroundColor: AppColors.background,
             body: Center(
               child: CircularProgressIndicator(
-                valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.accent),
               ),
             ),
           );
@@ -106,23 +105,42 @@ class _ReceiptScreenState extends State<ReceiptScreen>
 
         if (snapshot.hasError) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F9FA),
+            backgroundColor: AppColors.background,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surface,
               elevation: 0,
-              title: const Text('Receipt'),
+              surfaceTintColor: Colors.transparent,
+              title: const Text(
+                'Receipt',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                ),
+              ),
+              iconTheme: const IconThemeData(color: AppColors.textPrimary),
             ),
             body: Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Icon(
-                    Icons.error_outline,
-                    size: 64,
-                    color: Color(0xFFEF4444),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: AppColors.errorSurface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.error_outline,
+                      size: 40,
+                      color: AppColors.error,
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text('Error: ${snapshot.error}'),
+                  Text(
+                    'Error: ${snapshot.error}',
+                    style: const TextStyle(color: AppColors.textSecondary),
+                  ),
                 ],
               ),
             ),
@@ -133,13 +151,27 @@ class _ReceiptScreenState extends State<ReceiptScreen>
 
         if (receipt == null) {
           return Scaffold(
-            backgroundColor: const Color(0xFFF8F9FA),
+            backgroundColor: AppColors.background,
             appBar: AppBar(
-              backgroundColor: Colors.white,
+              backgroundColor: AppColors.surface,
               elevation: 0,
-              title: const Text('Receipt'),
+              surfaceTintColor: Colors.transparent,
+              title: const Text(
+                'Receipt',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 17,
+                ),
+              ),
+              iconTheme: const IconThemeData(color: AppColors.textPrimary),
             ),
-            body: const Center(child: Text('Receipt not found')),
+            body: const Center(
+              child: Text(
+                'Receipt not found',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            ),
           );
         }
 
@@ -147,7 +179,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
         final subtotal = _calculateSubtotal(receipt.items);
 
         return Scaffold(
-          backgroundColor: const Color(0xFFF8F9FA),
+          backgroundColor: AppColors.background,
           body: SafeArea(
             child: Column(
               children: [
@@ -155,73 +187,48 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                   child: SingleChildScrollView(
                     child: Column(
                       children: [
-                        // Success Header
+                        // Receipt Hero Header — solid near-black
                         Container(
                           width: double.infinity,
-                          padding: const EdgeInsets.all(32),
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topCenter,
-                              end: Alignment.bottomCenter,
-                              colors: receipt.verified
-                                  ? [
-                                      const Color(0xFFDEF7EC),
-                                      const Color(0xFFF8F9FA),
-                                    ]
-                                  : [
-                                      const Color(0xFFFEF3C7),
-                                      const Color(0xFFF8F9FA),
-                                    ],
-                            ),
-                          ),
+                          color: AppColors.primary,
+                          padding: const EdgeInsets.fromLTRB(28, 28, 28, 36),
                           child: Column(
                             children: [
-                              // Success Animation
+                              // Status icon
                               ScaleTransition(
                                 scale: _scaleAnimation,
                                 child: Container(
-                                  padding: const EdgeInsets.all(20),
+                                  padding: const EdgeInsets.all(16),
                                   decoration: BoxDecoration(
                                     color: receipt.verified
-                                        ? const Color(0xFF10B981)
-                                        : const Color(0xFFF59E0B),
+                                        ? AppColors.successSurface
+                                        : AppColors.warningSurface,
                                     shape: BoxShape.circle,
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: receipt.verified
-                                            ? const Color(
-                                                0xFF10B981,
-                                              ).withValues(alpha: 0.3)
-                                            : const Color(
-                                                0xFFF59E0B,
-                                              ).withValues(alpha: 0.3),
-                                        blurRadius: 24,
-                                        offset: const Offset(0, 8),
-                                      ),
-                                    ],
                                   ),
                                   child: Icon(
                                     receipt.verified
-                                        ? Icons.verified
+                                        ? Icons.verified_rounded
                                         : Icons.pending_outlined,
-                                    size: 64,
-                                    color: Colors.white,
+                                    size: 40,
+                                    color: receipt.verified
+                                        ? AppColors.success
+                                        : AppColors.warning,
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: 20),
                               FadeTransition(
                                 opacity: _fadeAnimation,
                                 child: Column(
                                   children: [
                                     Text(
                                       receipt.verified
-                                          ? 'Receipt Verified!'
-                                          : 'Payment Successful!',
+                                          ? 'Receipt Verified'
+                                          : 'Payment Successful',
                                       style: const TextStyle(
-                                        fontSize: 28,
+                                        fontSize: 26,
                                         fontWeight: FontWeight.w700,
-                                        color: Color(0xFF1A1A1A),
+                                        color: Colors.white,
                                         letterSpacing: -0.5,
                                       ),
                                     ),
@@ -230,10 +237,21 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                       DateFormat(
                                         'MMM dd, yyyy • hh:mm a',
                                       ).format(receipt.purchaseDate),
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.white.withValues(alpha: 0.6),
+                                        fontWeight: FontWeight.w400,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 20),
+                                    // Amount — large white bold
+                                    Text(
+                                      '₹${receipt.totalAmount.toStringAsFixed(2)}',
                                       style: const TextStyle(
-                                        fontSize: 15,
-                                        color: Color(0xFF64748B),
-                                        fontWeight: FontWeight.w500,
+                                        fontSize: 40,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                        letterSpacing: -1,
                                       ),
                                     ),
                                   ],
@@ -245,63 +263,57 @@ class _ReceiptScreenState extends State<ReceiptScreen>
 
                         // Verification Status Banner
                         Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
+                          padding: const EdgeInsets.fromLTRB(20, 20, 20, 0),
                           child: _buildStatusBanner(receipt.verified),
                         ),
 
                         // QR Code Section
                         Padding(
-                          padding: const EdgeInsets.all(24),
+                          padding: const EdgeInsets.all(20),
                           child: Column(
                             children: [
+                              // QR Code card
                               Container(
                                 padding: const EdgeInsets.all(24),
                                 decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.08),
-                                      blurRadius: 24,
-                                      offset: const Offset(0, 8),
-                                    ),
-                                  ],
+                                  color: AppColors.surface,
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(color: AppColors.border),
                                 ),
                                 child: Column(
                                   children: [
-                                    // QR Code with blur effect when verified
                                     ScaleTransition(
                                       scale: _scaleAnimation,
                                       child: Stack(
                                         children: [
                                           Container(
-                                            padding: const EdgeInsets.all(16),
+                                            padding: const EdgeInsets.all(12),
                                             decoration: BoxDecoration(
-                                              color: Colors.white,
+                                              color: AppColors.surface,
                                               borderRadius:
-                                                  BorderRadius.circular(16),
+                                                  BorderRadius.circular(12),
                                               border: Border.all(
                                                 color: receipt.verified
-                                                    ? const Color(0xFF10B981)
-                                                    : const Color(0xFFE2E8F0),
+                                                    ? AppColors.success
+                                                    : AppColors.border,
                                                 width: receipt.verified ? 2 : 1,
                                               ),
                                             ),
                                             child: QrImageView(
                                               data: widget.receiptId,
                                               version: QrVersions.auto,
-                                              size: 220.0,
+                                              size: 200.0,
                                               backgroundColor: Colors.white,
                                               eyeStyle: const QrEyeStyle(
                                                 eyeShape: QrEyeShape.square,
-                                                color: Color(0xFF0F172A),
+                                                color: AppColors.primary,
                                               ),
                                               dataModuleStyle:
                                                   const QrDataModuleStyle(
                                                     dataModuleShape:
                                                         QrDataModuleShape
                                                             .square,
-                                                    color: Color(0xFF0F172A),
+                                                    color: AppColors.primary,
                                                   ),
                                             ),
                                           ),
@@ -310,7 +322,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                             Positioned.fill(
                                               child: ClipRRect(
                                                 borderRadius:
-                                                    BorderRadius.circular(16),
+                                                    BorderRadius.circular(12),
                                                 child: BackdropFilter(
                                                   filter: ImageFilter.blur(
                                                     sigmaX: 8.0,
@@ -322,7 +334,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                                           .withValues(alpha: 0.3),
                                                       borderRadius:
                                                           BorderRadius.circular(
-                                                            16,
+                                                            12,
                                                           ),
                                                     ),
                                                     child: Center(
@@ -331,23 +343,18 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                                             MainAxisSize.min,
                                                         children: const [
                                                           Icon(
-                                                            Icons.check_circle,
-                                                            size: 64,
-                                                            color: Color(
-                                                              0xFF10B981,
-                                                            ),
+                                                            Icons.check_circle_rounded,
+                                                            size: 56,
+                                                            color: AppColors.success,
                                                           ),
-                                                          SizedBox(height: 12),
+                                                          SizedBox(height: 10),
                                                           Text(
                                                             'VERIFIED',
                                                             style: TextStyle(
-                                                              fontSize: 20,
+                                                              fontSize: 18,
                                                               fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              color: Color(
-                                                                0xFF10B981,
-                                                              ),
+                                                                  FontWeight.w800,
+                                                              color: AppColors.success,
                                                               letterSpacing: 2,
                                                             ),
                                                           ),
@@ -361,27 +368,24 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                         ],
                                       ),
                                     ),
-                                    const SizedBox(height: 20),
-                                    // Receipt ID
+                                    const SizedBox(height: 16),
+                                    // Receipt ID chip
                                     Container(
                                       padding: const EdgeInsets.symmetric(
-                                        horizontal: 16,
-                                        vertical: 8,
+                                        horizontal: 14,
+                                        vertical: 7,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: receipt.verified
-                                            ? const Color(0xFFDEF7EC)
-                                            : const Color(0xFFF1F5F9),
+                                        color: AppColors.surfaceElevated,
                                         borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.border),
                                       ),
                                       child: Text(
                                         'ID: ${widget.receiptId.substring(0, 12).toUpperCase()}',
-                                        style: TextStyle(
-                                          fontSize: 13,
+                                        style: const TextStyle(
+                                          fontSize: 12,
                                           fontWeight: FontWeight.w600,
-                                          color: receipt.verified
-                                              ? const Color(0xFF065F46)
-                                              : const Color(0xFF64748B),
+                                          color: AppColors.textSecondary,
                                           fontFamily: 'monospace',
                                           letterSpacing: 0.5,
                                         ),
@@ -390,74 +394,59 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                   ],
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 16),
 
-                              // Instructions
-                              if (!receipt.verified)
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFFEF3C7),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    children: const [
-                                      Icon(
-                                        Icons.info_outline,
-                                        size: 24,
-                                        color: Color(0xFFF59E0B),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          'Show this QR code at the exit for verification',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF92400E),
-                                            height: 1.4,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
+                              // Instruction banner
+                              Container(
+                                padding: const EdgeInsets.all(14),
+                                decoration: BoxDecoration(
+                                  color: receipt.verified
+                                      ? AppColors.successSurface
+                                      : AppColors.warningSurface,
+                                  borderRadius: BorderRadius.circular(12),
+                                  border: Border.all(
+                                    color: receipt.verified
+                                        ? AppColors.success.withValues(alpha: 0.3)
+                                        : AppColors.warning.withValues(alpha: 0.3),
                                   ),
                                 ),
-                              if (receipt.verified)
-                                Container(
-                                  padding: const EdgeInsets.all(16),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFDEF7EC),
-                                    borderRadius: BorderRadius.circular(16),
-                                  ),
-                                  child: Row(
-                                    children: const [
-                                      Icon(
-                                        Icons.check_circle_outline,
-                                        size: 24,
-                                        color: Color(0xFF10B981),
-                                      ),
-                                      SizedBox(width: 12),
-                                      Expanded(
-                                        child: Text(
-                                          'Your receipt has been verified by security. You may exit the store.',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w600,
-                                            color: Color(0xFF065F46),
-                                            height: 1.4,
-                                          ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      receipt.verified
+                                          ? Icons.check_circle_outline_rounded
+                                          : Icons.info_outline_rounded,
+                                      size: 20,
+                                      color: receipt.verified
+                                          ? AppColors.success
+                                          : AppColors.warning,
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        receipt.verified
+                                            ? 'Your receipt has been verified by security. You may exit the store.'
+                                            : 'Show this QR code at the exit for verification.',
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          fontWeight: FontWeight.w500,
+                                          color: receipt.verified
+                                              ? const Color(0xFF14532D)
+                                              : const Color(0xFF78350F),
+                                          height: 1.4,
                                         ),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
+                              ),
                             ],
                           ),
                         ),
 
-                        // Order Summary Toggle
+                        // Order Details Toggle
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
                           child: GestureDetector(
                             onTap: () {
                               HapticFeedback.selectionClick();
@@ -468,28 +457,22 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                             child: Container(
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
+                                color: AppColors.surface,
                                 borderRadius: BorderRadius.circular(16),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.04),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
+                                border: Border.all(color: AppColors.border),
                               ),
                               child: Row(
                                 children: [
                                   Container(
-                                    padding: const EdgeInsets.all(10),
+                                    padding: const EdgeInsets.all(9),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
+                                      color: AppColors.accentSurface,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: const Icon(
                                       Icons.receipt_long_outlined,
-                                      color: Color(0xFF0F172A),
-                                      size: 20,
+                                      color: AppColors.accent,
+                                      size: 18,
                                     ),
                                   ),
                                   const SizedBox(width: 12),
@@ -497,9 +480,9 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                     child: Text(
                                       'View Order Details',
                                       style: TextStyle(
-                                        fontSize: 16,
+                                        fontSize: 15,
                                         fontWeight: FontWeight.w600,
-                                        color: Color(0xFF1A1A1A),
+                                        color: AppColors.textPrimary,
                                       ),
                                     ),
                                   ),
@@ -507,7 +490,8 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                                     _showDetails
                                         ? Icons.keyboard_arrow_up_rounded
                                         : Icons.keyboard_arrow_down_rounded,
-                                    color: const Color(0xFF64748B),
+                                    color: AppColors.textTertiary,
+                                    size: 22,
                                   ),
                                 ],
                               ),
@@ -519,7 +503,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                         AnimatedCrossFade(
                           firstChild: const SizedBox.shrink(),
                           secondChild: Padding(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.all(20),
                             child: _buildOrderDetails(
                               receipt,
                               subtotal,
@@ -532,30 +516,26 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                           duration: const Duration(milliseconds: 300),
                         ),
 
-                        const SizedBox(height: 100), // Space for button
+                        const SizedBox(height: 100),
                       ],
                     ),
                   ),
                 ),
 
-                // Done Button - Sticky
+                // Done Button — sticky
                 Container(
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.08),
-                        blurRadius: 16,
-                        offset: const Offset(0, -4),
-                      ),
-                    ],
+                  decoration: const BoxDecoration(
+                    color: AppColors.surface,
+                    border: Border(
+                      top: BorderSide(color: AppColors.border),
+                    ),
                   ),
                   child: SafeArea(
                     child: Padding(
                       padding: const EdgeInsets.all(20),
                       child: SizedBox(
                         width: double.infinity,
-                        height: 56,
+                        height: 52,
                         child: FilledButton(
                           onPressed: () {
                             HapticFeedback.mediumImpact();
@@ -564,19 +544,19 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                             ).popUntil((route) => route.isFirst);
                           },
                           style: FilledButton.styleFrom(
-                            backgroundColor: const Color(0xFF0F172A),
+                            backgroundColor: AppColors.primary,
                             foregroundColor: Colors.white,
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(14),
+                              borderRadius: BorderRadius.circular(12),
                             ),
                             elevation: 0,
                           ),
                           child: const Text(
                             'Done Shopping',
                             style: TextStyle(
-                              fontSize: 18,
+                              fontSize: 16,
                               fontWeight: FontWeight.w600,
-                              letterSpacing: 0.2,
+                              letterSpacing: 0.1,
                             ),
                           ),
                         ),
@@ -594,36 +574,24 @@ class _ReceiptScreenState extends State<ReceiptScreen>
 
   Widget _buildStatusBanner(bool isVerified) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: isVerified
-              ? [const Color(0xFF10B981), const Color(0xFF059669)]
-              : [const Color(0xFFF59E0B), const Color(0xFFD97706)],
-        ),
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color:
-                (isVerified ? const Color(0xFF10B981) : const Color(0xFFF59E0B))
-                    .withValues(alpha: 0.3),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
       ),
       child: Row(
         children: [
           Container(
-            padding: const EdgeInsets.all(8),
+            padding: const EdgeInsets.all(9),
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(8),
+              color: isVerified ? AppColors.successSurface : AppColors.warningSurface,
+              borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              isVerified ? Icons.verified : Icons.pending,
-              color: Colors.white,
-              size: 24,
+              isVerified ? Icons.verified_rounded : Icons.pending_outlined,
+              color: isVerified ? AppColors.success : AppColors.warning,
+              size: 20,
             ),
           ),
           const SizedBox(width: 12),
@@ -635,7 +603,7 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                   isVerified ? 'Verification Status' : 'Pending Verification',
                   style: const TextStyle(
                     fontSize: 12,
-                    color: Colors.white70,
+                    color: AppColors.textTertiary,
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -643,16 +611,20 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                 Text(
                   isVerified ? 'Verified by Security' : 'Awaiting Guard Scan',
                   style: const TextStyle(
-                    fontSize: 16,
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                    color: AppColors.textPrimary,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
           if (isVerified)
-            const Icon(Icons.check_circle, color: Colors.white, size: 28),
+            const Icon(
+              Icons.check_circle_rounded,
+              color: AppColors.success,
+              size: 22,
+            ),
         ],
       ),
     );
@@ -664,52 +636,58 @@ class _ReceiptScreenState extends State<ReceiptScreen>
     Map<String, double> taxBreakdown,
   ) {
     return Container(
-      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.surface,
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: AppColors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Items Purchased',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF1A1A1A),
+          // Items header
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            child: const Text(
+              'Items Purchased',
+              style: TextStyle(
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AppColors.textPrimary,
+              ),
             ),
           ),
-          const SizedBox(height: 16),
+          // Item rows with border-bottom divider
           ...List.generate(receipt.items.length, (index) {
             final item = receipt.items[index];
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 16),
+            final isLast = index == receipt.items.length - 1;
+            return Container(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 12),
+              decoration: BoxDecoration(
+                border: Border(
+                  bottom: BorderSide(
+                    color: isLast ? Colors.transparent : AppColors.border,
+                  ),
+                ),
+              ),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 8,
-                      vertical: 4,
+                      vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF1F5F9),
+                      color: AppColors.surfaceElevated,
                       borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: AppColors.border),
                     ),
                     child: Text(
                       '${item.quantity}×',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         fontWeight: FontWeight.w600,
-                        color: Color(0xFF64748B),
+                        color: AppColors.textSecondary,
                       ),
                     ),
                   ),
@@ -721,17 +699,17 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                         Text(
                           item.product.name,
                           style: const TextStyle(
-                            fontSize: 15,
+                            fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: Color(0xFF1A1A1A),
+                            color: AppColors.textPrimary,
                           ),
                         ),
                         if (item.product.brandName != null)
                           Text(
                             item.product.brandName!,
                             style: const TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF94A3B8),
+                              fontSize: 12,
+                              color: AppColors.textTertiary,
                             ),
                           ),
                       ],
@@ -740,120 +718,136 @@ class _ReceiptScreenState extends State<ReceiptScreen>
                   Text(
                     '₹${item.totalPrice.toStringAsFixed(2)}',
                     style: const TextStyle(
-                      fontSize: 15,
+                      fontSize: 14,
                       fontWeight: FontWeight.w700,
-                      color: Color(0xFF1A1A1A),
+                      color: AppColors.textPrimary,
                     ),
                   ),
                 ],
               ),
             );
           }),
-          const Divider(height: 32),
-          // Subtotal
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Subtotal',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: Color(0xFF64748B),
-                ),
-              ),
-              Text(
-                '₹${subtotal.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w600,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          // Tax Breakdown
-          ...taxBreakdown.entries
-              .where((entry) => entry.key != 'total')
-              .map(
-                (entry) => Padding(
-                  padding: const EdgeInsets.only(bottom: 12),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Tax (${entry.key})',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w500,
-                          color: Color(0xFF64748B),
-                        ),
-                      ),
-                      Text(
-                        '₹${entry.value.toStringAsFixed(2)}',
-                        style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF1A1A1A),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          const Divider(height: 24),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              const Text(
-                'Total Amount',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF1A1A1A),
-                ),
-              ),
-              Text(
-                '₹${receipt.totalAmount.toStringAsFixed(2)}',
-                style: const TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF10B981),
-                  letterSpacing: -0.5,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
+
+          // Subtotal / Tax / Total section
           Container(
-            padding: const EdgeInsets.all(12),
+            margin: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFFF8FAFC),
-              borderRadius: BorderRadius.circular(8),
+              color: AppColors.surfaceElevated,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: AppColors.border),
             ),
-            child: Row(
+            child: Column(
               children: [
-                const Icon(
-                  Icons.payment_outlined,
-                  size: 18,
-                  color: Color(0xFF64748B),
+                // Subtotal
+                _buildSummaryRow(
+                  'Subtotal',
+                  '₹${subtotal.toStringAsFixed(2)}',
+                  isBold: false,
                 ),
-                const SizedBox(width: 8),
-                Text(
-                  'Paid via ${receipt.paymentMethod}',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Color(0xFF64748B),
-                    fontWeight: FontWeight.w500,
-                  ),
+                const SizedBox(height: 10),
+                // Tax breakdown
+                ...taxBreakdown.entries
+                    .where((entry) => entry.key != 'total')
+                    .map(
+                      (entry) => Padding(
+                        padding: const EdgeInsets.only(bottom: 10),
+                        child: _buildSummaryRow(
+                          'Tax (${entry.key})',
+                          '₹${entry.value.toStringAsFixed(2)}',
+                          isBold: false,
+                        ),
+                      ),
+                    ),
+                Container(
+                  height: 1,
+                  color: AppColors.border,
+                  margin: const EdgeInsets.symmetric(vertical: 4),
+                ),
+                const SizedBox(height: 8),
+                // Total
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Total Amount',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                    Text(
+                      '₹${receipt.totalAmount.toStringAsFixed(2)}',
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: -0.5,
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
           ),
+
+          // Payment method row
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceElevated,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.border),
+              ),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.payment_outlined,
+                    size: 18,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    'Paid via ${receipt.paymentMethod}',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: AppColors.textSecondary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSummaryRow(String label, String value, {bool isBold = false}) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.w600 : FontWeight.w400,
+            color: AppColors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isBold ? FontWeight.w700 : FontWeight.w500,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
     );
   }
 }

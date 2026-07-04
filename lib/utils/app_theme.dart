@@ -1,77 +1,90 @@
 import 'package:flutter/material.dart';
 
-/// App-wide color constants and theme configuration
 class AppColors {
-  // Primary Colors
-  static const Color primary = Color(0xFF0F172A);
-  static const Color primaryLight = Color(0xFF1E293B);
-  static const Color primaryDark = Color(0xFF020617);
-  
-  // Secondary/Accent Colors
-  static const Color accent = Color(0xFF10B981);
-  static const Color accentLight = Color(0xFF34D399);
-  static const Color accentDark = Color(0xFF059669);
-  
-  // Status Colors
-  static const Color success = Color(0xFF10B981);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color error = Color(0xFFEF4444);
-  static const Color info = Color(0xFF3B82F6);
-  
-  // Gradient Colors
-  static const Color gradientPurple = Color(0xFF667EEA);
-  static const Color gradientPurpleDark = Color(0xFF764BA2);
-  static const Color gradientBlue = Color(0xFF06B6D4);
-  static const Color gradientBlueDark = Color(0xFF3B82F6);
-  static const Color gradientOrange = Color(0xFFFF6B35);
-  static const Color gradientOrangeDark = Color(0xFFFF8C42);
-  
-  // Neutral Colors
-  static const Color background = Color(0xFFF8F9FA);
-  static const Color surface = Colors.white;
-  static const Color textPrimary = Color(0xFF1A1A1A);
-  static const Color textSecondary = Color(0xFF64748B);
-  static const Color textTertiary = Color(0xFF94A3B8);
-  static const Color border = Color(0xFFE2E8F0);
-  static const Color divider = Color(0xFFE2E8F0);
-  
-  // Semantic Colors
-  static const Color activeGreen = Color(0xFF10B981);
-  static const Color inactiveGray = Color(0xFF64748B);
-  static const Color lowStockOrange = Color(0xFFF59E0B);
-  static const Color criticalStockRed = Color(0xFFEF4444);
-  
-  // Common Gradients
+  // Core Backgrounds
+  static const Color background = Color(0xFFF7F7F5);
+  static const Color surface = Color(0xFFFFFFFF);
+  static const Color surfaceElevated = Color(0xFFF2F2F0);
+  static const Color surfaceMuted = Color(0xFFF5F5F3);
+
+  // Primary (near-black)
+  static const Color primary = Color(0xFF0C0C0F);
+  static const Color primaryLight = Color(0xFF1C1C26);
+
+  // Accent (electric indigo — single vibrant tone)
+  static const Color accent = Color(0xFF5B5FEF);
+  static const Color accentLight = Color(0xFF7B7FF5);
+  static const Color accentDark = Color(0xFF4146D0);
+  static const Color accentSurface = Color(0xFFEEEFFC);
+
+  // Accent amber (star ratings, highlights)
+  static const Color amber = Color(0xFFF59E0B);
+
+  // Status
+  static const Color success = Color(0xFF16A34A);
+  static const Color successSurface = Color(0xFFDCFCE7);
+  static const Color warning = Color(0xFFD97706);
+  static const Color warningSurface = Color(0xFFFEF3C7);
+  static const Color error = Color(0xFFDC2626);
+  static const Color errorSurface = Color(0xFFFEE2E2);
+  static const Color info = Color(0xFF2563EB);
+  static const Color infoSurface = Color(0xFFDCEFFE);
+
+  // Text
+  static const Color textPrimary = Color(0xFF0C0C0F);
+  static const Color textSecondary = Color(0xFF6B6B7A);
+  static const Color textTertiary = Color(0xFFA1A1B0);
+  static const Color textInverse = Color(0xFFFFFFFF);
+  static const Color textDisabled = Color(0xFFC4C4CF);
+
+  // Border & Divider
+  static const Color border = Color(0xFFE5E5E3);
+  static const Color borderStrong = Color(0xFFD0D0CE);
+  static const Color divider = Color(0xFFF0F0EE);
+
+  // Semantic
+  static const Color activeGreen = Color(0xFF16A34A);
+  static const Color inactiveGray = Color(0xFFA1A1B0);
+  static const Color lowStockOrange = Color(0xFFD97706);
+  static const Color criticalStockRed = Color(0xFFDC2626);
+
+  // Minimal gradients — use sparingly, only for hero/CTA elements
   static const LinearGradient primaryGradient = LinearGradient(
     colors: [primary, primaryLight],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
-  
+
   static const LinearGradient accentGradient = LinearGradient(
     colors: [accent, accentDark],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
   );
-  
-  static const LinearGradient purpleGradient = LinearGradient(
-    colors: [gradientPurple, gradientPurpleDark],
-  );
-  
+
+  // Legacy aliases kept for compatibility
+  static const Color gradientPurple = Color(0xFF5B5FEF);
+  static const Color gradientPurpleDark = Color(0xFF4146D0);
+  static const Color gradientBlue = Color(0xFF2563EB);
+  static const Color gradientBlueDark = Color(0xFF1D4ED8);
+  static const Color gradientOrange = Color(0xFFD97706);
+  static const Color gradientOrangeDark = Color(0xFFB45309);
+
+  static const LinearGradient purpleGradient = accentGradient;
   static const LinearGradient blueGradient = LinearGradient(
-    colors: [gradientBlue, gradientBlueDark],
+    colors: [info, Color(0xFF1D4ED8)],
   );
-  
   static const LinearGradient orangeGradient = LinearGradient(
-    colors: [gradientOrange, gradientOrangeDark],
+    colors: [warning, Color(0xFFB45309)],
   );
-  
   static const LinearGradient successGradient = LinearGradient(
-    colors: [success, accentDark],
+    colors: [success, Color(0xFF15803D)],
   );
-  
   static const LinearGradient warningGradient = LinearGradient(
-    colors: [warning, Color(0xFFEF4444)],
+    colors: [warning, error],
   );
+  static const LinearGradient accentGradientCompat = accentGradient;
 }
 
-/// App-wide spacing constants
 class AppSpacing {
   static const double xs = 4.0;
   static const double sm = 8.0;
@@ -83,8 +96,8 @@ class AppSpacing {
   static const double huge = 48.0;
 }
 
-/// App-wide border radius constants
 class AppRadius {
+  static const double xs = 6.0;
   static const double sm = 8.0;
   static const double md = 12.0;
   static const double lg = 16.0;
@@ -93,117 +106,122 @@ class AppRadius {
   static const double full = 999.0;
 }
 
-/// App-wide text styles
 class AppTextStyles {
-  // Display Styles
   static const TextStyle displayLarge = TextStyle(
-    fontSize: 32,
+    fontSize: 34,
     fontWeight: FontWeight.w800,
-    letterSpacing: -1.0,
+    letterSpacing: -1.2,
     color: AppColors.textPrimary,
+    height: 1.1,
   );
-  
+
   static const TextStyle displayMedium = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w800,
-    letterSpacing: -0.5,
+    letterSpacing: -0.8,
     color: AppColors.textPrimary,
+    height: 1.2,
   );
-  
+
   static const TextStyle displaySmall = TextStyle(
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: FontWeight.w700,
     letterSpacing: -0.5,
     color: AppColors.textPrimary,
+    height: 1.2,
   );
-  
-  // Heading Styles
+
   static const TextStyle headingLarge = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w700,
+    letterSpacing: -0.3,
     color: AppColors.textPrimary,
   );
-  
+
   static const TextStyle headingMedium = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
     color: AppColors.textPrimary,
   );
-  
+
   static const TextStyle headingSmall = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
     color: AppColors.textPrimary,
   );
-  
-  // Body Styles
+
   static const TextStyle bodyLarge = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
+    height: 1.5,
   );
-  
+
   static const TextStyle bodyMedium = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w400,
     color: AppColors.textPrimary,
+    height: 1.5,
   );
-  
+
   static const TextStyle bodySmall = TextStyle(
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: FontWeight.w400,
     color: AppColors.textSecondary,
+    height: 1.4,
   );
-  
-  // Label Styles
+
   static const TextStyle labelLarge = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w600,
+    letterSpacing: 0.1,
     color: AppColors.textPrimary,
   );
-  
+
   static const TextStyle labelMedium = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
+    letterSpacing: 0.2,
     color: AppColors.textSecondary,
   );
-  
+
   static const TextStyle labelSmall = TextStyle(
-    fontSize: 10,
+    fontSize: 11,
     fontWeight: FontWeight.w600,
+    letterSpacing: 0.4,
     color: AppColors.textTertiary,
   );
 }
 
-/// App-wide shadow configurations
 class AppShadows {
   static List<BoxShadow> small = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
-      blurRadius: 8,
+      color: const Color(0xFF0C0C0F).withValues(alpha: 0.04),
+      blurRadius: 6,
       offset: const Offset(0, 2),
     ),
   ];
-  
+
   static List<BoxShadow> medium = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
+      color: const Color(0xFF0C0C0F).withValues(alpha: 0.06),
       blurRadius: 12,
       offset: const Offset(0, 4),
     ),
   ];
-  
+
   static List<BoxShadow> large = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.1),
-      blurRadius: 20,
+      color: const Color(0xFF0C0C0F).withValues(alpha: 0.08),
+      blurRadius: 24,
       offset: const Offset(0, 8),
     ),
   ];
-  
+
   static List<BoxShadow> colored(Color color) => [
     BoxShadow(
-      color: color.withValues(alpha: 0.3),
+      color: color.withValues(alpha: 0.25),
       blurRadius: 12,
       offset: const Offset(0, 4),
     ),

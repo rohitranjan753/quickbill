@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../blocs/auth/auth_bloc.dart';
@@ -19,24 +20,58 @@ class StoreAdminHomeScreen extends StatelessWidget {
       builder: (context, authState) {
         if (authState is! AuthAuthenticated) {
           return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+            body: Center(
+              child: CircularProgressIndicator(color: AppColors.accent),
+            ),
           );
         }
 
         final user = authState.user;
+        final initial = user.displayName.isNotEmpty
+            ? user.displayName[0].toUpperCase()
+            : '?';
 
         return Scaffold(
+          backgroundColor: AppColors.background,
           appBar: AppBar(
-            title: const Text('Store Management'),
+            backgroundColor: AppColors.surface,
             elevation: 0,
+            scrolledUnderElevation: 0,
+            title: const Text(
+              'Store Admin',
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontWeight: FontWeight.w700,
+                fontSize: 18,
+              ),
+            ),
+            iconTheme: const IconThemeData(color: AppColors.primary),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(1),
+              child: Divider(height: 1, thickness: 1, color: AppColors.border),
+            ),
           ),
           drawer: Drawer(
+            backgroundColor: AppColors.surface,
             child: ListView(
               padding: EdgeInsets.zero,
               children: [
                 UserAccountsDrawerHeader(
-                  accountName: Text(user.displayName),
-                  accountEmail: Text(user.email),
+                  accountName: Text(
+                    user.displayName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                    ),
+                  ),
+                  accountEmail: Text(
+                    user.email,
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.70),
+                      fontSize: 13,
+                    ),
+                  ),
                   currentAccountPicture: CircleAvatar(
                     backgroundColor: Colors.white,
                     child: user.photoURL != null
@@ -47,48 +82,54 @@ class StoreAdminHomeScreen extends StatelessWidget {
                               height: 90,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>
-                                  const CircularProgressIndicator(),
+                                  const CircularProgressIndicator(
+                                      color: AppColors.accent),
                               errorWidget: (context, url, error) => Text(
-                                user.displayName[0].toUpperCase(),
-                                style: const TextStyle(fontSize: 40),
+                                initial,
+                                style: const TextStyle(
+                                  fontSize: 36,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primary,
+                                ),
                               ),
                             ),
                           )
                         : Text(
-                            user.displayName[0].toUpperCase(),
-                            style: const TextStyle(fontSize: 40),
+                            initial,
+                            style: const TextStyle(
+                              fontSize: 36,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.primary,
+                            ),
                           ),
                   ),
                   decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [Color(0xFF10B981), Color(0xFF059669)],
-                    ),
+                    color: AppColors.primary,
                   ),
                   otherAccountsPictures: [
                     Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
+                        color: AppColors.accent,
                         borderRadius: BorderRadius.circular(8),
                       ),
                       child: const Icon(
-                        Icons.store,
+                        Icons.store_outlined,
                         color: Colors.white,
                         size: 20,
                       ),
                     ),
                   ],
                 ),
-                ListTile(
-                  leading: const Icon(Icons.dashboard),
-                  title: const Text('Dashboard'),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
+                const SizedBox(height: 8),
+                _DrawerItem(
+                  icon: Icons.grid_view_rounded,
+                  label: 'Dashboard',
+                  onTap: () => Navigator.pop(context),
                 ),
-                ListTile(
-                  leading: const Icon(Icons.inventory),
-                  title: const Text('Products'),
+                _DrawerItem(
+                  icon: Icons.inventory_2_outlined,
+                  label: 'Products',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -99,9 +140,9 @@ class StoreAdminHomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.people),
-                  title: const Text('User Management'),
+                _DrawerItem(
+                  icon: Icons.people_outline_rounded,
+                  label: 'User Management',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -112,9 +153,9 @@ class StoreAdminHomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.receipt_long),
-                  title: const Text('Sales History'),
+                _DrawerItem(
+                  icon: Icons.receipt_long_outlined,
+                  label: 'Sales History',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -125,9 +166,9 @@ class StoreAdminHomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-                ListTile(
-                  leading: const Icon(Icons.analytics),
-                  title: const Text('Analytics'),
+                _DrawerItem(
+                  icon: Icons.bar_chart_rounded,
+                  label: 'Analytics',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(
@@ -138,20 +179,61 @@ class StoreAdminHomeScreen extends StatelessWidget {
                     );
                   },
                 ),
-                const Divider(),
-                ListTile(
-                  leading: const Icon(Icons.logout),
-                  title: const Text('Sign Out'),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  child: Divider(height: 1, thickness: 1, color: AppColors.border),
+                ),
+                _DrawerItem(
+                  icon: Icons.logout_rounded,
+                  label: 'Sign Out',
+                  iconColor: AppColors.error,
+                  labelColor: AppColors.error,
                   onTap: () {
                     context.read<AuthBloc>().add(AuthSignOutRequested());
                   },
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
           body: const DashboardScreen(),
         );
       },
+    );
+  }
+}
+
+class _DrawerItem extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+  final Color iconColor;
+  final Color labelColor;
+
+  const _DrawerItem({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.iconColor = AppColors.textSecondary,
+    this.labelColor = AppColors.textPrimary,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      leading: Icon(icon, color: iconColor, size: 22),
+      title: Text(
+        label,
+        style: TextStyle(
+          color: labelColor,
+          fontWeight: FontWeight.w500,
+          fontSize: 15,
+        ),
+      ),
+      onTap: onTap,
+      horizontalTitleGap: 8,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 2),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
     );
   }
 }

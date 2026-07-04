@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
@@ -53,7 +54,6 @@ class _ScannerScreenState extends State<ScannerScreen>
     setState(() => _isProcessing = true);
 
     try {
-      // Get product from Firestore for the selected store
       final product = await _firestoreService.getProductByBarcodeAndStore(
         barcode,
         widget.selectedStore.id,
@@ -61,12 +61,9 @@ class _ScannerScreenState extends State<ScannerScreen>
       if (!mounted) return;
 
       if (product != null) {
-        // Validate product belongs to selected store
         if (product.storeId == widget.selectedStore.id) {
-          // Add to cart
           context.read<CartBloc>().add(CartItemAdded(product));
         } else {
-          // Product belongs to different store
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Row(
@@ -78,7 +75,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                   ),
                 ],
               ),
-              backgroundColor: const Color(0xFFEF4444),
+              backgroundColor: AppColors.error,
               behavior: SnackBarBehavior.floating,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -88,7 +85,6 @@ class _ScannerScreenState extends State<ScannerScreen>
           );
         }
       } else {
-        // Product not found
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Row(
@@ -98,7 +94,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                 Expanded(child: Text('Product not found in this store')),
               ],
             ),
-            backgroundColor: const Color(0xFFF59E0B),
+            backgroundColor: AppColors.warning,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -118,7 +114,7 @@ class _ScannerScreenState extends State<ScannerScreen>
               Expanded(child: Text('Error: ${e.toString()}')),
             ],
           ),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -126,7 +122,6 @@ class _ScannerScreenState extends State<ScannerScreen>
         ),
       );
     } finally {
-      // Delay before allowing next scan
       await Future.delayed(const Duration(seconds: 1));
       if (mounted) {
         setState(() => _isProcessing = false);
@@ -167,7 +162,7 @@ class _ScannerScreenState extends State<ScannerScreen>
             Text(
               widget.selectedStore.name,
               style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.8),
+                color: Colors.white.withValues(alpha: 0.7),
                 fontWeight: FontWeight.w500,
                 fontSize: 12,
               ),
@@ -195,7 +190,6 @@ class _ScannerScreenState extends State<ScannerScreen>
         listenWhen: (previous, current) => previous != current,
         listener: (BuildContext context, CartState state) {
           final messenger = ScaffoldMessenger.of(context);
-
           messenger.clearSnackBars();
           if (state is CartError) {
             debugPrint("Showing error snackbar: ${state.message}");
@@ -208,7 +202,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                     Expanded(child: Text(state.message)),
                   ],
                 ),
-                backgroundColor: const Color(0xFFEF4444),
+                backgroundColor: AppColors.error,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -226,7 +220,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                     Expanded(child: Text(state.message)),
                   ],
                 ),
-                backgroundColor: const Color(0xFF10B981),
+                backgroundColor: AppColors.accent,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
@@ -259,7 +253,7 @@ class _ScannerScreenState extends State<ScannerScreen>
               },
             ),
 
-            // Top Gradient
+            // Top gradient fade
             Positioned(
               top: 0,
               left: 0,
@@ -299,10 +293,10 @@ class _ScannerScreenState extends State<ScannerScreen>
                           Container(
                             padding: const EdgeInsets.all(20),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 width: 1,
                               ),
                             ),
@@ -310,13 +304,13 @@ class _ScannerScreenState extends State<ScannerScreen>
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: const [
                                 SizedBox(
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   child: CircularProgressIndicator(
                                     valueColor: AlwaysStoppedAnimation<Color>(
                                       Colors.white,
                                     ),
-                                    strokeWidth: 3,
+                                    strokeWidth: 2.5,
                                   ),
                                 ),
                                 SizedBox(width: 16),
@@ -324,7 +318,7 @@ class _ScannerScreenState extends State<ScannerScreen>
                                   'Processing...',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
@@ -333,12 +327,15 @@ class _ScannerScreenState extends State<ScannerScreen>
                           )
                         else
                           Container(
-                            padding: const EdgeInsets.all(24),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 20,
+                            ),
                             decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(20),
+                              color: Colors.white.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(16),
                               border: Border.all(
-                                color: Colors.white.withValues(alpha: 0.3),
+                                color: Colors.white.withValues(alpha: 0.2),
                                 width: 1,
                               ),
                             ),
@@ -347,25 +344,25 @@ class _ScannerScreenState extends State<ScannerScreen>
                                 const Icon(
                                   Icons.qr_code_scanner_rounded,
                                   color: Colors.white,
-                                  size: 48,
+                                  size: 40,
                                 ),
-                                const SizedBox(height: 16),
+                                const SizedBox(height: 12),
                                 const Text(
                                   'Point camera at barcode',
                                   style: TextStyle(
                                     color: Colors.white,
-                                    fontSize: 20,
+                                    fontSize: 18,
                                     fontWeight: FontWeight.w700,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
-                                const SizedBox(height: 8),
+                                const SizedBox(height: 6),
                                 Text(
                                   'Align the barcode within the frame',
                                   style: TextStyle(
-                                    color: Colors.white.withValues(alpha: 0.8),
-                                    fontSize: 15,
-                                    fontWeight: FontWeight.w500,
+                                    color: Colors.white.withValues(alpha: 0.65),
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w400,
                                   ),
                                   textAlign: TextAlign.center,
                                 ),
@@ -379,7 +376,7 @@ class _ScannerScreenState extends State<ScannerScreen>
               ),
             ),
 
-            // Cart Counter Badge (Top Right)
+            // Cart Counter Badge
             Positioned(
               top: 100,
               right: 16,
@@ -389,16 +386,14 @@ class _ScannerScreenState extends State<ScannerScreen>
                   return Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 16,
-                      vertical: 12,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [Color(0xFF10B981), Color(0xFF059669)],
-                      ),
+                      color: AppColors.accent,
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.4),
+                          color: AppColors.accent.withValues(alpha: 0.35),
                           blurRadius: 12,
                           offset: const Offset(0, 4),
                         ),
@@ -410,14 +405,14 @@ class _ScannerScreenState extends State<ScannerScreen>
                         const Icon(
                           Icons.shopping_cart,
                           color: Colors.white,
-                          size: 20,
+                          size: 18,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 7),
                         Text(
                           '${state.itemCount}',
                           style: const TextStyle(
                             color: Colors.white,
-                            fontSize: 16,
+                            fontSize: 15,
                             fontWeight: FontWeight.w700,
                           ),
                         ),
@@ -441,7 +436,6 @@ class ScannerOverlay extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    // Dark overlay
     final paint = Paint()
       ..color = Colors.black.withValues(alpha: 0.6)
       ..style = PaintingStyle.fill;
@@ -459,9 +453,9 @@ class ScannerOverlay extends CustomPainter {
 
     canvas.drawPath(path, paint);
 
-    // Border glow effect
+    // Border glow — accent indigo
     final glowPaint = Paint()
-      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
+      ..color = const Color(0xFF5B5FEF).withValues(alpha: 0.3)
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
@@ -471,9 +465,9 @@ class ScannerOverlay extends CustomPainter {
       glowPaint,
     );
 
-    // Corner brackets
+    // Corner brackets — accent indigo
     final cornerPaint = Paint()
-      ..color = const Color(0xFF10B981)
+      ..color = const Color(0xFF5B5FEF)
       ..strokeWidth = 5
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
@@ -481,7 +475,7 @@ class ScannerOverlay extends CustomPainter {
     const cornerLength = 40.0;
     const cornerOffset = 8.0;
 
-    // Top-left corner
+    // Top-left
     canvas.drawLine(
       Offset(scanArea.left - cornerOffset, scanArea.top + cornerLength),
       Offset(scanArea.left - cornerOffset, scanArea.top - cornerOffset),
@@ -493,7 +487,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Top-right corner
+    // Top-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.top - cornerOffset),
       Offset(scanArea.right + cornerOffset, scanArea.top - cornerOffset),
@@ -505,7 +499,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Bottom-left corner
+    // Bottom-left
     canvas.drawLine(
       Offset(scanArea.left - cornerOffset, scanArea.bottom - cornerLength),
       Offset(scanArea.left - cornerOffset, scanArea.bottom + cornerOffset),
@@ -517,7 +511,7 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Bottom-right corner
+    // Bottom-right
     canvas.drawLine(
       Offset(scanArea.right - cornerLength, scanArea.bottom + cornerOffset),
       Offset(scanArea.right + cornerOffset, scanArea.bottom + cornerOffset),
@@ -529,19 +523,18 @@ class ScannerOverlay extends CustomPainter {
       cornerPaint,
     );
 
-    // Animated scan line
+    // Animated scan line — accent indigo
     final scanLineY = scanArea.top + (scanArea.height * scanProgress);
     final scanLinePaint = Paint()
-      ..shader =
-          LinearGradient(
-            colors: [
-              Colors.transparent,
-              const Color(0xFF10B981).withValues(alpha: 0.8),
-              Colors.transparent,
-            ],
-          ).createShader(
-            Rect.fromLTWH(scanArea.left, scanLineY - 2, scanArea.width, 4),
-          )
+      ..shader = LinearGradient(
+        colors: [
+          Colors.transparent,
+          const Color(0xFF5B5FEF).withValues(alpha: 0.85),
+          Colors.transparent,
+        ],
+      ).createShader(
+        Rect.fromLTWH(scanArea.left, scanLineY - 2, scanArea.width, 4),
+      )
       ..strokeWidth = 3
       ..style = PaintingStyle.stroke;
 
@@ -551,9 +544,9 @@ class ScannerOverlay extends CustomPainter {
       scanLinePaint,
     );
 
-    // Glow effect for scan line
+    // Scan line glow
     final scanLineGlowPaint = Paint()
-      ..color = const Color(0xFF10B981).withValues(alpha: 0.3)
+      ..color = const Color(0xFF5B5FEF).withValues(alpha: 0.25)
       ..strokeWidth = 8
       ..style = PaintingStyle.stroke
       ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 6);

@@ -1,3 +1,4 @@
+import '../utils/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -88,7 +89,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
     try {
       final authState = context.read<AuthBloc>().state;
       final cartState = context.read<CartBloc>().state;
-      
+
       if (authState is! AuthAuthenticated) {
         throw Exception('User not authenticated');
       }
@@ -132,8 +133,8 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ReceiptScreen(receiptId: receiptId),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
+              return FadeTransition(opacity: animation, child: child);
+            },
             transitionDuration: const Duration(milliseconds: 400),
           ),
           (route) => route.isFirst,
@@ -151,7 +152,7 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 Expanded(child: Text('Payment failed: ${e.toString()}')),
               ],
             ),
-            backgroundColor: const Color(0xFFEF4444),
+            backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
@@ -166,27 +167,37 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA),
+      backgroundColor: AppColors.background,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: AppColors.surface,
         elevation: 0,
+        scrolledUnderElevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1A1A1A)),
+          icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text(
           'Checkout',
           style: TextStyle(
             fontSize: 20,
-            fontWeight: FontWeight.w600,
-            color: Color(0xFF1A1A1A),
+            fontWeight: FontWeight.w700,
+            color: AppColors.textPrimary,
           ),
+        ),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(1),
+          child: Container(height: 1, color: AppColors.border),
         ),
       ),
       body: BlocBuilder<CartBloc, CartState>(
         builder: (context, cartState) {
           if (cartState.items.isEmpty) {
-            return const Center(child: Text('Cart is empty'));
+            return const Center(
+              child: Text(
+                'Cart is empty',
+                style: TextStyle(color: AppColors.textSecondary),
+              ),
+            );
           }
 
           final taxBreakdown = _calculateTaxBreakdown(cartState.items);
@@ -204,15 +215,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       Container(
                         padding: const EdgeInsets.all(20),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: AppColors.surface,
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.04),
-                              blurRadius: 8,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
+                          border: Border.all(color: AppColors.border, width: 1),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,12 +227,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 Container(
                                   padding: const EdgeInsets.all(8),
                                   decoration: BoxDecoration(
-                                    color: const Color(0xFFECFDF5),
+                                    color: AppColors.accentSurface,
                                     borderRadius: BorderRadius.circular(8),
                                   ),
                                   child: const Icon(
                                     Icons.receipt_long_outlined,
-                                    color: Color(0xFF10B981),
+                                    color: AppColors.accent,
                                     size: 20,
                                   ),
                                 ),
@@ -235,9 +240,9 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                 const Text(
                                   'Order Summary',
                                   style: TextStyle(
-                                    fontSize: 18,
+                                    fontSize: 17,
                                     fontWeight: FontWeight.w700,
-                                    color: Color(0xFF1A1A1A),
+                                    color: AppColors.textPrimary,
                                   ),
                                 ),
                               ],
@@ -269,9 +274,12 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                     ),
                                   ),
                                 ),
-                            const Padding(
-                              padding: EdgeInsets.symmetric(vertical: 16),
-                              child: Divider(height: 1),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              child: Container(
+                                height: 1,
+                                color: AppColors.border,
+                              ),
                             ),
                             _SummaryRow(
                               label: 'Grand Total',
@@ -283,15 +291,15 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                         ),
                       ),
 
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 28),
 
                       // Payment Method Section
                       const Text(
                         'Payment Method',
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.w700,
-                          color: Color(0xFF1A1A1A),
+                          color: AppColors.textPrimary,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -312,24 +320,14 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             margin: const EdgeInsets.only(bottom: 12),
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: Colors.white,
+                              color: AppColors.surface,
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF0F172A)
-                                    : const Color(0xFFE2E8F0),
+                                    ? AppColors.primary
+                                    : AppColors.border,
                                 width: isSelected ? 2 : 1,
                               ),
-                              boxShadow: [
-                                if (isSelected)
-                                  BoxShadow(
-                                    color: const Color(
-                                      0xFF0F172A,
-                                    ).withValues(alpha: 0.1),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                              ],
                             ),
                             child: Row(
                               children: [
@@ -337,16 +335,16 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
                                     color: isSelected
-                                        ? const Color(0xFF0F172A)
-                                        : const Color(0xFFF1F5F9),
+                                        ? AppColors.primary
+                                        : AppColors.surfaceElevated,
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                   child: Icon(
                                     method['icon'],
                                     color: isSelected
                                         ? Colors.white
-                                        : const Color(0xFF64748B),
-                                    size: 24,
+                                        : AppColors.textSecondary,
+                                    size: 22,
                                   ),
                                 ),
                                 const SizedBox(width: 16),
@@ -358,11 +356,11 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                       Text(
                                         method['name'],
                                         style: TextStyle(
-                                          fontSize: 16,
+                                          fontSize: 15,
                                           fontWeight: FontWeight.w600,
                                           color: isSelected
-                                              ? const Color(0xFF0F172A)
-                                              : const Color(0xFF1A1A1A),
+                                              ? AppColors.textPrimary
+                                              : AppColors.textPrimary,
                                         ),
                                       ),
                                       const SizedBox(height: 2),
@@ -370,31 +368,31 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                                         method['subtitle'],
                                         style: const TextStyle(
                                           fontSize: 13,
-                                          color: Color(0xFF94A3B8),
+                                          color: AppColors.textTertiary,
                                         ),
                                       ),
                                     ],
                                   ),
                                 ),
                                 Container(
-                                  width: 24,
-                                  height: 24,
+                                  width: 22,
+                                  height: 22,
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     border: Border.all(
                                       color: isSelected
-                                          ? const Color(0xFF0F172A)
-                                          : const Color(0xFFCBD5E1),
+                                          ? AppColors.primary
+                                          : AppColors.border,
                                       width: 2,
                                     ),
                                     color: isSelected
-                                        ? const Color(0xFF0F172A)
-                                        : Colors.white,
+                                        ? AppColors.primary
+                                        : Colors.transparent,
                                   ),
                                   child: isSelected
                                       ? const Icon(
                                           Icons.check,
-                                          size: 16,
+                                          size: 14,
                                           color: Colors.white,
                                         )
                                       : null,
@@ -409,17 +407,13 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                 ),
               ),
 
-              // Pay Button - Sticky Bottom
+              // Pay Button — Sticky Bottom
               Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 16,
-                      offset: const Offset(0, -4),
-                    ),
-                  ],
+                decoration: const BoxDecoration(
+                  color: AppColors.surface,
+                  border: Border(
+                    top: BorderSide(color: AppColors.border, width: 1),
+                  ),
                 ),
                 child: SafeArea(
                   child: Padding(
@@ -430,18 +424,18 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                       child: FilledButton(
                         onPressed: _isProcessing ? null : _processPayment,
                         style: FilledButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
-                          disabledBackgroundColor: const Color(0xFF94A3B8),
+                          backgroundColor: AppColors.primary,
+                          disabledBackgroundColor: AppColors.textTertiary,
                           foregroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(12),
                           ),
                           elevation: 0,
                         ),
                         child: _isProcessing
                             ? const SizedBox(
-                                height: 24,
-                                width: 24,
+                                height: 22,
+                                width: 22,
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2.5,
                                   valueColor: AlwaysStoppedAnimation<Color>(
@@ -452,18 +446,17 @@ class _CheckoutScreenState extends State<CheckoutScreen> {
                             : Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  const Icon(Icons.lock_outline, size: 20),
+                                  const Icon(Icons.lock_outline, size: 18),
                                   const SizedBox(width: 8),
                                   Text(
                                     'Pay ₹${cartState.totalAmount.toStringAsFixed(2)}',
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 17,
                                       fontWeight: FontWeight.w600,
                                       letterSpacing: 0.2,
                                     ),
                                   ),
                                 ],
-                                
                               ),
                       ),
                     ),
@@ -497,21 +490,17 @@ class _SummaryRow extends StatelessWidget {
         Text(
           label,
           style: TextStyle(
-            fontSize: isRegular ? 15 : 18,
+            fontSize: isRegular ? 14 : 17,
             fontWeight: isRegular ? FontWeight.w500 : FontWeight.w700,
-            color: isRegular
-                ? const Color(0xFF64748B)
-                : const Color(0xFF1A1A1A),
+            color: isRegular ? AppColors.textSecondary : AppColors.textPrimary,
           ),
         ),
         Text(
           value,
           style: TextStyle(
-            fontSize: isRegular ? 15 : 22,
+            fontSize: isRegular ? 14 : 22,
             fontWeight: isRegular ? FontWeight.w600 : FontWeight.w700,
-            color: isRegular
-                ? const Color(0xFF1A1A1A)
-                : const Color(0xFF10B981),
+            color: AppColors.textPrimary,
             letterSpacing: isRegular ? 0 : -0.5,
           ),
         ),
